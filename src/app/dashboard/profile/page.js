@@ -1,0 +1,447 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import Avatar from '@/components/ui/Avatar'
+import { uploadAvatar, deleteImageByUrl } from '@/lib/supabase/storage'
+
+export default function ProfileEditPage() {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
+  
+  const fileInputRef = useRef(null)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [usernameError, setUsernameError] = useState('')
+  const [checkingUsername, setCheckingUsername] = useState(false)
+  
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+        setProfile(data)
+      }
+      setLoading(false)
+    }
+    loadProfile()
+  }, [])
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Avatar size must be less than 2MB.')
+        return
+      }
+      setAvatarFile(file)
+      setAvatarPreview(URL.createObjectURL(file))
+      setError('')
+    }
+  }
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click()
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    if (usernameError) {
+      setError('Please resolve all validation errors before saving.')
+      return
+    }
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    const { data: { user } } = await supabase.auth.getUser()
+    let avatarUrl = profile.avatar_url
+
+    if (avatarFile) {
+      try {
+        avatarUrl = await uploadAvatar('users', user.id, avatarFile)
+        if (profile.avatar_url) {
+          await deleteImageByUrl(profile.avatar_url)
+        }
+      } catch (uploadError) {
+        setError(`Failed to upload avatar: ${uploadError.message}`)
+        setSaving(false)
+        return
+      }
+    }
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        display_name: profile.display_name,
+        username: profile.username,
+        bio: profile.bio,
+        minecraft_ign: profile.minecraft_ign,
+        social_youtube: profile.social_youtube,
+        social_discord: profile.social_discord,
+        social_twitch: profile.social_twitch,
+        avatar_url: avatarUrl,
+      })
+      .eq('id', user.id)
+
+    if (updateError) {
+      setError(updateError.message)
+    } else {
+      setSuccess('Profile updated successfully!')
+      setProfile(prev => ({ ...prev, avatar_url: avatarUrl }))
+      setAvatarFile(null)
+      setTimeout(() => setSuccess(''), 3000)
+      router.refresh()
+    }
+    setSaving(false)
+  }
+
+  const updateField = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleLinkDiscord = async () => {
+    setError('')
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=/dashboard/profile`,
+          scopes: ['identify']
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      setError(`Failed to initiate Discord linking: ${err.message}`)
+    }
+  }
+
+  const handleUnlinkDiscord = async () => {
+    setSaving(true)
+    setError('')
+    setSuccess('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          discord_id: null,
+          social_discord: null
+        })
+        .eq('id', user.id)
+
+      if (updateError) throw updateError
+
+      setProfile(prev => ({
+        ...prev,
+        discord_id: null,
+        social_discord: null
+      }))
+      setSuccess('Discord account unlinked successfully.')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      setError(`Failed to unlink Discord: ${err.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('WARNING: Are you sure you want to delete your account? This will permanently delete your profile, organizations you own, and all your registrations. This action cannot be undone.')) return
+    const verification = window.prompt('Please type "DELETE MY ACCOUNT" to confirm:')
+    if (verification !== 'DELETE MY ACCOUNT') {
+      alert('Confirmation text did not match. Account deletion cancelled.')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const { error: deleteError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', user.id)
+
+      if (deleteError) throw deleteError
+
+      await supabase.auth.signOut()
+      
+      setSuccess('Account deleted successfully. Logging out...')
+      setTimeout(() => {
+        router.push('/')
+        router.refresh()
+      }, 1500)
+    } catch (err) {
+      setError(`Failed to delete account: ${err.message}`)
+      setSaving(false)
+    }
+  }
+
+  const handleUsernameBlur = async () => {
+    const username = profile?.username?.trim()
+    if (!username) return
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', user.id)
+      .single()
+
+    if (currentUser?.username === username) {
+      setUsernameError('')
+      return
+    }
+
+    setCheckingUsername(true)
+    setUsernameError('')
+    
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle()
+
+    if (data) {
+      setUsernameError('This username is already taken.')
+    }
+    setCheckingUsername(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="dashboard-page-header">
+          <div className="skeleton" style={{ width: '200px', height: '32px', marginBottom: '8px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+          <div className="skeleton" style={{ width: '300px', height: '18px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+        </div>
+        <div className="skeleton" style={{ height: '400px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-lg)' }} />
+      </div>
+    )
+  }
+
+  return (
+    <div id="profile-edit-page" className="flex flex-col gap-8">
+      <div className="dashboard-page-header">
+        <div className="dashboard-page-header-text">
+          <h1 className="dashboard-page-title">Edit Profile</h1>
+          <p className="dashboard-page-subtitle">Manage your public profile and Minecraft identity.</p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="auth-error" style={{ marginBottom: 0 }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
+      {success && (
+        <div className="auth-success" style={{ marginBottom: 0 }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>{success}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSave} id="profile-form" className="flex flex-col gap-6">
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+              Basic Information
+            </h3>
+          </div>
+          
+          {/* Avatar Upload Selection */}
+          <div className="flex items-center gap-6 mb-6 pb-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <Avatar
+              src={avatarPreview || profile?.avatar_url}
+              alt={profile?.display_name || 'Avatar'}
+              size="xl"
+              fallback={profile?.display_name?.[0]?.toUpperCase() || 'U'}
+            />
+            <div className="flex flex-col gap-2">
+              <div>
+                <Button variant="outline" size="sm" onClick={triggerFileInput}>
+                  Change Avatar
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  style={{ display: 'none' }}
+                />
+              </div>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                JPG, PNG or WEBP. Max 2MB.
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <Input
+              id="profile-display-name"
+              label="Display Name"
+              type="text"
+              placeholder="Your display name"
+              value={profile?.display_name || ''}
+              onChange={(e) => updateField('display_name', e.target.value)}
+            />
+            <Input
+              id="profile-username"
+              label="Username"
+              type="text"
+              placeholder="unique_username"
+              value={profile?.username || ''}
+              onChange={(e) => {
+                setUsernameError('')
+                updateField('username', e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+              }}
+              onBlur={handleUsernameBlur}
+              error={usernameError}
+              helperText={checkingUsername ? 'Checking availability...' : 'Letters, numbers, underscores, hyphens only'}
+            />
+          </div>
+          
+          <div className="mt-4">
+            <Input
+              id="profile-bio"
+              label="Bio"
+              type="textarea"
+              placeholder="Tell the community about yourself..."
+              value={profile?.bio || ''}
+              onChange={(e) => updateField('bio', e.target.value)}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+              Minecraft Identity
+            </h3>
+          </div>
+
+          <Input
+            id="profile-ign"
+            label="Minecraft In-Game Name (IGN)"
+            type="text"
+            placeholder="Steve"
+            value={profile?.minecraft_ign || ''}
+            onChange={(e) => updateField('minecraft_ign', e.target.value)}
+            helperText="Your exact Minecraft username — used for whitelist matching."
+          />
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+              Social Connections
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <Input
+              id="profile-youtube"
+              label="YouTube Channel URL"
+              type="url"
+              placeholder="https://youtube.com/@yourchannel"
+              value={profile?.social_youtube || ''}
+              onChange={(e) => updateField('social_youtube', e.target.value)}
+            />
+            <Input
+              id="profile-twitch"
+              label="Twitch Channel URL"
+              type="url"
+              placeholder="https://twitch.tv/yourchannel"
+              value={profile?.social_twitch || ''}
+              onChange={(e) => updateField('social_twitch', e.target.value)}
+            />
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '24px' }}>
+            <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>Discord Integration</label>
+            {profile?.discord_id ? (
+              <div className="flex items-center justify-between p-4" style={{ backgroundColor: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <div className="flex items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ color: '#5865F2' }}>
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                  </svg>
+                  <div>
+                    <span style={{ fontWeight: 600, display: 'block', color: 'var(--color-text)' }}>@{profile?.social_discord || 'Linked'}</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', display: 'block' }}>Discord User ID: {profile?.discord_id}</span>
+                  </div>
+                </div>
+                <Button variant="danger" size="sm" onClick={handleUnlinkDiscord}>
+                  Unlink Account
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-4" style={{ backgroundColor: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                  Connect your Discord account to verify server membership when registering for tournaments.
+                </span>
+                <Button variant="outline" size="sm" onClick={handleLinkDiscord}>
+                  Link Discord Account
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <div className="flex justify-end gap-4">
+          <Button variant="secondary" onClick={() => router.back()}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={saving} id="profile-save-btn">
+            Save Changes
+          </Button>
+        </div>
+      </form>
+
+      {/* Danger Zone */}
+      <Card style={{ borderColor: 'rgba(239, 68, 68, 0.25)', backgroundColor: 'rgba(239, 68, 68, 0.02)', marginTop: '24px' }} className="p-6">
+        <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', color: 'var(--color-danger)', marginBottom: '8px' }}>Danger Zone</h4>
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+          Deleting your account is a permanent action. All of your profile data, user settings, organizations you own, and tournament registrations will be deleted immediately.
+        </p>
+        <Button variant="danger" size="sm" onClick={handleDeleteAccount} loading={saving}>
+          Delete Account
+        </Button>
+      </Card>
+    </div>
+  )
+}

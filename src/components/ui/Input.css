@@ -1,0 +1,75 @@
+.td-input-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.td-input-label {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.td-input-required {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+.td-input-field {
+  background-color: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-white);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: 0 var(--space-4);
+  height: 40px;
+  outline: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  width: 100%;
+}
+
+.td-input-textarea {
+  height: auto;
+  min-height: 100px;
+  padding: var(--space-3) var(--space-4);
+  resize: vertical;
+}
+
+.td-input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.td-input-field:hover {
+  border-color: var(--color-border-hover);
+}
+
+.td-input-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-focus);
+}
+
+/* --- Error States --- */
+.td-input-has-error .td-input-field {
+  border-color: var(--color-danger);
+}
+
+.td-input-has-error .td-input-field:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+.td-input-error-msg {
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+  margin-top: var(--space-2);
+}
+
+.td-input-helper-msg {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin-top: var(--space-2);
+}
