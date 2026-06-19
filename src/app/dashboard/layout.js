@@ -247,22 +247,33 @@ export default function DashboardLayout({ children }) {
         <div className="sidebar-divider" />
         <div className="sidebar-section">
           <div className="sidebar-section-label">Manage</div>
-          <ul className="sidebar-nav">
-            <li>
-              <Link
-                href="/dashboard/org/new"
-                className={`sidebar-link ${pathname === '/dashboard/org/new' ? 'sidebar-link-active' : ''}`}
-              >
-                <span className="sidebar-link-icon">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </span>
-                New Organization
-              </Link>
-            </li>
-          </ul>
+          {orgs.length > 0 ? (
+            <ul className="sidebar-nav sidebar-manage-orgs">
+              {orgs.map((org) => {
+                const orgPath = `/dashboard/org/${org.id}`
+                const isActive = pathname.startsWith(orgPath) && selectedOrg?.id === org.id
+                return (
+                  <li key={org.id}>
+                    <Link
+                      href={orgPath}
+                      className={`sidebar-link sidebar-manage-org-link ${isActive ? 'sidebar-link-active' : ''}`}
+                      onClick={() => setSelectedOrg(org)}
+                    >
+                      <Avatar src={org.avatar_url} alt={org.name} size="xs" fallback="🏰" className="sidebar-manage-org-avatar" />
+                      <span className="sidebar-manage-org-info">
+                        <span className="sidebar-manage-org-name">{org.name}</span>
+                        <span className="sidebar-manage-org-role">{org.role}</span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <div className="sidebar-manage-empty">
+              <span className="sidebar-manage-empty-text">No organizations yet</span>
+            </div>
+          )}
         </div>
       </aside>
 

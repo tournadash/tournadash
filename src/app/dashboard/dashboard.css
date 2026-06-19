@@ -259,6 +259,63 @@
   line-height: var(--leading-normal);
 }
 
+/* Manage Section - Org List */
+.sidebar-manage-orgs {
+  gap: 2px;
+}
+
+.sidebar-manage-org-link {
+  gap: var(--space-3) !important;
+  padding: var(--space-2) var(--space-6) !important;
+}
+
+.sidebar-manage-org-avatar {
+  flex-shrink: 0;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-manage-org-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.sidebar-manage-org-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-base);
+}
+
+.sidebar-manage-org-link:hover .sidebar-manage-org-name,
+.sidebar-manage-org-link.sidebar-link-active .sidebar-manage-org-name {
+  color: var(--color-text-white);
+}
+
+.sidebar-manage-org-role {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-manage-empty {
+  padding: var(--space-4) var(--space-6);
+}
+
+.sidebar-manage-empty-text {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .dashboard-sidebar {
     display: none;
