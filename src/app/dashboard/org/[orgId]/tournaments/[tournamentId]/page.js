@@ -276,9 +276,6 @@ export default function TournamentManagePage() {
     loadData()
   }
 
-  const updateLiveTournamentUrl = async (url) => {
-    await supabase.from('tournaments').update({ live_tournament_url: url }).eq('id', tournamentId)
-  }
 
   const updateHighlightsUrl = async (url) => {
     await supabase.from('tournaments').update({ highlights_url: url }).eq('id', tournamentId)
@@ -970,19 +967,6 @@ export default function TournamentManagePage() {
         </div>
       </Card>
 
-      {/* Live Tournament URL (show when ONGOING or ENDED) */}
-      {(tournament.status === 'ONGOING' || tournament.status === 'ENDED') && (
-        <Card className="p-6">
-          <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Live Tournament URL</h4>
-          <Input
-            type="url"
-            placeholder="https://youtube.com/live/... or https://twitch.tv/..."
-            defaultValue={tournament.live_tournament_url || ''}
-            onBlur={(e) => updateLiveTournamentUrl(e.target.value)}
-            helperText="YouTube Live or Twitch URL — displayed on the public tournament page"
-          />
-        </Card>
-      )}
 
       {/* Winners (show when ENDED) */}
       {tournament.status === 'ENDED' && (

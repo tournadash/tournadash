@@ -103,6 +103,56 @@ export default function ApiDocsPage() {
     "whitelist_enabled": true
   }
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Asynchronously check connection status
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/check"))
+                .header("Authorization", "Bearer " + serverToken)
+                .GET()
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            plugin.getLogger().info("Connected successfully! Response: " + response.body());
+        } else {
+            plugin.getLogger().warning("Connection failed. HTTP Code: " + response.statusCode());
+        }
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error checking connection: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
               </div>
 
               <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
@@ -131,6 +181,55 @@ export default function ApiDocsPage() {
     { "minecraft_ign": "Alex", "minecraft_uuid": "d38bb81e-1cf6-4442-8877-cd0d5a49c3bd" }
   ]
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Fetch whitelisted player names & UUIDs
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/whitelist"))
+                .header("Authorization", "Bearer " + serverToken)
+                .GET()
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            plugin.getLogger().info("Whitelisted players loaded: " + response.body());
+            // You can parse response using Gson: new JsonParser().parse(response.body())
+        }
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error loading whitelist: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
               </div>
 
               <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
@@ -173,6 +272,55 @@ export default function ApiDocsPage() {
     "status": "ENDED"
   }
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Update status and toggle whitelist gate
+String payload = "{\\"status\\": \\"ONGOING\\", \\"whitelist_enabled\\": true}";
+
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/status"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + serverToken)
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        plugin.getLogger().info("Status update response: " + response.body());
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error updating status: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
               </div>
 
               <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
@@ -220,6 +368,72 @@ export default function ApiDocsPage() {
   "is_public": true,
   "entries_count": 2
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Create GSON payload and submit standings
+com.google.gson.JsonObject payload = new com.google.gson.JsonObject();
+payload.addProperty("name", "Round 1 Standings");
+payload.addProperty("is_public", true);
+
+com.google.gson.JsonArray entries = new com.google.gson.JsonArray();
+com.google.gson.JsonObject entry1 = new com.google.gson.JsonObject();
+entry1.addProperty("position", 1);
+entry1.addProperty("username", "Steve");
+entry1.addProperty("notes", "Winner - 15 Kills");
+entries.add(entry1);
+
+com.google.gson.JsonObject entry2 = new com.google.gson.JsonObject();
+entry2.addProperty("position", 2);
+entry2.addProperty("username", "Alex");
+entry2.addProperty("notes", "10 Kills");
+entries.add(entry2);
+
+payload.add("entries", entries);
+
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/leaderboard"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + serverToken)
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(payload.toString()))
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        plugin.getLogger().info("Leaderboard response: " + response.body());
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error posting standings: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
               </div>
 
               <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
@@ -255,6 +469,54 @@ export default function ApiDocsPage() {
     }
   ]
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Retrieve leaderboards and entries asynchronously
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/leaderboard"))
+                .header("Authorization", "Bearer " + serverToken)
+                .GET()
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            plugin.getLogger().info("Leaderboards: " + response.body());
+        }
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error retrieving leaderboards: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
               </div>
 
               <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
@@ -281,6 +543,58 @@ export default function ApiDocsPage() {
   "success": true,
   "message": "Leaderboard 'Round 1 Standings' deleted successfully"
 }`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Delete a leaderboard by name asynchronously
+String boardName = "Round 1 Standings";
+try {
+    String encodedName = java.net.URLEncoder.encode(boardName, "UTF-8");
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/leaderboard?name=" + encodedName))
+                    .header("Authorization", "Bearer " + serverToken)
+                    .DELETE()
+                    .build();
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            plugin.getLogger().info("Delete response: " + response.body());
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error executing delete: " + e.getMessage());
+        }
+    });
+} catch (Exception e) {
+    plugin.getLogger().severe("Encoding error: " + e.getMessage());
+}`}</pre>
+                  </div>
+                </details>
               </div>
             </div>
           </Card>

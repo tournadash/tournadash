@@ -410,7 +410,7 @@ export default function EditTournamentPage() {
             placeholder="https://youtube.com/watch?v=..." 
             value={form.trailer_url} 
             onChange={(e) => updateForm('trailer_url', e.target.value)} 
-            helperText="Displayed during the SOON phase. Can be left empty and configured later."
+            helperText="YouTube video URL."
           />
 
           <Input 
@@ -419,7 +419,7 @@ export default function EditTournamentPage() {
             placeholder="https://youtube.com/live/... or https://twitch.tv/..." 
             value={form.live_tournament_url} 
             onChange={(e) => updateForm('live_tournament_url', e.target.value)} 
-            helperText="Displayed during the ONGOING and ENDED phases. Can be left empty and configured later."
+            helperText="YouTube Live or Twitch URL."
           />
         </Card>
 
@@ -659,7 +659,6 @@ export default function EditTournamentPage() {
               placeholder="e.g., play.mydomain.com" 
               value={form.server_ip} 
               onChange={(e) => updateForm('server_ip', e.target.value)} 
-              helperText="The server address participants will use to connect"
             />
             <label className="flex items-center justify-between p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', height: 'fit-content', marginTop: '24px' }}>
               <div>
