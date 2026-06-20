@@ -348,21 +348,21 @@ export default function NewTournamentPage() {
           </div>
 
           <Input 
-            label="YouTube Trailer URL" 
+            label="YouTube Trailer URL (Optional)" 
             type="url" 
             placeholder="https://youtube.com/watch?v=..." 
             value={form.trailer_url} 
             onChange={(e) => updateForm('trailer_url', e.target.value)} 
-            helperText="Displayed during the SOON phase"
+            helperText="Displayed during the SOON phase. Can be left empty and configured later."
           />
 
           <Input 
-            label="Live Tournament URL" 
+            label="Live Tournament URL (Optional)" 
             type="url" 
             placeholder="https://youtube.com/live/... or https://twitch.tv/..." 
             value={form.live_tournament_url} 
             onChange={(e) => updateForm('live_tournament_url', e.target.value)} 
-            helperText="Displayed during the ONGOING and ENDED phases"
+            helperText="Displayed during the ONGOING and ENDED phases. Can be left empty and configured later."
           />
         </Card>
 
