@@ -7,14 +7,7 @@ import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 
-function generateOrgToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let token = 'org_tok_'
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return token
-}
+
 
 export default function NewOrganizationPage() {
   const [name, setName] = useState('')
@@ -138,37 +131,20 @@ export default function NewOrganizationPage() {
       return
     }
 
-    const orgToken = generateOrgToken()
-
     // Create organization
-    let insertPayload = {
+    const insertPayload = {
       name: name.trim(),
       slug: slug.trim(),
       bio: bio.trim() || null,
       social_youtube: socialYoutube.trim() || null,
       social_discord: socialDiscord.trim() || null,
-      org_token: orgToken,
-      created_by: user.id,
     }
 
-    let { data: org, error: orgError } = await supabase
+    const { data: org, error: orgError } = await supabase
       .from('organizations')
       .insert(insertPayload)
       .select()
       .single()
-
-    if (orgError && orgError.code === '42703') {
-      const fallbackPayload = { ...insertPayload }
-      delete fallbackPayload.org_token
-      delete fallbackPayload.created_by
-      const fallbackResult = await supabase
-        .from('organizations')
-        .insert(fallbackPayload)
-        .select()
-        .single()
-      org = fallbackResult.data
-      orgError = fallbackResult.error
-    }
 
     if (orgError) {
       if (orgError.message.includes('duplicate')) {

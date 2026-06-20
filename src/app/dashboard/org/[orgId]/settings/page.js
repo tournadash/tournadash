@@ -116,28 +116,7 @@ export default function OrgSettingsPage() {
     setSaving(false)
   }
 
-  const handleRegenerateOrgToken = async () => {
-    if (!confirm('Are you sure you want to regenerate the organization token? The old token will stop working immediately.')) return
-    
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    let newToken = 'org_tok_'
-    for (let i = 0; i < 32; i++) {
-      newToken += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
 
-    const { error: updateErr } = await supabase
-      .from('organizations')
-      .update({ org_token: newToken })
-      .eq('id', orgId)
-
-    if (updateErr) {
-      setError(updateErr.message)
-    } else {
-      setOrg(prev => ({ ...prev, org_token: newToken }))
-      setSuccess('Organization token regenerated successfully!')
-      setTimeout(() => setSuccess(''), 3000)
-    }
-  }
 
   const addCustomLink = () => setCustomLinks([...customLinks, { label: '', url: '' }])
   const removeCustomLink = (i) => setCustomLinks(customLinks.filter((_, idx) => idx !== i))
@@ -318,52 +297,7 @@ export default function OrgSettingsPage() {
           </a>
         </Card>
 
-        {/* Organization Server Token */}
-        <Card style={{ borderColor: 'var(--color-primary-subtle)' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>Organization Server Token</h3>
-          </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-            Use this permanent organization token in your Minecraft plugin configuration to allow team members and staff to join the server at any time.
-          </p>
-          
-          <div className="flex gap-4 items-end flex-wrap">
-            <div style={{ flex: 1, minWidth: '250px' }}>
-              <Input
-                label="Permanent Token"
-                type="text"
-                readOnly
-                value={org?.org_token || 'No token generated yet.'}
-                style={{ fontFamily: 'monospace' }}
-              />
-            </div>
-            <div className="flex gap-3">
-              {org?.org_token ? (
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(org.org_token)
-                    alert('Token copied to clipboard!')
-                  }}
-                >
-                  Copy
-                </Button>
-              ) : null}
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={handleRegenerateOrgToken}
-              >
-                Regenerate Token
-              </Button>
-            </div>
-          </div>
-        </Card>
+
 
         {/* Custom Links (Linktree) */}
         <Card>
