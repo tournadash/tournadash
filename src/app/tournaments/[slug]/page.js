@@ -84,7 +84,7 @@ export default function TournamentDetailPage() {
       // Get comments
       const { data: c } = await supabase
         .from('comments')
-        .select('*, users(display_name, username, avatar_url)')
+        .select('*, users(id, display_name, username, avatar_url)')
         .eq('tournament_id', t.id)
         .order('created_at', { ascending: false })
         .limit(50)
@@ -512,7 +512,7 @@ export default function TournamentDetailPage() {
                       <Avatar src={c.users?.avatar_url} size="sm" fallback="👤" />
                       <div style={{ flex: 1 }}>
                         <div className="flex items-center gap-2 mb-1">
-                          <Link href={`/users/${c.users?.username}`} style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)', textDecoration: 'none' }}>
+                          <Link href={`/users/${c.users?.username || c.user_id}`} style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)', textDecoration: 'none' }}>
                             {c.users?.display_name || 'Anonymous'}
                           </Link>
                           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>

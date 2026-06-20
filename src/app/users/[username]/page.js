@@ -88,7 +88,7 @@ export default function UserPublicProfilePage() {
           {profile.display_name || profile.username}
         </h1>
         <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
-          @{profile.username}
+          @{profile.username || `user_${profile.id.substring(0, 8)}`}
         </p>
 
         {profile.minecraft_ign && (

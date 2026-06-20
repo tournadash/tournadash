@@ -22,11 +22,63 @@ export default function DashboardPage() {
 
       if (user) {
         // Get profile
-        const { data: profileData } = await supabase
+        let { data: profileData } = await supabase
           .from('users')
           .select('*')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
+
+        if (!profileData) {
+          // Recreate missing public profile
+          const meta = user.user_metadata || {}
+          const fullName = meta.full_name || meta.name || user.email?.split('@')[0] || 'Player'
+          
+          let baseUsername = (meta.preferred_username || meta.username || user.email?.split('@')[0] || 'user').toLowerCase().replace(/[^a-z0-9_-]/g, '')
+          if (baseUsername.length < 3) baseUsername = 'user_' + baseUsername
+          
+          let uniqueUsername = baseUsername
+          let suffix = 1
+          let isUnique = false
+          while (!isUnique && suffix < 100) {
+            const { data: existing } = await supabase
+              .from('users')
+              .select('id')
+              .eq('username', uniqueUsername)
+              .maybeSingle()
+            if (!existing) {
+              isUnique = true
+            } else {
+              uniqueUsername = `${baseUsername}_${suffix}`
+              suffix++
+            }
+          }
+
+          const discordIdentity = user.identities?.find(id => id.provider === 'discord')
+          let discordId = null
+          let discordUsername = null
+          if (discordIdentity) {
+            discordId = discordIdentity.id || discordIdentity.identity_data?.provider_id || discordIdentity.identity_data?.sub
+            discordUsername = discordIdentity.identity_data?.custom_claims?.username || discordIdentity.identity_data?.user_name || discordIdentity.identity_data?.name
+          }
+
+          const { data: inserted, error: insertError } = await supabase
+            .from('users')
+            .insert({
+              id: user.id,
+              display_name: fullName,
+              username: uniqueUsername,
+              avatar_url: meta.avatar_url || meta.picture || null,
+              discord_id: discordId,
+              social_discord: discordUsername || null
+            })
+            .select()
+            .single()
+
+          if (!insertError && inserted) {
+            profileData = inserted
+          }
+        }
+
         setProfile(profileData)
 
         // Get orgs

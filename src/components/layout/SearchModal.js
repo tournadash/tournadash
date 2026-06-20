@@ -211,18 +211,20 @@ export default function SearchModal({ isOpen, onClose }) {
                     <div
                       key={u.id}
                       className="search-result-item"
-                      onClick={() => handleItemClick(`/users/${u.username}`)}
+                      onClick={() => handleItemClick(`/users/${u.username || u.id}`)}
                     >
                       <div className="search-result-item-avatar-group">
                         <Avatar
                           src={u.avatar_url}
-                          alt={u.display_name || u.username}
+                          alt={u.display_name || u.username || 'User'}
                           size="sm"
                           fallback={u.display_name?.[0]?.toUpperCase() || 'U'}
                         />
                         <div className="search-result-item-main">
-                          <span className="search-result-item-title">{u.display_name || u.username}</span>
-                          <span className="search-result-item-subtitle">@{u.username}</span>
+                          <span className="search-result-item-title">{u.display_name || u.username || 'User'}</span>
+                          <span className="search-result-item-subtitle">
+                            {u.username ? `@${u.username}` : 'No username set'}
+                          </span>
                         </div>
                       </div>
                       {u.minecraft_ign && (

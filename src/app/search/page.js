@@ -176,13 +176,15 @@ export default function SearchPage() {
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
                   {results.users.map(u => (
-                    <Link key={u.id} href={`/users/${u.username}`} style={{ textDecoration: 'none' }}>
+                    <Link key={u.id} href={`/users/${u.username || u.id}`} style={{ textDecoration: 'none' }}>
                       <Card interactive className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Avatar src={u.avatar_url} alt={u.display_name || u.username} size="sm" fallback={u.display_name?.[0]?.toUpperCase() || 'U'} />
+                          <Avatar src={u.avatar_url} alt={u.display_name || u.username || 'User'} size="sm" fallback={u.display_name?.[0]?.toUpperCase() || 'U'} />
                           <div>
-                            <div style={{ fontWeight: '600', color: 'var(--color-text-white)' }}>{u.display_name || u.username}</div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>@{u.username}</div>
+                            <div style={{ fontWeight: '600', color: 'var(--color-text-white)' }}>{u.display_name || u.username || 'User'}</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                              {u.username ? `@${u.username}` : 'No username set'}
+                            </div>
                           </div>
                         </div>
                         {u.minecraft_ign && (

@@ -32,23 +32,67 @@ export async function GET(request) {
     
     if (!error && data?.user) {
       const user = data.user
-      
+
+      // Check if user exists in public.users
+      const { data: publicUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle()
+
       // Auto-extract Discord identity if present
       const discordIdentity = user.identities?.find(id => id.provider === 'discord')
+      let discordId = null
+      let discordUsername = null
       if (discordIdentity) {
-        const discordId = discordIdentity.id || discordIdentity.identity_data?.provider_id || discordIdentity.identity_data?.sub
-        const discordUsername = discordIdentity.identity_data?.custom_claims?.username || discordIdentity.identity_data?.user_name || discordIdentity.identity_data?.name
+        discordId = discordIdentity.id || discordIdentity.identity_data?.provider_id || discordIdentity.identity_data?.sub
+        discordUsername = discordIdentity.identity_data?.custom_claims?.username || discordIdentity.identity_data?.user_name || discordIdentity.identity_data?.name
+      }
+
+      if (!publicUser) {
+        // Recreate public.users profile row
+        const meta = user.user_metadata || {}
+        const fullName = meta.full_name || meta.name || user.email?.split('@')[0] || 'Player'
         
-        if (discordId) {
-          // Update public.users table with discord_id and update social_discord if empty
-          await supabase
+        let baseUsername = (meta.preferred_username || meta.username || user.email?.split('@')[0] || 'user').toLowerCase().replace(/[^a-z0-9_-]/g, '')
+        if (baseUsername.length < 3) baseUsername = 'user_' + baseUsername
+        
+        let uniqueUsername = baseUsername
+        let suffix = 1
+        let isUnique = false
+        while (!isUnique && suffix < 100) {
+          const { data: existing } = await supabase
             .from('users')
-            .update({
-              discord_id: discordId,
-              social_discord: discordUsername || null
-            })
-            .eq('id', user.id)
+            .select('id')
+            .eq('username', uniqueUsername)
+            .maybeSingle()
+          if (!existing) {
+            isUnique = true
+          } else {
+            uniqueUsername = `${baseUsername}_${suffix}`
+            suffix++
+          }
         }
+
+        await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            display_name: fullName,
+            username: uniqueUsername,
+            avatar_url: meta.avatar_url || meta.picture || null,
+            discord_id: discordId,
+            social_discord: discordUsername || null
+          })
+      } else if (discordId) {
+        // Update public.users table with discord_id / social_discord
+        await supabase
+          .from('users')
+          .update({
+            discord_id: discordId,
+            social_discord: discordUsername || null
+          })
+          .eq('id', user.id)
       }
 
       return response

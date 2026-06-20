@@ -172,10 +172,10 @@ export default function ProfileEditPage() {
   }
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('WARNING: Are you sure you want to delete your account? This will permanently delete your profile, organizations you own, and all your registrations. This action cannot be undone.')) return
-    const verification = window.prompt('Please type "DELETE MY ACCOUNT" to confirm:')
-    if (verification !== 'DELETE MY ACCOUNT') {
-      alert('Confirmation text did not match. Account deletion cancelled.')
+    if (!window.confirm('WARNING: Are you sure you want to delete your profile? This will delete your public profile data. Your tournaments, registrations, and organizations will remain intact so you can recover them if you sign in again with the same account.')) return
+    const verification = window.prompt('Please type "DELETE MY PROFILE" to confirm:')
+    if (verification !== 'DELETE MY PROFILE') {
+      alert('Confirmation text did not match. Profile deletion cancelled.')
       return
     }
 
@@ -458,10 +458,10 @@ export default function ProfileEditPage() {
       <Card style={{ borderColor: 'rgba(239, 68, 68, 0.25)', backgroundColor: 'rgba(239, 68, 68, 0.02)', marginTop: '24px' }} className="p-6">
         <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', color: 'var(--color-danger)', marginBottom: '8px' }}>Danger Zone</h4>
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-          Deleting your account is a permanent action. All of your profile data, user settings, organizations you own, and tournament registrations will be deleted immediately.
+          Deleting your profile is a permanent action. All of your public profile details, bio, and settings will be deleted immediately. Your organization memberships and tournament registrations will be preserved so they are restored if you sign in again.
         </p>
         <Button variant="danger" size="sm" onClick={handleDeleteAccount} loading={saving}>
-          Delete Account
+          Delete Profile
         </Button>
       </Card>
     </div>
