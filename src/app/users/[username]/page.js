@@ -18,13 +18,21 @@ export default function UserPublicProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: user } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .single()
+      let query = supabase.from('users').select('*')
+      
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (uuidRegex.test(username)) {
+        query = query.or(`id.eq.${username},username.ilike.${username}`)
+      } else {
+        query = query.ilike('username', username)
+      }
 
-      if (!user) { setLoading(false); return }
+      const { data: user } = await query.maybeSingle()
+
+      if (!user) {
+        setLoading(false)
+        return
+      }
       setProfile(user)
       document.title = `${user.display_name || user.username} | TournaDash`
 

@@ -118,37 +118,37 @@ export default function LeaderboardPage() {
             fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600',
           }}>
-            <span style={{ width: '60px' }}>Rank</span>
-            <span style={{ flex: 1 }}>Organization</span>
-            <span style={{ width: '100px', textAlign: 'center' }}>Tournaments</span>
-            <span style={{ width: '100px', textAlign: 'center' }}>Followers</span>
+            <span style={{ width: '60px', flexShrink: 0 }}>Rank</span>
+            <span style={{ flex: 1, minWidth: 0 }}>Organization</span>
+            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Tournaments</span>
+            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Followers</span>
           </div>
 
           {orgs.map((org, i) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <Card interactive className="mb-2 gaming-glow-hover" style={{ padding: 'var(--space-4) var(--space-5)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ width: '60px', display: 'flex', alignItems: 'center' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
-                <div className="flex items-center gap-3" style={{ flex: 1 }}>
+                <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
                   <Avatar
                     src={org.avatar_url}
                     alt={org.name}
                     size="sm"
                     fallback={org.name[0]?.toUpperCase() || 'O'}
                   />
-                  <div>
-                    <div style={{ fontWeight: '600', color: 'var(--color-text-white)' }}>{org.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>@{org.slug}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: '600', color: 'var(--color-text-white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{org.name}</div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{org.slug}</div>
                   </div>
                 </div>
-                <span style={{ width: '100px', textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {org.tournament_count || 0}
                 </span>
-                <span style={{ width: '100px', textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
+                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
                   {org.follower_count || 0}
                 </span>
-              </Card>
+              </div>
             </Link>
           ))}
 
@@ -166,35 +166,35 @@ export default function LeaderboardPage() {
             fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600',
           }}>
-            <span style={{ width: '60px' }}>Rank</span>
-            <span style={{ flex: 1 }}>Tournament</span>
-            <span style={{ width: '100px', textAlign: 'center' }}>Status</span>
-            <span style={{ width: '80px', textAlign: 'center' }}>Players</span>
-            <span style={{ width: '80px', textAlign: 'center' }}>Likes</span>
+            <span style={{ width: '60px', flexShrink: 0 }}>Rank</span>
+            <span style={{ flex: 1, minWidth: 0 }}>Tournament</span>
+            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Status</span>
+            <span style={{ width: '80px', textAlign: 'center', flexShrink: 0 }}>Players</span>
+            <span style={{ width: '80px', textAlign: 'center', flexShrink: 0 }}>Likes</span>
           </div>
 
           {tournaments.map((t, i) => (
             <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
-              <Card interactive className="mb-2 gaming-glow-hover" style={{ padding: 'var(--space-4) var(--space-5)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ width: '60px', display: 'flex', alignItems: 'center' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', color: 'var(--color-text-white)' }}>{t.name}</div>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>by {t.organizations?.name}</div>
+                <div style={{ flex: 1, minWidth: 0, paddingRight: 'var(--space-4)' }}>
+                  <div style={{ fontWeight: '600', color: 'var(--color-text-white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>by {t.organizations?.name}</div>
                 </div>
-                <span style={{ width: '100px', textAlign: 'center' }}>
+                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
                   <Badge variant={getStatusVariant(t.status)} style={{ fontSize: '9px' }}>
                     {getStatusLabel(t.status)}
                   </Badge>
                 </span>
-                <span style={{ width: '80px', textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                <span style={{ width: '80px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {t.player_count || 0}
                 </span>
-                <span className="flex items-center justify-center gap-1" style={{ width: '80px', fontWeight: '700', color: 'var(--color-danger)' }}>
+                <span className="flex items-center justify-center gap-1" style={{ width: '80px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)' }}>
                   ❤️ {t.like_count || 0}
                 </span>
-              </Card>
+              </div>
             </Link>
           ))}
 

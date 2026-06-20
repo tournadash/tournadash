@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
@@ -17,8 +17,35 @@ export default function NewOrganizationPage() {
   const [slugError, setSlugError] = useState('')
   const [checkingSlug, setCheckingSlug] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const [hasOwnedOrg, setHasOwnedOrg] = useState(false)
+  const [checkingLimit, setCheckingLimit] = useState(true)
+
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const checkLimit = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: owned } = await supabase
+          .from('organization_members')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('role', 'OWNER')
+          .limit(1)
+        if (owned && owned.length > 0) {
+          setHasOwnedOrg(true)
+        }
+      }
+      setCheckingLimit(false)
+    }
+    checkLimit()
+  }, [])
+
+  const countWords = (text) => {
+    return text.trim().split(/\s+/).filter(Boolean).length
+  }
 
   const generateSlug = (name) => {
     return name
@@ -60,6 +87,13 @@ export default function NewOrganizationPage() {
       setError('Please resolve all validation errors before saving.')
       return
     }
+
+    const bioWordCount = countWords(bio)
+    if (bioWordCount > 200) {
+      setError('Your bio exceeds the limit of 200 words.')
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -78,6 +112,19 @@ export default function NewOrganizationPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setError('You must be logged in')
+      setLoading(false)
+      return
+    }
+
+    // Re-verify owned limit on submit
+    const { data: owned } = await supabase
+      .from('organization_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('role', 'OWNER')
+      .limit(1)
+    if (owned && owned.length > 0) {
+      setError('You can only create one organization of your own.')
       setLoading(false)
       return
     }
@@ -126,6 +173,20 @@ export default function NewOrganizationPage() {
     router.refresh()
   }
 
+  if (checkingLimit) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="dashboard-page-header">
+          <div className="skeleton" style={{ width: '200px', height: '32px', marginBottom: '8px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+          <div className="skeleton" style={{ width: '300px', height: '18px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+        </div>
+        <div className="skeleton" style={{ height: '300px', backgroundColor: 'var(--color-border)', borderRadius: 'var(--radius-lg)' }} />
+      </div>
+    )
+  }
+
+  const bioWordCount = countWords(bio)
+
   return (
     <div id="new-org-page" className="flex flex-col gap-8">
       <div className="dashboard-page-header">
@@ -136,6 +197,20 @@ export default function NewOrganizationPage() {
           </p>
         </div>
       </div>
+
+      {hasOwnedOrg && (
+        <Card style={{ borderColor: 'var(--color-danger)', backgroundColor: 'rgba(239, 68, 68, 0.02)' }} className="p-6">
+          <div className="flex gap-3 items-start" style={{ color: 'var(--color-danger)' }}>
+            <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>⚠️</span>
+            <div>
+              <h4 style={{ fontWeight: '600', color: 'var(--color-text-white)', marginBottom: '4px' }}>Ownership Limit Reached</h4>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', margin: 0 }}>
+                You can only create one organization of your own on the platform. If you wish to create a new organization, you must first delete your existing organization under its settings panel. You can still be invited to join other organizations as a Manager or Staff member.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {error && (
         <div className="auth-error" style={{ marginBottom: 0 }}>
@@ -170,6 +245,7 @@ export default function NewOrganizationPage() {
               onChange={(e) => handleNameChange(e.target.value)}
               required
               maxLength={50}
+              disabled={hasOwnedOrg}
             />
 
             <div className="td-input-group">
@@ -203,6 +279,7 @@ export default function NewOrganizationPage() {
                   }}
                   onBlur={handleSlugBlur}
                   required
+                  disabled={hasOwnedOrg}
                   style={{ borderRadius: '0 var(--radius-md) var(--radius-md) 0', borderColor: slugError ? 'var(--color-danger)' : undefined }}
                 />
               </div>
@@ -215,14 +292,26 @@ export default function NewOrganizationPage() {
               )}
             </div>
 
-            <Input
-              id="org-bio"
-              label="Bio / Description"
-              type="textarea"
-              placeholder="Tell the community about your organization..."
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
+            <div>
+              <Input
+                id="org-bio"
+                label="Bio / Description"
+                type="textarea"
+                placeholder="Tell the community about your organization..."
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                disabled={hasOwnedOrg}
+                error={bioWordCount > 200 ? 'Bio exceeds the 200 words limit' : ''}
+              />
+              <div style={{
+                textAlign: 'right',
+                fontSize: 'var(--text-xs)',
+                color: bioWordCount > 200 ? 'var(--color-danger)' : 'var(--color-text-muted)',
+                marginTop: '4px'
+              }}>
+                {bioWordCount} / 200 words
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -245,6 +334,7 @@ export default function NewOrganizationPage() {
               placeholder="https://youtube.com/@channel"
               value={socialYoutube}
               onChange={(e) => setSocialYoutube(e.target.value)}
+              disabled={hasOwnedOrg}
             />
             <Input
               id="org-discord"
@@ -253,6 +343,7 @@ export default function NewOrganizationPage() {
               placeholder="https://discord.gg/invite"
               value={socialDiscord}
               onChange={(e) => setSocialDiscord(e.target.value)}
+              disabled={hasOwnedOrg}
             />
           </div>
         </Card>
@@ -261,7 +352,7 @@ export default function NewOrganizationPage() {
           <Button variant="secondary" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" loading={loading} id="create-org-btn">
+          <Button type="submit" loading={loading} id="create-org-btn" disabled={hasOwnedOrg || bioWordCount > 200}>
             Create Organization
           </Button>
         </div>

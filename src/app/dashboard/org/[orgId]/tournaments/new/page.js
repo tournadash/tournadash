@@ -25,6 +25,7 @@ export default function NewTournamentPage() {
   const [form, setForm] = useState({
     name: '',
     slug: '',
+    short_description: '',
     description: '',
     rules: '',
     trailer_url: '',
@@ -119,33 +120,48 @@ export default function NewTournamentPage() {
 
     const serverToken = generateToken()
 
-    const { data, error: insertError } = await supabase
+    const insertPayload = {
+      organization_id: orgId,
+      name: form.name.trim(),
+      slug: form.slug.trim() || generateSlug(form.name),
+      short_description: form.short_description.trim() || null,
+      description: form.description.trim() || null,
+      rules: form.rules.trim() || null,
+      trailer_url: form.trailer_url.trim() || null,
+      registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
+      max_players: form.max_players ? parseInt(form.max_players) : null,
+      starts_at: form.starts_at || null,
+      status: 'SOON',
+      server_token: serverToken,
+      whitelist_enabled: true,
+      comments_enabled: form.comments_enabled,
+      likes_visible: form.likes_visible,
+      dislikes_visible: form.dislikes_visible,
+      followers_only_comments: form.followers_only_comments,
+      registration_type: form.registration_type,
+      registration_open: form.registration_open,
+      max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
+      discord_guild_id: form.discord_guild_id.trim() || null,
+      discord_invite_url: form.discord_invite_url.trim() || null,
+    }
+
+    let { data, error: insertError } = await supabase
       .from('tournaments')
-      .insert({
-        organization_id: orgId,
-        name: form.name.trim(),
-        slug: form.slug.trim() || generateSlug(form.name),
-        description: form.description.trim() || null,
-        rules: form.rules.trim() || null,
-        trailer_url: form.trailer_url.trim() || null,
-        registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
-        max_players: form.max_players ? parseInt(form.max_players) : null,
-        starts_at: form.starts_at || null,
-        status: 'SOON',
-        server_token: serverToken,
-        whitelist_enabled: true,
-        comments_enabled: form.comments_enabled,
-        likes_visible: form.likes_visible,
-        dislikes_visible: form.dislikes_visible,
-        followers_only_comments: form.followers_only_comments,
-        registration_type: form.registration_type,
-        registration_open: form.registration_open,
-        max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
-        discord_guild_id: form.discord_guild_id.trim() || null,
-        discord_invite_url: form.discord_invite_url.trim() || null,
-      })
+      .insert(insertPayload)
       .select()
       .single()
+
+    if (insertError && (insertError.message.includes('short_description') || insertError.code === '42703')) {
+      const fallbackPayload = { ...insertPayload }
+      delete fallbackPayload.short_description
+      const fallbackResult = await supabase
+        .from('tournaments')
+        .insert(fallbackPayload)
+        .select()
+        .single()
+      data = fallbackResult.data
+      insertError = fallbackResult.error
+    }
 
     if (insertError) {
       if (insertError.message.includes('duplicate')) {
@@ -261,9 +277,21 @@ export default function NewTournamentPage() {
 
           <div className="mt-4">
             <Input 
-              label="Description" 
+              label="Short Description" 
               type="textarea" 
-              placeholder="Describe your tournament, prizes, format..." 
+              placeholder="Brief summary shown on tournament listings (max 150 characters)..." 
+              value={form.short_description} 
+              onChange={(e) => updateForm('short_description', e.target.value)} 
+              maxLength={150}
+              helperText={`${form.short_description ? form.short_description.length : 0} / 150 characters`}
+            />
+          </div>
+
+          <div className="mt-4">
+            <Input 
+              label="Long Description" 
+              type="textarea" 
+              placeholder="Describe your tournament in detail, prizes, format, schedule..." 
               value={form.description} 
               onChange={(e) => updateForm('description', e.target.value)} 
             />

@@ -63,8 +63,8 @@ export default function Footer() {
             <ul className="footer-column-links">
               <li><Link href="/dashboard">Dashboard</Link></li>
               <li><Link href="/dashboard/org/new">Create Organization</Link></li>
-              <li><Link href="#">Plugin Download</Link></li>
-              <li><Link href="#">API Docs</Link></li>
+              <li><Link href="/plugin">Plugin Download</Link></li>
+              <li><Link href="/api-docs">API Docs</Link></li>
             </ul>
           </div>
 
@@ -72,10 +72,10 @@ export default function Footer() {
           <div className="footer-column">
             <h4>Resources</h4>
             <ul className="footer-column-links">
-              <li><Link href="#">Getting Started</Link></li>
-              <li><Link href="#">Help Center</Link></li>
-              <li><Link href="#">Privacy Policy</Link></li>
-              <li><Link href="#">Terms of Service</Link></li>
+              <li><Link href="/getting-started">Getting Started</Link></li>
+              <li><Link href="/help">Help Center</Link></li>
+              <li><Link href="/privacy">Privacy Policy</Link></li>
+              <li><Link href="/terms">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
@@ -86,9 +86,9 @@ export default function Footer() {
             © {currentYear} TournaDash. Built for the Minecraft community.
           </p>
           <div className="footer-bottom-links">
-            <Link href="#">Privacy</Link>
-            <Link href="#">Terms</Link>
-            <Link href="#">Status</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/help">Status</Link>
           </div>
         </div>
       </div>

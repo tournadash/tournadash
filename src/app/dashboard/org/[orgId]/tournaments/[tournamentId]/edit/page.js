@@ -39,6 +39,7 @@ export default function EditTournamentPage() {
         setForm({
           name: data.name || '',
           slug: data.slug || '',
+          short_description: data.short_description || '',
           description: data.description || '',
           rules: data.rules || '',
           trailer_url: data.trailer_url || '',
@@ -143,29 +144,42 @@ export default function EditTournamentPage() {
       }
     }
 
-    const { error: updateError } = await supabase
+    const updatePayload = {
+      name: form.name.trim(),
+      slug: form.slug.trim(),
+      short_description: form.short_description.trim() || null,
+      description: form.description.trim() || null,
+      rules: form.rules.trim() || null,
+      trailer_url: form.trailer_url.trim() || null,
+      registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
+      max_players: form.max_players ? parseInt(form.max_players) : null,
+      starts_at: form.starts_at || null,
+      comments_enabled: form.comments_enabled,
+      likes_visible: form.likes_visible,
+      dislikes_visible: form.dislikes_visible,
+      followers_only_comments: form.followers_only_comments,
+      registration_type: form.registration_type,
+      registration_open: form.registration_open,
+      max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
+      discord_guild_id: form.discord_guild_id.trim() || null,
+      discord_invite_url: form.discord_invite_url.trim() || null,
+      banner_url: bannerUrl,
+    }
+
+    let { error: updateError } = await supabase
       .from('tournaments')
-      .update({
-        name: form.name.trim(),
-        slug: form.slug.trim(),
-        description: form.description.trim() || null,
-        rules: form.rules.trim() || null,
-        trailer_url: form.trailer_url.trim() || null,
-        registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
-        max_players: form.max_players ? parseInt(form.max_players) : null,
-        starts_at: form.starts_at || null,
-        comments_enabled: form.comments_enabled,
-        likes_visible: form.likes_visible,
-        dislikes_visible: form.dislikes_visible,
-        followers_only_comments: form.followers_only_comments,
-        registration_type: form.registration_type,
-        registration_open: form.registration_open,
-        max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
-        discord_guild_id: form.discord_guild_id.trim() || null,
-        discord_invite_url: form.discord_invite_url.trim() || null,
-        banner_url: bannerUrl,
-      })
+      .update(updatePayload)
       .eq('id', tournamentId)
+
+    if (updateError && (updateError.message.includes('short_description') || updateError.code === '42703')) {
+      const fallbackPayload = { ...updatePayload }
+      delete fallbackPayload.short_description
+      const fallbackResult = await supabase
+        .from('tournaments')
+        .update(fallbackPayload)
+        .eq('id', tournamentId)
+      updateError = fallbackResult.error
+    }
 
     if (updateError) {
       if (updateError.message.includes('duplicate')) {
@@ -304,9 +318,21 @@ export default function EditTournamentPage() {
 
           <div className="mt-4">
             <Input 
-              label="Description" 
+              label="Short Description" 
               type="textarea" 
-              placeholder="Describe your tournament, prizes, format..." 
+              placeholder="Brief summary shown on tournament listings (max 150 characters)..." 
+              value={form.short_description} 
+              onChange={(e) => updateForm('short_description', e.target.value)} 
+              maxLength={150}
+              helperText={`${form.short_description ? form.short_description.length : 0} / 150 characters`}
+            />
+          </div>
+
+          <div className="mt-4">
+            <Input 
+              label="Long Description" 
+              type="textarea" 
+              placeholder="Describe your tournament in detail, prizes, format, schedule..." 
               value={form.description} 
               onChange={(e) => updateForm('description', e.target.value)} 
             />

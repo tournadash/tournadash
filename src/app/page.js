@@ -1,7 +1,20 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import './home.css'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+
+  const [
+    { count: tournamentCount },
+    { count: organizationCount },
+    { count: playerCount }
+  ] = await Promise.all([
+    supabase.from('tournaments').select('*', { count: 'exact', head: true }),
+    supabase.from('organizations').select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true })
+  ])
+
   const features = [
     {
       icon: '🛡️',
@@ -76,15 +89,15 @@ export default function HomePage() {
           {/* Stats */}
           <div className="hero-stats">
             <div className="hero-stat">
-              <div className="hero-stat-value">0+</div>
+              <div className="hero-stat-value">{tournamentCount || 0}+</div>
               <div className="hero-stat-label">🏆 Tournaments</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">0+</div>
+              <div className="hero-stat-value">{playerCount || 0}+</div>
               <div className="hero-stat-label">👥 Players</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">0+</div>
+              <div className="hero-stat-value">{organizationCount || 0}+</div>
               <div className="hero-stat-label">🏰 Organizations</div>
             </div>
           </div>

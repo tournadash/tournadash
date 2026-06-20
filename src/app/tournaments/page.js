@@ -149,7 +149,7 @@ export default function TournamentsBrowsePage() {
                       {t.name}
                     </h3>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}>
-                      {t.description || 'No description provided.'}
+                      {t.short_description || (t.description ? (t.description.length > 120 ? t.description.substring(0, 120) + '...' : t.description) : 'No description provided.')}
                     </p>
 
                     <div className="flex items-center justify-between mt-4">

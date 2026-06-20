@@ -25,6 +25,11 @@ export default function ProfileEditPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  const countWords = (text) => {
+    if (!text) return 0
+    return text.trim().split(/\s+/).filter(Boolean).length
+  }
+
   useEffect(() => {
     const loadProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -62,6 +67,12 @@ export default function ProfileEditPage() {
     e.preventDefault()
     if (usernameError) {
       setError('Please resolve all validation errors before saving.')
+      return
+    }
+
+    const bioWordCount = countWords(profile?.bio)
+    if (bioWordCount > 200) {
+      setError('Your bio exceeds the limit of 200 words.')
       return
     }
     setSaving(true)
@@ -330,14 +341,25 @@ export default function ProfileEditPage() {
           </div>
           
           <div className="mt-4">
-            <Input
-              id="profile-bio"
-              label="Bio"
-              type="textarea"
-              placeholder="Tell the community about yourself..."
-              value={profile?.bio || ''}
-              onChange={(e) => updateField('bio', e.target.value)}
-            />
+            <div>
+              <Input
+                id="profile-bio"
+                label="Bio"
+                type="textarea"
+                placeholder="Tell the community about yourself..."
+                value={profile?.bio || ''}
+                onChange={(e) => updateField('bio', e.target.value)}
+                error={countWords(profile?.bio) > 200 ? 'Bio exceeds the 200 words limit' : ''}
+              />
+              <div style={{
+                textAlign: 'right',
+                fontSize: 'var(--text-xs)',
+                color: countWords(profile?.bio) > 200 ? 'var(--color-danger)' : 'var(--color-text-muted)',
+                marginTop: '4px'
+              }}>
+                {countWords(profile?.bio)} / 200 words
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -426,7 +448,7 @@ export default function ProfileEditPage() {
           <Button variant="secondary" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" loading={saving} id="profile-save-btn">
+          <Button type="submit" loading={saving} id="profile-save-btn" disabled={countWords(profile?.bio) > 200}>
             Save Changes
           </Button>
         </div>

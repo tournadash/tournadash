@@ -199,7 +199,7 @@ export default function OrgPublicProfilePage() {
       <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Team Members</h3>
       <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-10)' }}>
         {members.map((m) => (
-          <Link key={m.id} href={`/users/${m.users?.username}`} style={{ textDecoration: 'none' }}>
+          <Link key={m.id} href={`/users/${m.users?.username || m.user_id}`} style={{ textDecoration: 'none' }}>
             <Card interactive className="flex items-center gap-3" style={{ padding: 'var(--space-3) var(--space-4)' }}>
               <Avatar
                 src={m.users?.avatar_url}
@@ -251,7 +251,7 @@ export default function OrgPublicProfilePage() {
                       </Badge>
                     </div>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}>
-                      {t.description || 'No description provided.'}
+                      {t.short_description || (t.description ? (t.description.length > 120 ? t.description.substring(0, 120) + '...' : t.description) : 'No description provided.')}
                     </p>
                     <div className="flex gap-4" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)' }}>
                       <span className="flex items-center gap-1">

@@ -25,6 +25,11 @@ export default function OrgSettingsPage() {
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
 
+  const countWords = (text) => {
+    if (!text) return 0
+    return text.trim().split(/\s+/).filter(Boolean).length
+  }
+
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -60,6 +65,13 @@ export default function OrgSettingsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    
+    const bioWordCount = countWords(org?.bio)
+    if (bioWordCount > 200) {
+      setError('Your bio exceeds the limit of 200 words.')
+      return
+    }
+
     setSaving(true)
     setError('')
     setSuccess('')
@@ -206,13 +218,24 @@ export default function OrgSettingsPage() {
               onChange={(e) => setOrg({ ...org, name: e.target.value })}
               required
             />
-            <Input
-              label="Bio"
-              type="textarea"
-              value={org?.bio || ''}
-              onChange={(e) => setOrg({ ...org, bio: e.target.value })}
-              placeholder="About your organization..."
-            />
+            <div>
+              <Input
+                label="Bio"
+                type="textarea"
+                value={org?.bio || ''}
+                onChange={(e) => setOrg({ ...org, bio: e.target.value })}
+                placeholder="About your organization..."
+                error={countWords(org?.bio) > 200 ? 'Bio exceeds the 200 words limit' : ''}
+              />
+              <div style={{
+                textAlign: 'right',
+                fontSize: 'var(--text-xs)',
+                color: countWords(org?.bio) > 200 ? 'var(--color-danger)' : 'var(--color-text-muted)',
+                marginTop: '4px'
+              }}>
+                {countWords(org?.bio)} / 200 words
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -333,7 +356,7 @@ export default function OrgSettingsPage() {
         </Card>
 
         <div className="flex justify-end gap-4" style={{ marginBottom: 'var(--space-8)' }}>
-          <Button type="submit" loading={saving}>
+          <Button type="submit" loading={saving} disabled={countWords(org?.bio) > 200}>
             Save Settings
           </Button>
         </div>
