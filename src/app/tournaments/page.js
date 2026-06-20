@@ -22,6 +22,7 @@ export default function TournamentsBrowsePage() {
       let query = supabase
         .from('tournaments')
         .select('*, organizations(name, slug, avatar_url)')
+        .eq('is_private', false)
         .order('created_at', { ascending: false })
 
       if (filter !== 'ALL') {

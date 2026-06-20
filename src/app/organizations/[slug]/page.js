@@ -32,7 +32,7 @@ export default function OrgPublicProfilePage() {
       document.title = `${orgData.name} | TournaDash`
       setFollowerCount(orgData.follower_count || 0)
 
-      const { data: t } = await supabase.from('tournaments').select('*').eq('organization_id', orgData.id).order('created_at', { ascending: false })
+      const { data: t } = await supabase.from('tournaments').select('*').eq('organization_id', orgData.id).eq('is_private', false).order('created_at', { ascending: false })
       setTournaments(t || [])
 
       const { data: m } = await supabase.from('organization_members').select('*, users(display_name, username, avatar_url)').eq('organization_id', orgData.id)

@@ -60,7 +60,7 @@ export default function SearchModal({ isOpen, onClose }) {
     setLoading(true)
     try {
       const [t, o, u] = await Promise.all([
-        supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').ilike('name', `%${q}%`).limit(5),
+        supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').eq('is_private', false).ilike('name', `%${q}%`).limit(5),
         supabase.from('organizations').select('id, name, slug, follower_count, tournament_count, avatar_url').ilike('name', `%${q}%`).limit(5),
         supabase.from('users').select('id, display_name, username, avatar_url, minecraft_ign').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,minecraft_ign.ilike.%${q}%`).limit(5),
       ])

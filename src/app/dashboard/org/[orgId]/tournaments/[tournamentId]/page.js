@@ -393,6 +393,22 @@ export default function TournamentManagePage() {
     }
   }
 
+  const toggleLeaderboardVisibility = async (lbId, currentIsPublic) => {
+    const nextVal = currentIsPublic === false ? true : false
+    setError('')
+    try {
+      const { error: lbErr } = await supabase
+        .from('tournament_leaderboards')
+        .update({ is_public: nextVal })
+        .eq('id', lbId)
+      if (lbErr) throw lbErr
+      
+      setLeaderboards(prev => prev.map(lb => lb.id === lbId ? { ...lb, is_public: nextVal } : lb))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   const handleApproveRegistration = async (reg) => {
     const { error: updateError } = await supabase
       .from('tournament_registrations')
@@ -906,7 +922,7 @@ export default function TournamentManagePage() {
         </button>
       </div>
 
-      {activeTab === 'whitelist' ? (
+      {activeTab === 'whitelist' && (
         /* Whitelist Management */
         <Card className="p-6 flex flex-col gap-6">
           <div>
@@ -1017,7 +1033,9 @@ export default function TournamentManagePage() {
             </div>
           )}
         </Card>
-      ) : (
+      )}
+
+      {activeTab === 'registrations' && (
         /* Registrations Management */
         <Card className="p-6 flex flex-col gap-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1190,9 +1208,19 @@ export default function TournamentManagePage() {
               {leaderboards.map((lb) => (
                 <Card key={lb.id} className="p-6">
                   <div className="flex items-center justify-between mb-4" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
-                    <h4 style={{ fontSize: 'var(--text-md)', fontWeight: '700', color: 'var(--color-primary)', margin: 0 }}>
-                      {lb.name}
-                    </h4>
+                    <div className="flex items-center gap-3">
+                      <h4 style={{ fontSize: 'var(--text-md)', fontWeight: '700', color: 'var(--color-primary)', margin: 0 }}>
+                        {lb.name}
+                      </h4>
+                      <Badge
+                        variant={lb.is_public !== false ? 'success' : 'neutral'}
+                        style={{ cursor: 'pointer', fontSize: '10px', padding: '2px 8px' }}
+                        onClick={() => toggleLeaderboardVisibility(lb.id, lb.is_public)}
+                        title="Click to toggle public visibility"
+                      >
+                        {lb.is_public !== false ? 'Public' : 'Hidden'}
+                      </Badge>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"

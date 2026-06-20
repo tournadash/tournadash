@@ -78,6 +78,7 @@ export default function TournamentDetailPage() {
         .single()
 
       if (!t) { setLoading(false); return }
+      if (t.is_private && !u) { setLoading(false); return }
       setTournament(t)
       document.title = `${t.name} | TournaDash`
       setOrg(t.organizations)
@@ -157,6 +158,12 @@ export default function TournamentDetailPage() {
           .eq('user_id', u.id)
           .maybeSingle()
         setIsMemberOfOrg(!!memberCheck)
+
+        if (t.is_private && !memberCheck) {
+          setTournament(null)
+          setLoading(false)
+          return
+        }
       }
 
       // Fetch tournament leaderboards & entries
@@ -574,14 +581,14 @@ export default function TournamentDetailPage() {
           )}
 
           {/* Leaderboards (Standings) */}
-          {leaderboards && leaderboards.length > 0 && (
+          {tournament.status === 'ENDED' && leaderboards && leaderboards.filter(lb => lb.is_public !== false).length > 0 && (
             <Card className="p-6 flex flex-col gap-6">
               <h3 className="dashboard-page-title mb-0" style={{ fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span>🏆 Tournament Standings</span>
               </h3>
               
               <div className="flex flex-col gap-6">
-                {leaderboards.map((lb) => (
+                {leaderboards.filter(lb => lb.is_public !== false).map((lb) => (
                   <div key={lb.id} style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }} className="first:border-t-0 first:pt-0">
                     <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '700', color: 'var(--color-primary)', marginBottom: '12px' }}>
                       {lb.name}

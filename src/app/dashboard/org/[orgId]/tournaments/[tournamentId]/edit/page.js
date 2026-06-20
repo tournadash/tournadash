@@ -68,6 +68,7 @@ export default function EditTournamentPage() {
           auto_fill: !!data.auto_fill,
           require_discord: !!data.require_discord,
           require_follow: !!data.require_follow,
+          is_private: !!data.is_private,
           ends_at: data.ends_at ? data.ends_at.slice(0, 16) : '',
         })
         setThumbnailPreview(data.banner_url || null)
@@ -181,6 +182,7 @@ export default function EditTournamentPage() {
       auto_fill: !!form.auto_fill,
       require_discord: !!form.require_discord,
       require_follow: !!form.require_follow,
+      is_private: !!form.is_private,
       ends_at: form.ends_at || null,
       banner_url: bannerUrl,
     }
@@ -638,6 +640,7 @@ export default function EditTournamentPage() {
               { key: 'likes_visible', label: 'Show Like Count', desc: 'Display the number of likes publicly' },
               { key: 'dislikes_visible', label: 'Show Dislike Button', desc: 'Allow users to dislike the tournament' },
               { key: 'followers_only_comments', label: 'Followers-Only Comments', desc: 'Only followers of your org can comment' },
+              { key: 'is_private', label: 'Private Tournament', desc: 'Hide this tournament from search, browse listings, and public profiles' },
             ].map(({ key, label, desc }) => (
               <label key={key} className="flex items-center justify-between" style={{
                 padding: 'var(--space-4)',
