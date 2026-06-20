@@ -65,6 +65,9 @@ export default function TournamentDetailPage() {
   const [regError, setRegError] = useState('')
   const [serverIpInfo, setServerIpInfo] = useState(null)
   const [leaderboards, setLeaderboards] = useState([])
+  const [shareCopied, setShareCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState('about')
+  const [activeLbId, setActiveLbId] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -186,8 +189,12 @@ export default function TournamentDetailPage() {
           entries: entries?.filter(e => e.leaderboard_id === lb.id) || []
         }))
         setLeaderboards(lbsWithEntries)
+        if (lbsWithEntries.length > 0) {
+          setActiveLbId(lbsWithEntries[0].id)
+        }
       } else {
         setLeaderboards([])
+        setActiveLbId(null)
       }
 
       setLoading(false)
@@ -522,205 +529,302 @@ export default function TournamentDetailPage() {
             </svg>
             {tournament.player_count || 0} players
           </span>
+          {tournament.prizepool && (
+            <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+              💎 Prize Pool: <strong style={{ color: 'var(--color-primary)' }}>{tournament.prizepool}</strong>
+            </span>
+          )}
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+              setShareCopied(true)
+              setTimeout(() => setShareCopied(false), 2000)
+            }}
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', height: '28px', padding: '0 10px', fontSize: 'var(--text-xs)' }}
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            {shareCopied ? 'Copied!' : 'Share'}
+          </button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 'var(--space-8)', alignItems: 'start' }}>
         {/* Left Column */}
         <div className="flex flex-col gap-6">
-          {/* Phase-Specific Content */}
-          {tournament.status === 'SOON' && tournament.trailer_url && (
-            <div>
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Trailer</h3>
-              <YouTubeEmbed url={tournament.trailer_url} />
-            </div>
-          )}
+          {/* Tab Selector */}
+          <div className="flex gap-4" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '1px' }}>
+            <button
+              onClick={() => setActiveTab('about')}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: activeTab === 'about' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                color: activeTab === 'about' ? 'var(--color-text-white)' : 'var(--color-text-secondary)',
+                fontWeight: '600',
+                fontSize: 'var(--text-sm)',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              About
+            </button>
+            <button
+              onClick={() => setActiveTab('results')}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: activeTab === 'results' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                color: activeTab === 'results' ? 'var(--color-text-white)' : 'var(--color-text-secondary)',
+                fontWeight: '600',
+                fontSize: 'var(--text-sm)',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              Results & Leaderboards
+            </button>
+          </div>
 
-          {(tournament.status === 'ONGOING' || tournament.status === 'ENDED') && (tournament.live_tournament_url || tournament.stream_url) && (
-            <div>
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Live Tournament</h3>
-              <YouTubeEmbed url={tournament.live_tournament_url || tournament.stream_url} />
-            </div>
-          )}
+          {activeTab === 'about' && (
+            <>
+              {/* Trailer in About */}
+              {tournament.status === 'SOON' && tournament.trailer_url && (
+                <div>
+                  <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Trailer</h3>
+                  <YouTubeEmbed url={tournament.trailer_url} />
+                </div>
+              )}
 
-          {tournament.status === 'ENDED' && tournament.highlights_url && (
-            <div>
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Highlights</h3>
-              <YouTubeEmbed url={tournament.highlights_url} />
-            </div>
-          )}
+              {/* Description */}
+              {tournament.description && (
+                <Card className="p-6">
+                  <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>About</h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', whiteSpace: 'pre-wrap' }}>
+                    {tournament.description}
+                  </p>
+                </Card>
+              )}
 
-          {/* Winners (ENDED) */}
-          {tournament.status === 'ENDED' && (tournament.winner_1st || tournament.winner_2nd || tournament.winner_3rd) && (
-            <Card className="p-8 text-center">
-              <h3 className="dashboard-page-title mb-6" style={{ fontSize: 'var(--text-base)' }}>Tournament Results</h3>
-              <div className="flex justify-center gap-8 items-end">
-                {tournament.winner_2nd && (
-                  <div className="flex flex-col items-center">
-                    <div style={{ fontSize: '32px', marginBottom: 'var(--space-2)' }}>🥈</div>
-                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>{tournament.winner_2nd.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>2nd Place</div>
-                  </div>
-                )}
-                {tournament.winner_1st && (
-                  <div className="flex flex-col items-center">
-                    <div style={{ fontSize: '44px', marginBottom: 'var(--space-2)' }}>🥇</div>
-                    <div style={{ fontSize: 'var(--text-base)', fontWeight: '800', color: 'var(--color-warning)' }}>{tournament.winner_1st.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Champion</div>
-                  </div>
-                )}
-                {tournament.winner_3rd && (
-                  <div className="flex flex-col items-center">
-                    <div style={{ fontSize: '32px', marginBottom: 'var(--space-2)' }}>🥉</div>
-                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>{tournament.winner_3rd.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>3rd Place</div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
+              {/* Rules */}
+              {tournament.rules && (
+                <Card className="p-6">
+                  <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Rules</h3>
+                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', whiteSpace: 'pre-wrap' }}>
+                    {tournament.rules}
+                  </p>
+                </Card>
+              )}
 
-          {/* Leaderboards (Standings) */}
-          {tournament.status === 'ENDED' && leaderboards && leaderboards.filter(lb => lb.is_public !== false).length > 0 && (
-            <Card className="p-6 flex flex-col gap-6">
-              <h3 className="dashboard-page-title mb-0" style={{ fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🏆 Tournament Standings</span>
-              </h3>
-              
-              <div className="flex flex-col gap-6">
-                {leaderboards.filter(lb => lb.is_public !== false).map((lb) => (
-                  <div key={lb.id} style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }} className="first:border-t-0 first:pt-0">
-                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '700', color: 'var(--color-primary)', marginBottom: '12px' }}>
-                      {lb.name}
-                    </h4>
+              {/* Comments */}
+              {tournament.comments_enabled && (
+                <Card className="p-6">
+                  <h3 className="dashboard-page-title mb-6" style={{ fontSize: 'var(--text-base)' }}>Comments ({comments.length})</h3>
 
-                    {lb.entries && lb.entries.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {lb.entries.map((entry) => (
-                          <div
-                            key={entry.id}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '10px 16px',
-                              backgroundColor: 'var(--color-bg-input)',
-                              border: '1px solid var(--color-border)',
-                              borderRadius: 'var(--radius-md)'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <span style={{
-                                fontWeight: '800',
-                                color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
-                                fontSize: 'var(--text-sm)',
-                                width: '24px'
-                              }}>
-                                #{entry.position}
-                              </span>
-                              <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
-                                {entry.username}
-                              </span>
-                            </div>
-                            {entry.notes && (
-                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '600' }}>
-                                {entry.notes}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                  {user ? (
+                    <form onSubmit={handleComment} className="flex gap-3 mb-6">
+                      <Avatar size="sm" fallback="👤" />
+                      <div style={{ flex: 1 }}>
+                        <Input
+                          type="textarea"
+                          placeholder="Write a comment..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                        />
+                        <div className="flex justify-end mt-2">
+                          <Button type="submit" size="sm" loading={commentLoading} disabled={!newComment.trim()}>
+                            Post Comment
+                          </Button>
+                        </div>
                       </div>
-                    ) : (
-                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
-                        No standings entered for this leaderboard yet.
-                      </p>
+                    </form>
+                  ) : (
+                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
+                      <Link href="/login" style={{ color: 'var(--color-primary)' }}>Sign in</Link> to leave a comment.
+                    </p>
+                  )}
+
+                  {comments.length > 0 ? (
+                    <div className="flex flex-col gap-6">
+                      {comments.map((c) => (
+                        <div key={c.id} className="flex gap-3 items-start">
+                          <Avatar src={c.users?.avatar_url} size="sm" fallback="👤" />
+                          <div style={{ flex: 1 }}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Link href={`/users/${c.users?.username || c.user_id}`} style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)', textDecoration: 'none' }}>
+                                {c.users?.display_name || 'Anonymous'}
+                              </Link>
+                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                                {new Date(c.created_at).toLocaleDateString()}
+                              </span>
+                              {user && c.user_id === user.id && (
+                                <button onClick={() => deleteComment(c.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}>
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                              {c.body}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+                      No comments yet. Be the first!
+                    </p>
+                  )}
+                </Card>
+              )}
+            </>
+          )}
+
+          {activeTab === 'results' && (
+            <>
+              {/* Live Streams and Highlights in Results */}
+              {(tournament.status === 'ONGOING' || tournament.status === 'ENDED') && (tournament.live_tournament_url || tournament.stream_url) && (
+                <div>
+                  <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Live Tournament</h3>
+                  <YouTubeEmbed url={tournament.live_tournament_url || tournament.stream_url} />
+                </div>
+              )}
+
+              {tournament.status === 'ENDED' && tournament.highlights_url && (
+                <div>
+                  <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Highlights</h3>
+                  <YouTubeEmbed url={tournament.highlights_url} />
+                </div>
+              )}
+
+              {/* Winners Podium */}
+              {tournament.status === 'ENDED' && (tournament.winner_1st || tournament.winner_2nd || tournament.winner_3rd) && (
+                <Card className="p-8 text-center">
+                  <h3 className="dashboard-page-title mb-6" style={{ fontSize: 'var(--text-base)' }}>Tournament Results</h3>
+                  <div className="flex justify-center gap-8 items-end">
+                    {tournament.winner_2nd && (
+                      <div className="flex flex-col items-center">
+                        <div style={{ fontSize: '32px', marginBottom: 'var(--space-2)' }}>🥈</div>
+                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>{tournament.winner_2nd.name}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>2nd Place</div>
+                      </div>
+                    )}
+                    {tournament.winner_1st && (
+                      <div className="flex flex-col items-center">
+                        <div style={{ fontSize: '44px', marginBottom: 'var(--space-2)' }}>🥇</div>
+                        <div style={{ fontSize: 'var(--text-base)', fontWeight: '800', color: 'var(--color-warning)' }}>{tournament.winner_1st.name}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Champion</div>
+                      </div>
+                    )}
+                    {tournament.winner_3rd && (
+                      <div className="flex flex-col items-center">
+                        <div style={{ fontSize: '32px', marginBottom: 'var(--space-2)' }}>🥉</div>
+                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>{tournament.winner_3rd.name}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>3rd Place</div>
+                      </div>
                     )}
                   </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Description */}
-          {tournament.description && (
-            <Card className="p-6">
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>About</h3>
-              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', whiteSpace: 'pre-wrap' }}>
-                {tournament.description}
-              </p>
-            </Card>
-          )}
-
-          {/* Rules */}
-          {tournament.rules && (
-            <Card className="p-6">
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Rules</h3>
-              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', whiteSpace: 'pre-wrap' }}>
-                {tournament.rules}
-              </p>
-            </Card>
-          )}
-
-          {/* Comments */}
-          {tournament.comments_enabled && (
-            <Card className="p-6">
-              <h3 className="dashboard-page-title mb-6" style={{ fontSize: 'var(--text-base)' }}>Comments ({comments.length})</h3>
-
-              {user ? (
-                <form onSubmit={handleComment} className="flex gap-3 mb-6">
-                  <Avatar size="sm" fallback="👤" />
-                  <div style={{ flex: 1 }}>
-                    <Input
-                      type="textarea"
-                      placeholder="Write a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button type="submit" size="sm" loading={commentLoading} disabled={!newComment.trim()}>
-                        Post Comment
-                      </Button>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-                  <Link href="/login" style={{ color: 'var(--color-primary)' }}>Sign in</Link> to leave a comment.
-                </p>
+                </Card>
               )}
 
-              {comments.length > 0 ? (
-                <div className="flex flex-col gap-6">
-                  {comments.map((c) => (
-                    <div key={c.id} className="flex gap-3 items-start">
-                      <Avatar src={c.users?.avatar_url} size="sm" fallback="👤" />
-                      <div style={{ flex: 1 }}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Link href={`/users/${c.users?.username || c.user_id}`} style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)', textDecoration: 'none' }}>
-                            {c.users?.display_name || 'Anonymous'}
-                          </Link>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                            {new Date(c.created_at).toLocaleDateString()}
-                          </span>
-                          {user && c.user_id === user.id && (
-                            <button onClick={() => deleteComment(c.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto' }}>
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-                          {c.body}
-                        </p>
+              {/* Standings/Leaderboards */}
+              {leaderboards && leaderboards.filter(lb => lb.is_public !== false).length > 0 ? (
+                <Card className="p-6 flex flex-col gap-6">
+                  <h3 className="dashboard-page-title mb-0" style={{ fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🏆 Tournament Standings</span>
+                  </h3>
+                  
+                  {leaderboards.filter(lb => lb.is_public !== false).length > 1 && (
+                    <div className="flex gap-2 flex-wrap" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
+                      {leaderboards.filter(lb => lb.is_public !== false).map((lb) => (
+                        <button
+                          key={lb.id}
+                          onClick={() => setActiveLbId(lb.id)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: 'var(--text-xs)',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            backgroundColor: activeLbId === lb.id ? 'var(--color-primary)' : 'var(--color-bg-input)',
+                            color: activeLbId === lb.id ? 'var(--color-text-white)' : 'var(--color-text-secondary)',
+                            border: '1px solid var(--color-border)',
+                          }}
+                        >
+                          {lb.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {(() => {
+                    const activeLb = leaderboards.find(l => l.id === activeLbId) || leaderboards.filter(l => l.is_public !== false)[0];
+                    if (!activeLb) return null;
+                    return (
+                      <div>
+                        <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '700', color: 'var(--color-primary)', marginBottom: '12px' }}>
+                          {activeLb.name}
+                        </h4>
+                        {activeLb.entries && activeLb.entries.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {activeLb.entries.map((entry) => (
+                              <div
+                                key={entry.id}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  padding: '10px 16px',
+                                  backgroundColor: 'var(--color-bg-input)',
+                                  border: '1px solid var(--color-border)',
+                                  borderRadius: 'var(--radius-md)'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <span style={{
+                                    fontWeight: '800',
+                                    color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
+                                    fontSize: 'var(--text-sm)',
+                                    width: '24px'
+                                  }}>
+                                    #{entry.position}
+                                  </span>
+                                  <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                                    {entry.username}
+                                  </span>
+                                </div>
+                                {entry.notes && (
+                                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '600' }}>
+                                    {entry.notes}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                            No standings entered for this leaderboard yet.
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  })()}
+                </Card>
               ) : (
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
-                  No comments yet. Be the first!
-                </p>
+                <Card className="p-8 text-center" style={{ color: 'var(--color-text-secondary)' }}>
+                  🏆 No standings or leaderboards are available yet.
+                </Card>
               )}
-            </Card>
+            </>
           )}
         </div>
 
@@ -860,11 +964,17 @@ export default function TournamentDetailPage() {
                 <Badge variant={getStatusVariant(tournament.status)}>{tournament.status}</Badge>
               </div>
               <div className="flex justify-between items-center">
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Whitelisted Players</span>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Maximum Players</span>
                 <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {tournament.player_count || 0}{tournament.max_players ? `/${tournament.max_players}` : ''}
                 </span>
               </div>
+              {tournament.prizepool && (
+                <div className="flex justify-between items-center">
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Prize Pool</span>
+                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-primary)' }}>{tournament.prizepool}</span>
+                </div>
+              )}
               {tournament.registration_type === 'native' && (
                 <div className="flex justify-between items-center">
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Total Registrants</span>

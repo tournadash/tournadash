@@ -48,6 +48,14 @@ export default function TournamentManagePage() {
   const [entryInputs, setEntryInputs] = useState({})
   const [userRole, setUserRole] = useState(null)
 
+  // Selection and Inline editing states
+  const [selectedLbIds, setSelectedLbIds] = useState([])
+  const [shareCopied, setShareCopied] = useState(false)
+  const [editingEntryId, setEditingEntryId] = useState(null)
+  const [editPos, setEditPos] = useState('')
+  const [editUsername, setEditUsername] = useState('')
+  const [editNotes, setEditNotes] = useState('')
+
   const loadData = async () => {
     const { data: t } = await supabase
       .from('tournaments')
@@ -421,6 +429,94 @@ export default function TournamentManagePage() {
     }
   }
 
+  const toggleSelectLb = (id) => {
+    setSelectedLbIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  const toggleSelectAllLbs = () => {
+    if (selectedLbIds.length === leaderboards.length) {
+      setSelectedLbIds([])
+    } else {
+      setSelectedLbIds(leaderboards.map(lb => lb.id))
+    }
+  }
+
+  const deleteSelectedLeaderboards = async () => {
+    if (selectedLbIds.length === 0) return
+    if (!confirm(`Are you sure you want to delete the ${selectedLbIds.length} selected leaderboards?`)) return
+    setSaving(true)
+    setError('')
+    try {
+      const { error } = await supabase
+        .from('tournament_leaderboards')
+        .delete()
+        .in('id', selectedLbIds)
+      if (error) throw error
+      setSuccess('Selected leaderboards deleted.')
+      setTimeout(() => setSuccess(''), 2000)
+      setSelectedLbIds([])
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const makeSelectedPublic = async (isPublic) => {
+    if (selectedLbIds.length === 0) return
+    setSaving(true)
+    setError('')
+    try {
+      const { error } = await supabase
+        .from('tournament_leaderboards')
+        .update({ is_public: isPublic })
+        .in('id', selectedLbIds)
+      if (error) throw error
+      setSuccess(`Selected leaderboards marked as ${isPublic ? 'Public' : 'Hidden'}.`)
+      setTimeout(() => setSuccess(''), 2000)
+      setSelectedLbIds([])
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const startEditing = (entry) => {
+    setEditingEntryId(entry.id)
+    setEditPos(entry.position)
+    setEditUsername(entry.username)
+    setEditNotes(entry.notes || '')
+  }
+
+  const saveEditedEntry = async (entryId) => {
+    const position = parseInt(editPos, 10)
+    const username = editUsername?.trim()
+    const notes = editNotes?.trim() || null
+
+    if (isNaN(position) || !username) {
+      alert('Position and Username are required.')
+      return
+    }
+
+    setError('')
+    try {
+      const { error } = await supabase
+        .from('tournament_leaderboard_entries')
+        .update({ position, username, notes })
+        .eq('id', entryId)
+      if (error) throw error
+      setEditingEntryId(null)
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   const handleApproveRegistration = async (reg) => {
     const { error: updateError } = await supabase
       .from('tournament_registrations')
@@ -717,8 +813,8 @@ export default function TournamentManagePage() {
         </div>
       )}
 
-      {/* Status & Token Row */}
-      <div className="grid grid-cols-2 gap-6">
+      {/* Status, Share Link & Token Row */}
+      <div className="grid grid-cols-3 gap-6">
         {/* Status Control */}
         <Card className="p-6">
           <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Tournament Phase</h4>
@@ -760,6 +856,34 @@ export default function TournamentManagePage() {
             {tournament.status === 'SOON' && 'Players cannot join the server. Registration is open.'}
             {tournament.status === 'ONGOING' && 'Only whitelisted players can join. Registration closed.'}
             {tournament.status === 'ENDED' && 'Server is locked. Tournament results can be set.'}
+          </p>
+        </Card>
+
+        {/* Public Share Link */}
+        <Card className="p-6">
+          <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Public Share Link</h4>
+          <div className="flex gap-2">
+            <input
+              className="td-input-field"
+              value={typeof window !== 'undefined' ? `${window.location.origin}/tournaments/${tournament.slug}` : `/tournaments/${tournament.slug}`}
+              readOnly
+              style={{ fontSize: 'var(--text-xs)', flex: 1 }}
+            />
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={() => {
+                const link = typeof window !== 'undefined' ? `${window.location.origin}/tournaments/${tournament.slug}` : `${location.origin}/tournaments/${tournament.slug}`;
+                navigator.clipboard.writeText(link)
+                setShareCopied(true)
+                setTimeout(() => setShareCopied(false), 2000)
+              }}
+            >
+              {shareCopied ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)' }}>
+            Share this link with players so they can register and view results.
           </p>
         </Card>
 
@@ -1223,6 +1347,49 @@ export default function TournamentManagePage() {
             </form>
           </Card>
 
+          {/* Bulk actions menu */}
+          {leaderboards.length > 0 && (
+            <Card className="p-4 flex justify-between items-center gap-4 flex-wrap" style={{ backgroundColor: 'var(--color-bg-subtle)' }}>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox"
+                  checked={leaderboards.length > 0 && selectedLbIds.length === leaderboards.length}
+                  onChange={toggleSelectAllLbs}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                />
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                  Select All ({selectedLbIds.length} of {leaderboards.length} selected)
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={selectedLbIds.length === 0}
+                  onClick={() => makeSelectedPublic(true)}
+                >
+                  Mark Public
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={selectedLbIds.length === 0}
+                  onClick={() => makeSelectedPublic(false)}
+                >
+                  Mark Hidden
+                </Button>
+                <Button 
+                  variant="danger" 
+                  size="sm" 
+                  disabled={selectedLbIds.length === 0}
+                  onClick={deleteSelectedLeaderboards}
+                >
+                  Delete Selected
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* List existing leaderboards */}
           {leaderboards.length > 0 ? (
             <div className="flex flex-col gap-6">
@@ -1230,6 +1397,12 @@ export default function TournamentManagePage() {
                 <Card key={lb.id} className="p-6">
                   <div className="flex items-center justify-between mb-4" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
                     <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedLbIds.includes(lb.id)}
+                        onChange={() => toggleSelectLb(lb.id)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                      />
                       <h4 style={{ fontSize: 'var(--text-md)', fontWeight: '700', color: 'var(--color-primary)', margin: 0 }}>
                         {lb.name}
                       </h4>
@@ -1322,7 +1495,7 @@ export default function TournamentManagePage() {
                         <span style={{ width: '60px' }}>Pos</span>
                         <span style={{ flex: 2 }}>Player Username</span>
                         <span style={{ flex: 2 }}>Prize / Info</span>
-                        <span style={{ width: '80px', textAlign: 'right' }}>Actions</span>
+                        <span style={{ width: '120px', textAlign: 'right' }}>Actions</span>
                       </div>
 
                       {lb.entries.map((entry) => (
@@ -1331,37 +1504,108 @@ export default function TournamentManagePage() {
                           backgroundColor: 'var(--color-bg-input)',
                           border: '1px solid var(--color-border)',
                           borderRadius: 'var(--radius-md)',
-                          height: '40px'
+                          height: '48px'
                         }}>
-                          <span style={{ 
-                            width: '60px', 
-                            fontWeight: '800', 
-                            color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
-                            fontSize: 'var(--text-sm)'
-                          }}>
-                            #{entry.position}
-                          </span>
-                          <span style={{ flex: 2, fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
-                            {entry.username}
-                          </span>
-                          <span style={{ flex: 2, color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-                            {entry.notes || '—'}
-                          </span>
-                          <div style={{ width: '80px', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                              onClick={() => deleteLeaderboardEntry(entry.id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--color-danger)',
-                                fontSize: 'var(--text-xs)',
-                                cursor: 'pointer',
-                                padding: '4px'
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </div>
+                          {editingEntryId === entry.id ? (
+                            <>
+                              <input
+                                type="number"
+                                min="1"
+                                className="td-input-field"
+                                value={editPos}
+                                onChange={(e) => setEditPos(e.target.value)}
+                                style={{ width: '60px', height: '32px', padding: '0 4px', fontSize: 'var(--text-xs)', marginRight: 'var(--space-2)' }}
+                              />
+                              <input
+                                type="text"
+                                className="td-input-field"
+                                value={editUsername}
+                                onChange={(e) => setEditUsername(e.target.value)}
+                                style={{ flex: 2, height: '32px', padding: '0 8px', fontSize: 'var(--text-xs)', marginRight: 'var(--space-2)' }}
+                              />
+                              <input
+                                type="text"
+                                className="td-input-field"
+                                value={editNotes}
+                                onChange={(e) => setEditNotes(e.target.value)}
+                                style={{ flex: 2, height: '32px', padding: '0 8px', fontSize: 'var(--text-xs)', marginRight: 'var(--space-2)' }}
+                              />
+                              <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                                <button
+                                  onClick={() => saveEditedEntry(entry.id)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-primary)',
+                                    fontSize: 'var(--text-xs)',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                  }}
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingEntryId(null)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-text-secondary)',
+                                    fontSize: 'var(--text-xs)',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ 
+                                width: '60px', 
+                                fontWeight: '800', 
+                                color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
+                                fontSize: 'var(--text-sm)'
+                              }}>
+                                #{entry.position}
+                              </span>
+                              <span style={{ flex: 2, fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                                {entry.username}
+                              </span>
+                              <span style={{ flex: 2, color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
+                                {entry.notes || '—'}
+                              </span>
+                              <div style={{ width: '120px', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                                <button
+                                  onClick={() => startEditing(entry)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-primary)',
+                                    fontSize: 'var(--text-xs)',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => deleteLeaderboardEntry(entry.id)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-danger)',
+                                    fontSize: 'var(--text-xs)',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                  }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>

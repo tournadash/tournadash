@@ -114,28 +114,29 @@ export default function LeaderboardPage() {
       </div>
 
       {loading ? (
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="skeleton" style={{ height: '72px', marginBottom: '8px', borderRadius: 'var(--radius-md)' }} />
           ))}
         </div>
       ) : tab === 'orgs' ? (
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           {/* Table Header */}
           <div className="flex items-center" style={{
             padding: 'var(--space-3) var(--space-5)',
             fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600',
+            gap: 'var(--space-4)'
           }}>
             <span style={{ width: '60px', flexShrink: 0 }}>Rank</span>
             <span style={{ flex: 1, minWidth: 0 }}>Organization</span>
-            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Tournaments</span>
-            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Followers</span>
+            <span style={{ width: '120px', textAlign: 'center', flexShrink: 0 }}>Tournaments</span>
+            <span style={{ width: '120px', textAlign: 'center', flexShrink: 0 }}>Followers</span>
           </div>
 
           {orgs.map((org, i) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
                 <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
@@ -151,10 +152,10 @@ export default function LeaderboardPage() {
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{org.slug}</div>
                   </div>
                 </div>
-                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {org.ended_tournament_count || 0}
                 </span>
-                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
+                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
                   {org.follower_count || 0}
                 </span>
               </div>
@@ -168,23 +169,24 @@ export default function LeaderboardPage() {
           )}
         </div>
       ) : (
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           {/* Table Header */}
           <div className="flex items-center" style={{
             padding: 'var(--space-3) var(--space-5)',
             fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600',
+            gap: 'var(--space-4)'
           }}>
             <span style={{ width: '60px', flexShrink: 0 }}>Rank</span>
             <span style={{ flex: 1, minWidth: 0 }}>Tournament</span>
-            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Status</span>
-            <span style={{ width: '80px', textAlign: 'center', flexShrink: 0 }}>Players</span>
-            <span style={{ width: '80px', textAlign: 'center', flexShrink: 0 }}>Likes</span>
+            <span style={{ width: '120px', textAlign: 'center', flexShrink: 0 }}>Status</span>
+            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Players</span>
+            <span style={{ width: '100px', textAlign: 'center', flexShrink: 0 }}>Likes</span>
           </div>
 
           {tournaments.map((t, i) => (
             <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
                 <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
@@ -192,15 +194,15 @@ export default function LeaderboardPage() {
                   <div style={{ fontWeight: '600', color: 'var(--color-text-white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>by {t.organizations?.name}</div>
                 </div>
-                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
+                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
                   <Badge variant={getStatusVariant(t.status)} style={{ fontSize: '9px' }}>
                     {getStatusLabel(t.status)}
                   </Badge>
                 </span>
-                <span style={{ width: '80px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {t.player_count || 0}
                 </span>
-                <span className="flex items-center justify-center gap-1" style={{ width: '80px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)' }}>
+                <span className="flex items-center justify-center gap-1" style={{ width: '100px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)' }}>
                   ❤️ {t.like_count || 0}
                 </span>
               </div>

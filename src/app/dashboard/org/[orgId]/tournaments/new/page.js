@@ -48,6 +48,7 @@ export default function NewTournamentPage() {
     require_discord: false,
     require_follow: false,
     ends_at: '',
+    prizepool: '',
   })
   
   const fileInputRef = useRef(null)
@@ -155,6 +156,7 @@ export default function NewTournamentPage() {
       require_discord: !!form.require_discord,
       require_follow: !!form.require_follow,
       ends_at: form.ends_at || null,
+      prizepool: form.prizepool.trim() || null,
     }
 
     let { data, error: insertError } = await supabase
@@ -163,7 +165,7 @@ export default function NewTournamentPage() {
       .select()
       .single()
 
-    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count') || insertError.message.includes('require_discord') || insertError.message.includes('require_follow'))) {
+    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count') || insertError.message.includes('require_discord') || insertError.message.includes('require_follow') || insertError.message.includes('prizepool'))) {
       const fallbackPayload = { ...insertPayload }
       delete fallbackPayload.short_description
       delete fallbackPayload.auto_select_count
@@ -171,6 +173,7 @@ export default function NewTournamentPage() {
       delete fallbackPayload.require_discord
       delete fallbackPayload.require_follow
       delete fallbackPayload.ends_at
+      delete fallbackPayload.prizepool
       const fallbackResult = await supabase
         .from('tournaments')
         .insert(fallbackPayload)
@@ -482,18 +485,36 @@ export default function NewTournamentPage() {
                       helperText="Invite link shown to players if they need to join your server."
                     />
                   </div>
-                  <label className="flex items-center gap-2 cursor-pointer mt-4 p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content' }}>
-                    <input
-                      type="checkbox"
-                      checked={form.require_discord}
-                      onChange={(e) => updateForm('require_discord', e.target.checked)}
-                      style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
-                    />
-                    <div>
-                      <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Enforce Discord Membership Gating</span>
-                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Only discord server members can register for the tournament.</span>
-                    </div>
-                  </label>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content', marginBottom: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={form.require_discord}
+                        onChange={(e) => updateForm('require_discord', e.target.checked)}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                      />
+                      <div>
+                        <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Enforce Discord Membership Gating</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Only discord server members can register for the tournament.</span>
+                      </div>
+                    </label>
+                    {form.require_discord && (
+                      <div style={{ paddingLeft: 'var(--space-2)' }}>
+                        <a 
+                          href="https://discord.com/api/oauth2/authorize?client_id=1517466838353838172&permissions=8&scope=bot" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-secondary btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', backgroundColor: '#5865F2', color: '#fff', border: 'none' }}
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                          </svg>
+                          Invite Bot to Guild
+                        </a>
+                      </div>
+                    )}
+                  </div>
                   <label className="flex items-center gap-2 cursor-pointer mt-4 p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content' }}>
                     <input
                       type="checkbox"
@@ -534,7 +555,7 @@ export default function NewTournamentPage() {
             <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>Settings</h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-6 mb-4">
             <Input 
               label="Max Players" 
               type="number" 
@@ -543,6 +564,15 @@ export default function NewTournamentPage() {
               value={form.max_players} 
               onChange={(e) => updateForm('max_players', e.target.value)} 
             />
+            <Input 
+              label="Prize Pool (Optional)" 
+              type="text" 
+              placeholder="e.g. $1,000, 5000 Robux, Custom, etc." 
+              value={form.prizepool} 
+              onChange={(e) => updateForm('prizepool', e.target.value)} 
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
             <Input 
               label="Starts At" 
               type="datetime-local" 

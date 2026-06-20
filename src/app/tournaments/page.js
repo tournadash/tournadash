@@ -153,30 +153,30 @@ export default function TournamentsBrowsePage() {
                       {t.short_description || (t.description ? (t.description.length > 120 ? t.description.substring(0, 120) + '...' : t.description) : 'No description provided.')}
                     </p>
 
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center gap-2">
-                        <Avatar src={t.organizations?.avatar_url} alt={t.organizations?.name || 'Org'} size="sm" fallback="🏰" />
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
+                    {t.starts_at && (
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                        📅 {new Date(t.starts_at).toLocaleDateString()}
+                      </div>
+                    )}
+
+                    {/* Engagement & Org Row */}
+                    <div className="flex items-center justify-between" style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
+                      <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
+                        <Avatar src={t.organizations?.avatar_url} alt={t.organizations?.name || 'Org'} size="xs" fallback="🏰" />
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '130px' }}>
                           {t.organizations?.name || 'Unknown'}
                         </span>
                       </div>
-                      {t.starts_at && (
+                      <div className="flex gap-3" style={{ flexShrink: 0 }}>
+                        {t.likes_visible && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                            ❤️ {t.like_count || 0}
+                          </span>
+                        )}
                         <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          📅 {new Date(t.starts_at).toLocaleDateString()}
+                          💬 {t.comment_count || 0}
                         </span>
-                      )}
-                    </div>
-
-                    {/* Engagement */}
-                    <div className="flex gap-4" style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
-                      {t.likes_visible && (
-                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                          ❤️ {t.like_count || 0}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                        💬 {t.comment_count || 0}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </Card>
