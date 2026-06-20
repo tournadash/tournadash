@@ -7,10 +7,12 @@ import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Avatar from '@/components/ui/Avatar'
+import Modal from '@/components/ui/Modal'
 import { uploadAvatar, deleteImageByUrl } from '@/lib/supabase/storage'
 
 export default function ProfileEditPage() {
   const [profile, setProfile] = useState(null)
+  const [originalIgn, setOriginalIgn] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -21,6 +23,13 @@ export default function ProfileEditPage() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [usernameError, setUsernameError] = useState('')
   const [checkingUsername, setCheckingUsername] = useState(false)
+
+  // IGN change confirm states
+  const [showIgnConfirmModal, setShowIgnConfirmModal] = useState(false)
+  const [ignConfirm1, setIgnConfirm1] = useState('')
+  const [ignConfirm2, setIgnConfirm2] = useState('')
+  const [ignConfirm3, setIgnConfirm3] = useState('')
+  const [pendingIgn, setPendingIgn] = useState('')
   
   const router = useRouter()
   const supabase = createClient()
@@ -40,6 +49,7 @@ export default function ProfileEditPage() {
           .eq('id', user.id)
           .single()
         setProfile(data)
+        setOriginalIgn(data?.minecraft_ign || '')
       }
       setLoading(false)
     }
@@ -64,7 +74,7 @@ export default function ProfileEditPage() {
   }
 
   const handleSave = async (e) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     if (usernameError) {
       setError('Please resolve all validation errors before saving.')
       return
@@ -75,6 +85,30 @@ export default function ProfileEditPage() {
       setError('Your bio exceeds the limit of 200 words.')
       return
     }
+
+    const isIgnChanged = (profile.minecraft_ign || '').trim() !== (originalIgn || '').trim()
+
+    if (isIgnChanged) {
+      const changeCount = profile.ign_change_count || 0
+      if (changeCount >= 2) {
+        setError('You cannot change your Minecraft IGN anymore. It is locked.')
+        return
+      }
+
+      if (changeCount === 1) {
+        setPendingIgn((profile.minecraft_ign || '').trim())
+        setIgnConfirm1('')
+        setIgnConfirm2('')
+        setIgnConfirm3('')
+        setShowIgnConfirmModal(true)
+        return
+      }
+    }
+
+    await executeSave(profile.minecraft_ign, isIgnChanged ? 1 : 0)
+  }
+
+  const executeSave = async (newIgn, incrementBy) => {
     setSaving(true)
     setError('')
     setSuccess('')
@@ -95,13 +129,17 @@ export default function ProfileEditPage() {
       }
     }
 
+    const nextChangeCount = (profile.ign_change_count || 0) + incrementBy
+    const formattedIgn = newIgn ? newIgn.trim() : null
+
     const { error: updateError } = await supabase
       .from('users')
       .update({
         display_name: profile.display_name,
         username: profile.username,
         bio: profile.bio,
-        minecraft_ign: profile.minecraft_ign,
+        minecraft_ign: formattedIgn,
+        ign_change_count: nextChangeCount,
         social_youtube: profile.social_youtube,
         social_discord: profile.social_discord,
         social_twitch: profile.social_twitch,
@@ -110,15 +148,36 @@ export default function ProfileEditPage() {
       .eq('id', user.id)
 
     if (updateError) {
-      setError(updateError.message)
+      if (updateError.code === '23505' || updateError.message.includes('unique_minecraft_ign') || updateError.message.includes('duplicate')) {
+        setError('This Minecraft IGN is already registered by another user. Each player must have a unique IGN.')
+      } else {
+        setError(updateError.message)
+      }
     } else {
       setSuccess('Profile updated successfully!')
-      setProfile(prev => ({ ...prev, avatar_url: avatarUrl }))
+      setOriginalIgn(newIgn || '')
+      setProfile(prev => ({ ...prev, avatar_url: avatarUrl, ign_change_count: nextChangeCount, minecraft_ign: formattedIgn }))
       setAvatarFile(null)
       setTimeout(() => setSuccess(''), 3000)
       router.refresh()
     }
     setSaving(false)
+  }
+
+  const handleConfirmFinalSave = async (e) => {
+    e.preventDefault()
+    const trimmedPending = pendingIgn.trim()
+    if (
+      ignConfirm1.trim() !== trimmedPending ||
+      ignConfirm2.trim() !== trimmedPending ||
+      ignConfirm3.trim() !== trimmedPending
+    ) {
+      setError('Confirmation inputs do not match the new IGN. Please type it exactly 3 times.')
+      return
+    }
+
+    setShowIgnConfirmModal(false)
+    await executeSave(pendingIgn, 1)
   }
 
   const updateField = (field, value) => {
@@ -380,7 +439,14 @@ export default function ProfileEditPage() {
             placeholder="Steve"
             value={profile?.minecraft_ign || ''}
             onChange={(e) => updateField('minecraft_ign', e.target.value)}
-            helperText="Your exact Minecraft username — used for whitelist matching."
+            disabled={profile?.ign_change_count >= 2}
+            helperText={
+              profile?.ign_change_count >= 2 
+                ? "Locked: You have reached the maximum of 2 IGN changes." 
+                : profile?.ign_change_count === 1
+                  ? "Warning: This is your final change. Saving it will lock your IGN from further edits."
+                  : "You can change your Minecraft IGN at most twice. (1 change remaining after this)"
+            }
           />
         </Card>
 
@@ -464,6 +530,49 @@ export default function ProfileEditPage() {
           Delete Profile
         </Button>
       </Card>
+
+      {/* Confirm IGN final change modal */}
+      <Modal
+        isOpen={showIgnConfirmModal}
+        onClose={() => setShowIgnConfirmModal(false)}
+        title="⚠️ Final Minecraft IGN Change"
+      >
+        <form onSubmit={handleConfirmFinalSave} className="flex flex-col gap-4">
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 'var(--leading-relaxed)' }}>
+            You are about to make your <strong>second and final</strong> Minecraft IGN change. Once saved, you will <strong>never</strong> be able to change your Minecraft username on TournaDash again.
+            <br /><br />
+            Please type your new IGN (<strong>{pendingIgn}</strong>) exactly <strong>three times</strong> below to confirm:
+          </div>
+
+          <Input
+            placeholder="Type the new name (1st time)"
+            value={ignConfirm1}
+            onChange={(e) => setIgnConfirm1(e.target.value)}
+            required
+          />
+          <Input
+            placeholder="Type the new name (2nd time)"
+            value={ignConfirm2}
+            onChange={(e) => setIgnConfirm2(e.target.value)}
+            required
+          />
+          <Input
+            placeholder="Type the new name (3rd time)"
+            value={ignConfirm3}
+            onChange={(e) => setIgnConfirm3(e.target.value)}
+            required
+          />
+
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="secondary" onClick={() => setShowIgnConfirmModal(false)} type="button">
+              Cancel
+            </Button>
+            <Button type="submit" variant="danger">
+              Confirm Final Change & Lock
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

@@ -27,7 +27,7 @@ export default function TournamentManagePage() {
 
   // Sprint 5 Registrations states
   const [registrations, setRegistrations] = useState([])
-  const [activeTab, setActiveTab] = useState('whitelist') // whitelist or registrations
+  const [activeTab, setActiveTab] = useState('whitelist') // whitelist, registrations, or leaderboards
   const [regSearch, setRegSearch] = useState('')
 
   const [serverIp, setServerIp] = useState('')
@@ -40,6 +40,12 @@ export default function TournamentManagePage() {
   const [importLimitOption, setImportLimitOption] = useState('all')
   const [importLimitValue, setImportLimitValue] = useState('')
   const [importLoading, setImportLoading] = useState(false)
+
+  // Leaderboards states
+  const [leaderboards, setLeaderboards] = useState([])
+  const [newLbName, setNewLbName] = useState('')
+  const [lbCreating, setLbCreating] = useState(false)
+  const [entryInputs, setEntryInputs] = useState({})
 
   const loadData = async () => {
     const { data: t } = await supabase
@@ -72,6 +78,30 @@ export default function TournamentManagePage() {
       .maybeSingle()
     setServerIp(ipData?.server_ip || '')
     setIpRevealed(!!ipData?.ip_revealed)
+
+    // Fetch tournament leaderboards
+    const { data: lbs } = await supabase
+      .from('tournament_leaderboards')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .order('created_at', { ascending: true })
+
+    if (lbs && lbs.length > 0) {
+      const lbIds = lbs.map(l => l.id)
+      const { data: entries } = await supabase
+        .from('tournament_leaderboard_entries')
+        .select('*')
+        .in('leaderboard_id', lbIds)
+        .order('position', { ascending: true })
+
+      const lbsWithEntries = lbs.map(lb => ({
+        ...lb,
+        entries: entries?.filter(e => e.leaderboard_id === lb.id) || []
+      }))
+      setLeaderboards(lbsWithEntries)
+    } else {
+      setLeaderboards([])
+    }
 
     setLoading(false)
   }
@@ -267,6 +297,99 @@ export default function TournamentManagePage() {
     } catch (err) {
       setError(`Failed to delete tournament: ${err.message}`)
       setSaving(false)
+    }
+  }
+
+  const createLeaderboard = async (e) => {
+    e.preventDefault()
+    if (!newLbName.trim()) return
+    setLbCreating(true)
+    setError('')
+    try {
+      const { data, error: lbErr } = await supabase
+        .from('tournament_leaderboards')
+        .insert({ tournament_id: tournamentId, name: newLbName.trim() })
+        .select()
+        .single()
+      if (lbErr) {
+        if (lbErr.message.includes('unique')) {
+          throw new Error('A leaderboard with this name already exists.')
+        }
+        throw lbErr
+      }
+      setNewLbName('')
+      setSuccess(`Leaderboard "${data.name}" created!`)
+      setTimeout(() => setSuccess(''), 2000)
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLbCreating(false)
+    }
+  }
+
+  const deleteLeaderboard = async (lbId, lbName) => {
+    if (!confirm(`Are you sure you want to delete the leaderboard "${lbName}" and all its entries?`)) return
+    setError('')
+    try {
+      const { error: lbErr } = await supabase
+        .from('tournament_leaderboards')
+        .delete()
+        .eq('id', lbId)
+      if (lbErr) throw lbErr
+      setSuccess(`Leaderboard "${lbName}" deleted.`)
+      setTimeout(() => setSuccess(''), 2000)
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const addLeaderboardEntry = async (lbId) => {
+    const inputs = entryInputs[lbId] || {}
+    const position = parseInt(inputs.position, 10)
+    const username = inputs.username?.trim()
+    const notes = inputs.notes?.trim() || null
+
+    if (isNaN(position) || !username) {
+      alert('Position and Username are required.')
+      return
+    }
+
+    setError('')
+    try {
+      const { error: entryErr } = await supabase
+        .from('tournament_leaderboard_entries')
+        .insert({
+          leaderboard_id: lbId,
+          position,
+          username,
+          notes
+        })
+      if (entryErr) throw entryErr
+      
+      // Clear inputs for this leaderboard
+      setEntryInputs(prev => ({
+        ...prev,
+        [lbId]: { position: '', username: '', notes: '' }
+      }))
+      loadData()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const deleteLeaderboardEntry = async (entryId) => {
+    setError('')
+    try {
+      const { error: entryErr } = await supabase
+        .from('tournament_leaderboard_entries')
+        .delete()
+        .eq('id', entryId)
+      if (entryErr) throw entryErr
+      loadData()
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -765,6 +888,22 @@ export default function TournamentManagePage() {
         >
           Registrations ({registrations.length})
         </button>
+        <button
+          onClick={() => setActiveTab('leaderboards')}
+          style={{
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'leaderboards' ? '2px solid var(--color-primary)' : '2px solid transparent',
+            color: activeTab === 'leaderboards' ? 'var(--color-text-white)' : 'var(--color-text-secondary)',
+            fontWeight: '600',
+            fontSize: 'var(--text-sm)',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          Leaderboards
+        </button>
       </div>
 
       {activeTab === 'whitelist' ? (
@@ -1023,6 +1162,175 @@ export default function TournamentManagePage() {
             </div>
           )}
         </Card>
+      )}
+
+      {activeTab === 'leaderboards' && (
+        <div className="flex flex-col gap-6">
+          {/* Create Leaderboard Form */}
+          <Card className="p-6">
+            <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Create Standings/Leaderboard</h4>
+            <form onSubmit={createLeaderboard} className="flex gap-2">
+              <input
+                className="td-input-field"
+                placeholder="e.g. Solo Standings, Teams, Prizes..."
+                value={newLbName}
+                onChange={(e) => setNewLbName(e.target.value)}
+                style={{ flex: 1 }}
+                required
+              />
+              <Button type="submit" size="sm" loading={lbCreating}>
+                Create Leaderboard
+              </Button>
+            </form>
+          </Card>
+
+          {/* List existing leaderboards */}
+          {leaderboards.length > 0 ? (
+            <div className="flex flex-col gap-6">
+              {leaderboards.map((lb) => (
+                <Card key={lb.id} className="p-6">
+                  <div className="flex items-center justify-between mb-4" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
+                    <h4 style={{ fontSize: 'var(--text-md)', fontWeight: '700', color: 'var(--color-primary)', margin: 0 }}>
+                      {lb.name}
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      style={{ color: 'var(--color-danger)', padding: '0 8px', height: '28px' }}
+                      onClick={() => deleteLeaderboard(lb.id, lb.name)}
+                    >
+                      Delete Leaderboard
+                    </Button>
+                  </div>
+
+                  {/* Add Entry Row Form */}
+                  <div className="flex gap-3 mb-6 items-end flex-wrap">
+                    <div style={{ width: '80px' }}>
+                      <label className="td-input-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Rank</label>
+                      <input
+                        type="number"
+                        min="1"
+                        className="td-input-field"
+                        placeholder="1"
+                        value={entryInputs[lb.id]?.position || ''}
+                        onChange={(e) => setEntryInputs(prev => ({
+                          ...prev,
+                          [lb.id]: { ...(prev[lb.id] || {}), position: e.target.value }
+                        }))}
+                        style={{ height: '36px', fontSize: 'var(--text-sm)' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, minWidth: '150px' }}>
+                      <label className="td-input-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Player IGN</label>
+                      <input
+                        type="text"
+                        className="td-input-field"
+                        placeholder="Minecraft Username"
+                        value={entryInputs[lb.id]?.username || ''}
+                        onChange={(e) => setEntryInputs(prev => ({
+                          ...prev,
+                          [lb.id]: { ...(prev[lb.id] || {}), username: e.target.value }
+                        }))}
+                        style={{ height: '36px', fontSize: 'var(--text-sm)' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1.5, minWidth: '200px' }}>
+                      <label className="td-input-label" style={{ fontSize: '11px', marginBottom: '4px' }}>Prize / Info (Optional)</label>
+                      <input
+                        type="text"
+                        className="td-input-field"
+                        placeholder="e.g. $5, Winner, or leave empty"
+                        value={entryInputs[lb.id]?.notes || ''}
+                        onChange={(e) => setEntryInputs(prev => ({
+                          ...prev,
+                          [lb.id]: { ...(prev[lb.id] || {}), notes: e.target.value }
+                        }))}
+                        style={{ height: '36px', fontSize: 'var(--text-sm)' }}
+                      />
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      style={{ height: '36px' }}
+                      onClick={() => addLeaderboardEntry(lb.id)}
+                    >
+                      Add Entry
+                    </Button>
+                  </div>
+
+                  {/* Entries Table */}
+                  {lb.entries && lb.entries.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center" style={{
+                        padding: '0 var(--space-4)',
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--color-text-muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontWeight: '600',
+                        height: '24px'
+                      }}>
+                        <span style={{ width: '60px' }}>Pos</span>
+                        <span style={{ flex: 2 }}>Player Username</span>
+                        <span style={{ flex: 2 }}>Prize / Info</span>
+                        <span style={{ width: '80px', textAlign: 'right' }}>Actions</span>
+                      </div>
+
+                      {lb.entries.map((entry) => (
+                        <div key={entry.id} className="flex items-center" style={{
+                          padding: 'var(--space-2) var(--space-4)',
+                          backgroundColor: 'var(--color-bg-input)',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: 'var(--radius-md)',
+                          height: '40px'
+                        }}>
+                          <span style={{ 
+                            width: '60px', 
+                            fontWeight: '800', 
+                            color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
+                            fontSize: 'var(--text-sm)'
+                          }}>
+                            #{entry.position}
+                          </span>
+                          <span style={{ flex: 2, fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                            {entry.username}
+                          </span>
+                          <span style={{ flex: 2, color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
+                            {entry.notes || '—'}
+                          </span>
+                          <div style={{ width: '80px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => deleteLeaderboardEntry(entry.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--color-danger)',
+                                fontSize: 'var(--text-xs)',
+                                cursor: 'pointer',
+                                padding: '4px'
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', margin: 'var(--space-4) 0' }}>
+                      No entries added to this leaderboard yet.
+                    </p>
+                  )}
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: 'var(--space-10)', color: 'var(--color-text-secondary)' }} className="flex flex-col items-center gap-2">
+              <p style={{ fontSize: 'var(--text-sm)', fontWeight: '500', color: 'var(--color-text-white)' }}>No tournament leaderboards created yet.</p>
+              <p style={{ fontSize: 'var(--text-xs)' }}>Use the form above to name and create your first standings board.</p>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Danger Zone */}

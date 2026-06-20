@@ -18,6 +18,7 @@ export default function OrgPublicProfilePage() {
   const [user, setUser] = useState(null)
   const [followed, setFollowed] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
+  const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,6 +37,32 @@ export default function OrgPublicProfilePage() {
 
       const { data: m } = await supabase.from('organization_members').select('*, users(display_name, username, avatar_url)').eq('organization_id', orgData.id)
       setMembers(m || [])
+
+      // Fetch organization leaderboard
+      const { data: lbData } = await supabase
+        .from('organization_leaderboards')
+        .select('*')
+        .eq('organization_id', orgData.id)
+        .order('wins', { ascending: false })
+        .limit(10)
+
+      if (lbData && lbData.length > 0) {
+        setLeaderboard(lbData)
+      } else {
+        // Fallback: calculate dynamically from ended tournaments
+        const calc = {}
+        t?.forEach(tourney => {
+          if (tourney.status === 'ENDED' && tourney.winner_1st?.name) {
+            const name = tourney.winner_1st.name.trim()
+            calc[name] = (calc[name] || 0) + 1
+          }
+        })
+        const calculatedLB = Object.entries(calc)
+          .map(([name, wins]) => ({ player_name: name, wins }))
+          .sort((a, b) => b.wins - a.wins)
+          .slice(0, 10)
+        setLeaderboard(calculatedLB)
+      }
 
       if (u) {
         const { data: follow } = await supabase.from('follows').select('id').eq('organization_id', orgData.id).eq('user_id', u.id).maybeSingle()
@@ -219,6 +246,50 @@ export default function OrgPublicProfilePage() {
           </Link>
         ))}
       </div>
+
+      {/* Leaderboard Section */}
+      {leaderboard && leaderboard.length > 0 && (
+        <div style={{ marginBottom: 'var(--space-10)' }}>
+          <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>🏆 Organization Leaderboard</span>
+          </h3>
+          <Card className="p-6">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+              {leaderboard.map((player, idx) => {
+                const rank = idx + 1
+                return (
+                  <div key={idx} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 'var(--space-3) var(--space-4)',
+                    backgroundColor: 'var(--color-bg-input)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        fontWeight: '800',
+                        fontSize: 'var(--text-sm)',
+                        color: rank === 1 ? 'var(--color-warning)' : rank === 2 ? 'var(--color-text-secondary)' : rank === 3 ? '#cd7f32' : 'var(--color-text-muted)',
+                        width: '20px'
+                      }}>
+                        #{rank}
+                      </span>
+                      <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                        {player.player_name}
+                      </span>
+                    </div>
+                    <Badge variant="primary" style={{ fontSize: '10px' }}>
+                      {player.wins} {player.wins === 1 ? 'Win' : 'Wins'}
+                    </Badge>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Tournaments */}
       <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Tournaments</h3>

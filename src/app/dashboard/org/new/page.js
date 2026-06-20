@@ -148,6 +148,7 @@ export default function NewOrganizationPage() {
       social_youtube: socialYoutube.trim() || null,
       social_discord: socialDiscord.trim() || null,
       org_token: orgToken,
+      created_by: user.id,
     }
 
     let { data: org, error: orgError } = await supabase
@@ -159,6 +160,7 @@ export default function NewOrganizationPage() {
     if (orgError && orgError.code === '42703') {
       const fallbackPayload = { ...insertPayload }
       delete fallbackPayload.org_token
+      delete fallbackPayload.created_by
       const fallbackResult = await supabase
         .from('organizations')
         .insert(fallbackPayload)

@@ -14,6 +14,7 @@ export default function UserPublicProfilePage() {
   const supabase = createClient()
   const [profile, setProfile] = useState(null)
   const [orgs, setOrgs] = useState([])
+  const [stats, setStats] = useState({ played: 0, wins: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -41,6 +42,29 @@ export default function UserPublicProfilePage() {
         .select('role, organizations(id, name, slug, avatar_url, follower_count, tournament_count)')
         .eq('user_id', user.id)
       setOrgs(memberships?.map(m => ({ ...m.organizations, role: m.role })) || [])
+
+      // Fetch user statistics
+      if (user.minecraft_ign) {
+        // Tournaments Played (selected in whitelist)
+        const { count: playedCount } = await supabase
+          .from('tournament_players')
+          .select('*', { count: 'exact', head: true })
+          .ilike('minecraft_ign', user.minecraft_ign)
+
+        // Tournaments Won (1st place)
+        const { count: wonCount } = await supabase
+          .from('tournaments')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'ENDED')
+          .ilike('winner_1st->>name', user.minecraft_ign)
+
+        setStats({
+          played: playedCount || 0,
+          wins: wonCount || 0
+        })
+      } else {
+        setStats({ played: 0, wins: 0 })
+      }
 
       setLoading(false)
     }
@@ -98,6 +122,36 @@ export default function UserPublicProfilePage() {
             </Badge>
           </div>
         )}
+
+        {/* Statistics Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 'var(--space-4)',
+          maxWidth: '300px',
+          margin: 'var(--space-5) auto var(--space-5) auto',
+          padding: 'var(--space-3) var(--space-4)',
+          backgroundColor: 'var(--color-bg-input)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-md)'
+        }}>
+          <div>
+            <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-text-white)' }}>
+              {stats.played}
+            </div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
+              Played
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-warning)' }}>
+              {stats.wins}
+            </div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
+              Won
+            </div>
+          </div>
+        </div>
 
         {profile.bio && (
           <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', maxWidth: '500px', margin: '0 auto' }}>

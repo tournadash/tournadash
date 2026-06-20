@@ -64,6 +64,7 @@ export default function TournamentDetailPage() {
   const [submittingReg, setSubmittingReg] = useState(false)
   const [regError, setRegError] = useState('')
   const [serverIpInfo, setServerIpInfo] = useState(null)
+  const [leaderboards, setLeaderboards] = useState([])
 
   useEffect(() => {
     const load = async () => {
@@ -156,6 +157,30 @@ export default function TournamentDetailPage() {
           .eq('user_id', u.id)
           .maybeSingle()
         setIsMemberOfOrg(!!memberCheck)
+      }
+
+      // Fetch tournament leaderboards & entries
+      const { data: lbs } = await supabase
+        .from('tournament_leaderboards')
+        .select('*')
+        .eq('tournament_id', t.id)
+        .order('created_at', { ascending: true })
+
+      if (lbs && lbs.length > 0) {
+        const lbIds = lbs.map(l => l.id)
+        const { data: entries } = await supabase
+          .from('tournament_leaderboard_entries')
+          .select('*')
+          .in('leaderboard_id', lbIds)
+          .order('position', { ascending: true })
+
+        const lbsWithEntries = lbs.map(lb => ({
+          ...lb,
+          entries: entries?.filter(e => e.leaderboard_id === lb.id) || []
+        }))
+        setLeaderboards(lbsWithEntries)
+      } else {
+        setLeaderboards([])
       }
 
       setLoading(false)
@@ -544,6 +569,67 @@ export default function TournamentDetailPage() {
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>3rd Place</div>
                   </div>
                 )}
+              </div>
+            </Card>
+          )}
+
+          {/* Leaderboards (Standings) */}
+          {leaderboards && leaderboards.length > 0 && (
+            <Card className="p-6 flex flex-col gap-6">
+              <h3 className="dashboard-page-title mb-0" style={{ fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🏆 Tournament Standings</span>
+              </h3>
+              
+              <div className="flex flex-col gap-6">
+                {leaderboards.map((lb) => (
+                  <div key={lb.id} style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }} className="first:border-t-0 first:pt-0">
+                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '700', color: 'var(--color-primary)', marginBottom: '12px' }}>
+                      {lb.name}
+                    </h4>
+
+                    {lb.entries && lb.entries.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {lb.entries.map((entry) => (
+                          <div
+                            key={entry.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 16px',
+                              backgroundColor: 'var(--color-bg-input)',
+                              border: '1px solid var(--color-border)',
+                              borderRadius: 'var(--radius-md)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{
+                                fontWeight: '800',
+                                color: entry.position === 1 ? 'var(--color-warning)' : entry.position === 2 ? 'var(--color-text-secondary)' : entry.position === 3 ? '#cd7f32' : 'var(--color-text-muted)',
+                                fontSize: 'var(--text-sm)',
+                                width: '24px'
+                              }}>
+                                #{entry.position}
+                              </span>
+                              <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                                {entry.username}
+                              </span>
+                            </div>
+                            {entry.notes && (
+                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '600' }}>
+                                {entry.notes}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                        No standings entered for this leaderboard yet.
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </Card>
           )}

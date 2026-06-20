@@ -167,6 +167,21 @@ export default function DashboardLayout({ children }) {
         ) 
       }
     ] : []),
+    ...((selectedOrg.role === 'OWNER' || selectedOrg.role === 'ADMIN') ? [
+      { 
+        href: `/dashboard/org/${selectedOrg.id}/leaderboard`, 
+        label: 'Leaderboard', 
+        icon: (
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/>
+            <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"/>
+          </svg>
+        ) 
+      }
+    ] : []),
     { 
       href: `/dashboard/org/${selectedOrg.id}/tournaments`, 
       label: 'Tournaments', 
