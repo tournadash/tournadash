@@ -17,6 +17,22 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Missing ign parameter' }, { status: 400 })
   }
 
+  // 1. Check if player is an org member (always allowed)
+  const { data: orgMember } = await supabaseAdmin
+    .from('organization_members')
+    .select('id, minecraft_ign')
+    .eq('organization_id', tournament.organization_id)
+    .ilike('minecraft_ign', ign)
+    .maybeSingle()
+
+  if (orgMember) {
+    return NextResponse.json({
+      allowed: true,
+      reason: 'Organization member',
+      is_org_member: true,
+    })
+  }
+
   // Check tournament status
   if (tournament.status === 'SOON') {
     return NextResponse.json({
@@ -31,24 +47,6 @@ export async function GET(request) {
       allowed: false,
       reason: 'Tournament has ended.',
       status: 'ENDED',
-    })
-  }
-
-  // Tournament is ONGOING — check access
-
-  // 1. Check if player is an org member (always allowed)
-  const { data: orgMember } = await supabaseAdmin
-    .from('organization_members')
-    .select('id, minecraft_ign')
-    .eq('organization_id', tournament.organization_id)
-    .ilike('minecraft_ign', ign)
-    .maybeSingle()
-
-  if (orgMember) {
-    return NextResponse.json({
-      allowed: true,
-      reason: 'Organization member',
-      is_org_member: true,
     })
   }
 

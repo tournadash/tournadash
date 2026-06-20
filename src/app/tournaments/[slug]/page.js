@@ -813,10 +813,10 @@ export default function TournamentDetailPage() {
               variant={followed ? 'secondary' : 'primary'}
               size="sm"
               onClick={handleFollow}
-              disabled={!user}
+              disabled={!user || isMemberOfOrg}
               className="w-full flex items-center justify-center gap-1"
             >
-              {followed ? 'Following' : 'Follow'}
+              {isMemberOfOrg ? 'Member' : followed ? 'Following' : 'Follow'}
             </Button>
           </Card>
         </div>
