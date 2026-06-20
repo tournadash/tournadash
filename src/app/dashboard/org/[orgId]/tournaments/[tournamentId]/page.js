@@ -256,8 +256,8 @@ export default function TournamentManagePage() {
     loadData()
   }
 
-  const updateStreamUrl = async (url) => {
-    await supabase.from('tournaments').update({ stream_url: url }).eq('id', tournamentId)
+  const updateLiveTournamentUrl = async (url) => {
+    await supabase.from('tournaments').update({ live_tournament_url: url }).eq('id', tournamentId)
   }
 
   const updateHighlightsUrl = async (url) => {
@@ -825,16 +825,16 @@ export default function TournamentManagePage() {
         </div>
       </Card>
 
-      {/* Stream URL (show when ONGOING) */}
-      {tournament.status === 'ONGOING' && (
+      {/* Live Tournament URL (show when ONGOING or ENDED) */}
+      {(tournament.status === 'ONGOING' || tournament.status === 'ENDED') && (
         <Card className="p-6">
-          <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Live Stream URL</h4>
+          <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Live Tournament URL</h4>
           <Input
             type="url"
-            placeholder="https://youtube.com/live/..."
-            defaultValue={tournament.stream_url || ''}
-            onBlur={(e) => updateStreamUrl(e.target.value)}
-            helperText="YouTube Live stream URL — displayed on the public tournament page"
+            placeholder="https://youtube.com/live/... or https://twitch.tv/..."
+            defaultValue={tournament.live_tournament_url || ''}
+            onBlur={(e) => updateLiveTournamentUrl(e.target.value)}
+            helperText="YouTube Live or Twitch URL — displayed on the public tournament page"
           />
         </Card>
       )}

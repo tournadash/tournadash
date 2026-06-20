@@ -27,8 +27,8 @@ export default function NewTournamentPage() {
     slug: '',
     short_description: '',
     description: '',
-    rules: '',
     trailer_url: '',
+    live_tournament_url: '',
     registration_url: '',
     max_players: '',
     starts_at: '',
@@ -133,8 +133,8 @@ export default function NewTournamentPage() {
       slug: form.slug.trim() || generateSlug(form.name),
       short_description: form.short_description.trim() || null,
       description: form.description.trim() || null,
-      rules: form.rules.trim() || null,
       trailer_url: form.trailer_url.trim() || null,
+      live_tournament_url: form.live_tournament_url.trim() || null,
       registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
       max_players: form.max_players ? parseInt(form.max_players) : null,
       starts_at: form.starts_at || null,
@@ -354,6 +354,15 @@ export default function NewTournamentPage() {
             value={form.trailer_url} 
             onChange={(e) => updateForm('trailer_url', e.target.value)} 
             helperText="Displayed during the SOON phase"
+          />
+
+          <Input 
+            label="Live Tournament URL" 
+            type="url" 
+            placeholder="https://youtube.com/live/... or https://twitch.tv/..." 
+            value={form.live_tournament_url} 
+            onChange={(e) => updateForm('live_tournament_url', e.target.value)} 
+            helperText="Displayed during the ONGOING and ENDED phases"
           />
         </Card>
 

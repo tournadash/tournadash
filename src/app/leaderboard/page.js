@@ -20,14 +20,23 @@ export default function LeaderboardPage() {
     const load = async () => {
       const { data: orgData } = await supabase
         .from('organizations')
-        .select('*')
-        .order('follower_count', { ascending: false })
-        .limit(25)
-      setOrgs(orgData || [])
+        .select('*, tournaments(id, status)')
+        .eq('tournaments.status', 'ENDED')
+
+      const mappedOrgs = (orgData || [])
+        .map(org => ({
+          ...org,
+          ended_tournament_count: org.tournaments?.length || 0
+        }))
+        .filter(org => org.ended_tournament_count > 0)
+        .sort((a, b) => b.ended_tournament_count - a.ended_tournament_count)
+        .slice(0, 25)
+      setOrgs(mappedOrgs)
 
       const { data: tData } = await supabase
         .from('tournaments')
         .select('*, organizations(name, slug, avatar_url)')
+        .eq('status', 'ENDED')
         .order('like_count', { ascending: false })
         .limit(25)
       setTournaments(tData || [])
@@ -143,7 +152,7 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
                 <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
-                  {org.tournament_count || 0}
+                  {org.ended_tournament_count || 0}
                 </span>
                 <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
                   {org.follower_count || 0}

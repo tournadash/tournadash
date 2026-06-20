@@ -150,6 +150,114 @@ export default function ApiDocsPage() {
   "message": "Status updated successfully"
 }`}</pre>
               </div>
+
+              <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
+
+              {/* Endpoint 4 */}
+              <div>
+                <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                  <Badge variant="primary" style={{ fontFamily: 'var(--font-mono)' }}>POST</Badge>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/leaderboard</span>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
+                  Creates a new custom tournament leaderboard (standings board) or overwrites an existing one of the same name.
+                </p>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Request Body:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)',
+                  marginBottom: '8px'
+                }}>{`{
+  "name": "Round 1 Standings",
+  "is_public": true,
+  "entries": [
+    { "position": 1, "username": "Steve", "notes": "Winner - 15 Kills" },
+    { "position": 2, "username": "Alex", "notes": "10 Kills" }
+  ]
+}`}</pre>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)'
+                }}>{`{
+  "success": true,
+  "leaderboard_id": "c1387d89-9e8c-4a3b-821f-0e6d63bcde6b",
+  "name": "Round 1 Standings",
+  "is_public": true,
+  "entries_count": 2
+}`}</pre>
+              </div>
+
+              <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
+
+              {/* Endpoint 5 */}
+              <div>
+                <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                  <Badge variant="success" style={{ fontFamily: 'var(--font-mono)' }}>GET</Badge>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/leaderboard</span>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
+                  Retrieves all custom leaderboards and entries for the authorized tournament.
+                </p>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)'
+                }}>{`{
+  "tournament_id": "b139de67-1111-2222-3333-444455556666",
+  "leaderboards": [
+    {
+      "id": "c1387d89-9e8c-4a3b-821f-0e6d63bcde6b",
+      "name": "Round 1 Standings",
+      "is_public": true,
+      "entries": [
+        { "position": 1, "username": "Steve", "notes": "Winner - 15 Kills" }
+      ]
+    }
+  ]
+}`}</pre>
+              </div>
+
+              <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
+
+              {/* Endpoint 6 */}
+              <div>
+                <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                  <Badge variant="danger" style={{ fontFamily: 'var(--font-mono)' }}>DELETE</Badge>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/leaderboard?name=&lt;name&gt;</span>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
+                  Deletes a custom leaderboard and all its standings entries by name.
+                </p>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)'
+                }}>{`{
+  "success": true,
+  "message": "Leaderboard 'Round 1 Standings' deleted successfully"
+}`}</pre>
+              </div>
             </div>
           </Card>
         </div>

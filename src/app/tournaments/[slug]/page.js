@@ -536,10 +536,10 @@ export default function TournamentDetailPage() {
             </div>
           )}
 
-          {tournament.status === 'ONGOING' && tournament.stream_url && (
+          {(tournament.status === 'ONGOING' || tournament.status === 'ENDED') && (tournament.live_tournament_url || tournament.stream_url) && (
             <div>
-              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Live Stream</h3>
-              <YouTubeEmbed url={tournament.stream_url} />
+              <h3 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-lg)' }}>Live Tournament</h3>
+              <YouTubeEmbed url={tournament.live_tournament_url || tournament.stream_url} />
             </div>
           )}
 
@@ -808,7 +808,7 @@ export default function TournamentDetailPage() {
           )}
 
           {/* Registration Button for Non-registered */}
-          {!registration && (
+          {!registration && tournament.status !== 'ENDED' && (
             <div className="flex flex-col gap-2">
               {tournament.registration_type === 'external' ? (
                 tournament.registration_url ? (

@@ -50,6 +50,7 @@ export default function EditTournamentPage() {
           description: data.description || '',
           rules: data.rules || '',
           trailer_url: data.trailer_url || '',
+          live_tournament_url: data.live_tournament_url || '',
           registration_url: data.registration_url || '',
           max_players: data.max_players !== null ? String(data.max_players) : '',
           starts_at: data.starts_at ? data.starts_at.slice(0, 16) : '', // format for datetime-local
@@ -164,8 +165,8 @@ export default function EditTournamentPage() {
       slug: form.slug.trim(),
       short_description: form.short_description.trim() || null,
       description: form.description.trim() || null,
-      rules: form.rules.trim() || null,
       trailer_url: form.trailer_url.trim() || null,
+      live_tournament_url: form.live_tournament_url.trim() || null,
       registration_url: form.registration_type === 'external' ? (form.registration_url.trim() || null) : null,
       max_players: form.max_players ? parseInt(form.max_players) : null,
       starts_at: form.starts_at || null,
@@ -405,6 +406,15 @@ export default function EditTournamentPage() {
             value={form.trailer_url} 
             onChange={(e) => updateForm('trailer_url', e.target.value)} 
             helperText="Displayed during the SOON phase"
+          />
+
+          <Input 
+            label="Live Tournament URL" 
+            type="url" 
+            placeholder="https://youtube.com/live/... or https://twitch.tv/..." 
+            value={form.live_tournament_url} 
+            onChange={(e) => updateForm('live_tournament_url', e.target.value)} 
+            helperText="Displayed during the ONGOING and ENDED phases"
           />
         </Card>
 
