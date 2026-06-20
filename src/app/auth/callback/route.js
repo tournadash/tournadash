@@ -44,9 +44,11 @@ export async function GET(request) {
       const discordIdentity = user.identities?.find(id => id.provider === 'discord')
       let discordId = null
       let discordUsername = null
+      let discordAvatar = null
       if (discordIdentity) {
         discordId = discordIdentity.id || discordIdentity.identity_data?.provider_id || discordIdentity.identity_data?.sub
         discordUsername = discordIdentity.identity_data?.custom_claims?.username || discordIdentity.identity_data?.user_name || discordIdentity.identity_data?.name
+        discordAvatar = discordIdentity.identity_data?.avatar_url || discordIdentity.identity_data?.image_url || discordIdentity.identity_data?.picture
       }
 
       if (!publicUser) {
@@ -80,18 +82,24 @@ export async function GET(request) {
             id: user.id,
             display_name: fullName,
             username: uniqueUsername,
-            avatar_url: meta.avatar_url || meta.picture || null,
+            avatar_url: meta.avatar_url || meta.picture || discordAvatar || null,
             discord_id: discordId,
             social_discord: discordUsername || null
           })
       } else if (discordId) {
         // Update public.users table with discord_id / social_discord
+        // If they linked Discord and don't have an avatar set yet, use their Discord avatar!
+        const updatePayload = {
+          discord_id: discordId,
+          social_discord: discordUsername || null
+        }
+        if (!publicUser.avatar_url && discordAvatar) {
+          updatePayload.avatar_url = discordAvatar
+        }
+        
         await supabase
           .from('users')
-          .update({
-            discord_id: discordId,
-            social_discord: discordUsername || null
-          })
+          .update(updatePayload)
           .eq('id', user.id)
       }
 

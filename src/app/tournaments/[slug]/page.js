@@ -50,6 +50,7 @@ export default function TournamentDetailPage() {
   const [newComment, setNewComment] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
   const [followed, setFollowed] = useState(false)
+  const [isMemberOfOrg, setIsMemberOfOrg] = useState(false)
 
   // Sprint 5 Registration states
   const [registration, setRegistration] = useState(null)
@@ -137,6 +138,14 @@ export default function TournamentDetailPage() {
           .eq('user_id', u.id)
           .maybeSingle()
         setRegistration(reg)
+
+        const { data: memberCheck } = await supabase
+          .from('organization_members')
+          .select('id')
+          .eq('organization_id', t.organization_id)
+          .eq('user_id', u.id)
+          .maybeSingle()
+        setIsMemberOfOrg(!!memberCheck)
       }
 
       setLoading(false)
@@ -145,7 +154,7 @@ export default function TournamentDetailPage() {
   }, [slug])
 
   const handleReaction = async (type) => {
-    if (!user) return
+    if (!user || isMemberOfOrg) return
     const isActive = type === 'LIKE' ? liked : disliked
 
     if (isActive) {
@@ -550,7 +559,7 @@ export default function TournamentDetailPage() {
                 size="sm"
                 onClick={() => handleReaction('LIKE')}
                 style={{ flex: 1 }}
-                disabled={!user}
+                disabled={!user || isMemberOfOrg}
                 className="flex items-center justify-center gap-1"
               >
                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill={liked ? 'currentColor' : 'none'}>
@@ -564,7 +573,7 @@ export default function TournamentDetailPage() {
                   size="sm"
                   onClick={() => handleReaction('DISLIKE')}
                   style={{ flex: 1 }}
-                  disabled={!user}
+                  disabled={!user || isMemberOfOrg}
                   className="flex items-center justify-center gap-1"
                 >
                   <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill={disliked ? 'currentColor' : 'none'}>
@@ -575,6 +584,7 @@ export default function TournamentDetailPage() {
               )}
             </div>
             {!user && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>Sign in to react</p>}
+            {user && isMemberOfOrg && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>Org members cannot react</p>}
           </Card>
 
           {/* Registration */}

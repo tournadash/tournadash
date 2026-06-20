@@ -115,11 +115,7 @@ export default function UserPublicProfilePage() {
                 </Button>
               </a>
             )}
-            {profile.social_discord && (
-              <Button variant="secondary" size="sm" style={{ cursor: 'default' }}>
-                Discord: {profile.social_discord}
-              </Button>
-            )}
+
             {profile.social_twitch && (
               <a href={profile.social_twitch} target="_blank" rel="noopener noreferrer">
                 <Button variant="secondary" size="sm">

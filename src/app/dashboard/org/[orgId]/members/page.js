@@ -85,6 +85,12 @@ export default function MembersPage() {
       return
     }
 
+    if (foundUser.id === user.id) {
+      setAddError('You cannot invite yourself.')
+      setAddLoading(false)
+      return
+    }
+
     // Check if already a member
     const existing = members.find(m => m.user_id === foundUser.id)
     if (existing) {

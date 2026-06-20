@@ -146,9 +146,9 @@ export default function OrgPublicProfilePage() {
               variant={followed ? 'secondary' : 'primary'}
               size="sm"
               onClick={handleFollow}
-              disabled={!user}
+              disabled={!user || members.some(m => m.user_id === user.id)}
             >
-              {followed ? 'Following' : 'Follow'}
+              {members.some(m => m.user_id === user?.id) ? 'Member' : (followed ? 'Following' : 'Follow')}
             </Button>
           </div>
         </div>
