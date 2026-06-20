@@ -41,6 +41,7 @@ export default function NewTournamentPage() {
     max_registrations: '',
     discord_guild_id: '',
     discord_invite_url: '',
+    use_custom_discord: false,
     server_ip: '',
     ip_revealed: false,
     auto_select_count: '',
@@ -151,6 +152,7 @@ export default function NewTournamentPage() {
       max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
       discord_guild_id: form.discord_guild_id.trim() || null,
       discord_invite_url: form.discord_invite_url.trim() || null,
+      use_custom_discord: !!form.use_custom_discord,
       auto_select_count: form.auto_select_count ? parseInt(form.auto_select_count) : null,
       auto_fill: !!form.auto_fill,
       require_discord: !!form.require_discord,
@@ -165,7 +167,7 @@ export default function NewTournamentPage() {
       .select()
       .single()
 
-    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count') || insertError.message.includes('require_discord') || insertError.message.includes('require_follow') || insertError.message.includes('prizepool'))) {
+    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count') || insertError.message.includes('require_discord') || insertError.message.includes('require_follow') || insertError.message.includes('prizepool') || insertError.message.includes('use_custom_discord'))) {
       const fallbackPayload = { ...insertPayload }
       delete fallbackPayload.short_description
       delete fallbackPayload.auto_select_count
@@ -174,6 +176,7 @@ export default function NewTournamentPage() {
       delete fallbackPayload.require_follow
       delete fallbackPayload.ends_at
       delete fallbackPayload.prizepool
+      delete fallbackPayload.use_custom_discord
       const fallbackResult = await supabase
         .from('tournaments')
         .insert(fallbackPayload)
@@ -469,22 +472,65 @@ export default function NewTournamentPage() {
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px', marginTop: '8px' }}>
                   <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '600', marginBottom: '12px', color: 'var(--color-text)' }}>Discord Verification Bot Requirements</h4>
                   
-                  <div className="grid grid-cols-2 gap-6">
-                    <Input
-                      label="Discord Server Guild ID"
-                      placeholder="e.g. 1157466838383583817"
-                      value={form.discord_guild_id}
-                      onChange={(e) => updateForm('discord_guild_id', e.target.value.trim())}
-                      helperText="Required to verify server membership via Discord bot."
-                    />
-                    <Input
-                      label="Discord Invite URL"
-                      placeholder="https://discord.gg/your-server"
-                      value={form.discord_invite_url}
-                      onChange={(e) => updateForm('discord_invite_url', e.target.value.trim())}
-                      helperText="Invite link shown to players if they need to join your server."
-                    />
+                  <div className="mb-4">
+                    <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+                      Discord Server settings
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', flex: 1 }}>
+                        <input
+                          type="radio"
+                          name="discord_source"
+                          checked={!form.use_custom_discord}
+                          onChange={() => updateForm('use_custom_discord', false)}
+                          style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Default Organization Settings</span>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Inherit the Discord settings from organization settings.</span>
+                        </div>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', flex: 1 }}>
+                        <input
+                          type="radio"
+                          name="discord_source"
+                          checked={form.use_custom_discord}
+                          onChange={() => updateForm('use_custom_discord', true)}
+                          style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Use Custom Discord Server</span>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Configure a separate Discord server specifically for this event.</span>
+                        </div>
+                      </label>
+                    </div>
                   </div>
+
+                  {form.use_custom_discord ? (
+                    <div className="grid grid-cols-2 gap-6 mt-4">
+                      <Input
+                        label="Discord Server Guild ID"
+                        placeholder="e.g. 1157466838383583817"
+                        value={form.discord_guild_id}
+                        onChange={(e) => updateForm('discord_guild_id', e.target.value.trim())}
+                        helperText="Required to verify server membership via Discord bot."
+                      />
+                      <Input
+                        label="Discord Invite URL"
+                        placeholder="https://discord.gg/your-server"
+                        value={form.discord_invite_url}
+                        onChange={(e) => updateForm('discord_invite_url', e.target.value.trim())}
+                        helperText="Invite link shown to players if they need to join your server."
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', background: 'var(--color-bg-subtle)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '12px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ color: '#5865F2' }}>
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                      </svg>
+                      <span>Using organization default Discord server. Fill or modify it under <strong>Organization Settings</strong>.</span>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2 mt-4">
                     <label className="flex items-center gap-2 cursor-pointer p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content', marginBottom: 0 }}>
                       <input

@@ -69,6 +69,9 @@ export default function TournamentDetailPage() {
   const [activeTab, setActiveTab] = useState('about')
   const [activeLbId, setActiveLbId] = useState(null)
 
+  const effectiveGuildId = tournament?.use_custom_discord ? tournament.discord_guild_id : tournament?.organizations?.discord_guild_id
+  const effectiveInviteUrl = tournament?.use_custom_discord ? tournament.discord_invite_url : tournament?.organizations?.social_discord
+
   useEffect(() => {
     const load = async () => {
       const { data: { user: u } } = await supabase.auth.getUser()
@@ -76,7 +79,7 @@ export default function TournamentDetailPage() {
 
       const { data: t } = await supabase
         .from('tournaments')
-        .select('*, organizations(id, name, slug, avatar_url, bio, social_youtube, social_discord, follower_count)')
+        .select('*, organizations(id, name, slug, avatar_url, bio, social_youtube, social_discord, discord_guild_id, follower_count)')
         .eq('slug', slug)
         .single()
 
@@ -275,7 +278,7 @@ export default function TournamentDetailPage() {
     setDiscordVerifying(true)
     setDiscordError('')
     try {
-      const res = await fetch(`/api/discord/check-member?guild_id=${tournament.discord_guild_id}&discord_id=${discordIdToCheck}`)
+      const res = await fetch(`/api/discord/check-member?guild_id=${effectiveGuildId}&discord_id=${discordIdToCheck}`)
       if (!res.ok) throw new Error('API server returned error')
       const data = await res.json()
       if (data.isMember) {
@@ -296,7 +299,7 @@ export default function TournamentDetailPage() {
       await supabase.from('follows').insert({ organization_id: org.id, user_id: user.id })
       setFollowed(true)
     }
-    if (tournament.discord_guild_id && tournament.require_discord) {
+    if (effectiveGuildId && tournament.require_discord) {
       setRegStep(1)
       if (userProfile?.discord_id) {
         verifyDiscordMembership()
@@ -322,7 +325,7 @@ export default function TournamentDetailPage() {
 
     if (tournament.require_follow && !followed) {
       setRegStep('follow')
-    } else if (tournament.discord_guild_id && tournament.require_discord) {
+    } else if (effectiveGuildId && tournament.require_discord) {
       setRegStep(1)
       if (userProfile?.discord_id) {
         verifyDiscordMembership()
@@ -1086,8 +1089,8 @@ export default function TournamentDetailPage() {
                 ) : discordError ? (
                   <div className="flex flex-col gap-4 text-center">
                     <p style={{ color: 'var(--color-danger)', fontSize: 'var(--text-sm)' }}>{discordError}</p>
-                    {tournament.discord_invite_url && (
-                      <a href={tournament.discord_invite_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline flex items-center justify-center gap-2">
+                    {effectiveInviteUrl && (
+                      <a href={effectiveInviteUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline flex items-center justify-center gap-2">
                         Join Discord Server
                       </a>
                     )}

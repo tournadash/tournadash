@@ -195,6 +195,7 @@ export default function MembersPage() {
   const isAdmin = userRole === 'ADMIN'
   const canInvite = userRole === 'OWNER' || userRole === 'ADMIN'
   const canManage = userRole === 'OWNER' || userRole === 'MANAGER'
+  const canViewApplications = userRole === 'OWNER' || userRole === 'ADMIN' || userRole === 'MANAGER'
 
   const getRoleVariant = (role) => {
     switch (role) {
@@ -217,6 +218,11 @@ export default function MembersPage() {
           {userRole && userRole !== 'OWNER' && (
             <Button variant="danger" onClick={handleLeaveOrganization}>
               Leave Organization
+            </Button>
+          )}
+          {canViewApplications && (
+            <Button variant="outline" onClick={() => router.push(`/dashboard/org/${orgId}/applications`)} id="view-applications-btn">
+              Applications
             </Button>
           )}
           {canInvite && (

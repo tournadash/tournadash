@@ -99,6 +99,7 @@ export default function OrgSettingsPage() {
         social_youtube: org.social_youtube,
         social_discord: org.social_discord,
         social_twitch: org.social_twitch,
+        discord_guild_id: org.discord_guild_id?.trim() || null,
         custom_links: customLinks.filter(l => l.label && l.url),
         avatar_url: avatarUrl,
       })
@@ -295,6 +296,15 @@ export default function OrgSettingsPage() {
           >
             Invite Verification Bot
           </a>
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <Input
+              label="Discord Server Guild ID"
+              placeholder="e.g. 1157466838383583817"
+              value={org?.discord_guild_id || ''}
+              onChange={(e) => setOrg({ ...org, discord_guild_id: e.target.value })}
+              helperText="The default Discord Guild ID for your organization's tournaments."
+            />
+          </div>
         </Card>
 
 

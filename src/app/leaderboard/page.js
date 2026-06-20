@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
 
           {orgs.map((org, i) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
                 <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
@@ -186,7 +186,7 @@ export default function LeaderboardPage() {
 
           {tournaments.map((t, i) => (
             <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover flex items-center" style={{ padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
+              <div className="td-card td-card-interactive mb-2 gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
                 <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {getRankBadge(i)}
                 </span>
@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
                 <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
                   {t.player_count || 0}
                 </span>
-                <span className="flex items-center justify-center gap-1" style={{ width: '100px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)' }}>
+                <span style={{ width: '100px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                   ❤️ {t.like_count || 0}
                 </span>
               </div>
