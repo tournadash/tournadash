@@ -262,7 +262,7 @@ export default function TournamentDetailPage() {
     setRegError('')
     setDiscordError('')
 
-    if (tournament.discord_guild_id) {
+    if (tournament.discord_guild_id && tournament.require_discord) {
       setRegStep(1)
       if (userProfile?.discord_id) {
         verifyDiscordMembership()
@@ -450,6 +450,7 @@ export default function TournamentDetailPage() {
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
               {new Date(tournament.starts_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {tournament.ends_at && ` - ${new Date(tournament.ends_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
             </span>
           )}
         </div>
@@ -760,6 +761,12 @@ export default function TournamentDetailPage() {
                   <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>{new Date(tournament.starts_at).toLocaleDateString()}</span>
                 </div>
               )}
+              {tournament.ends_at && (
+                <div className="flex justify-between items-center">
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Ends</span>
+                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>{new Date(tournament.ends_at).toLocaleDateString()}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Created</span>
                 <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>{new Date(tournament.created_at).toLocaleDateString()}</span>
@@ -843,28 +850,55 @@ export default function TournamentDetailPage() {
             )}
           </div>
         ) : (
-          <form onSubmit={handleSubmitRegistration} className="flex flex-col gap-4">
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-              Complete your entry details below.
-            </p>
-            <Input
-              label="Minecraft In-Game Name (IGN)"
-              placeholder="e.g. Steve"
-              value={minecraftIgn}
-              onChange={(e) => setMinecraftIgn(e.target.value)}
-              required
-              helperText="Ensure this is exact, as it is used for whitelist access."
-            />
-            {regError && <p style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}>{regError}</p>}
-            <div className="flex justify-end gap-3 mt-4">
-              <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" loading={submittingReg}>
-                Complete Registration
-              </Button>
+          !userProfile?.minecraft_ign ? (
+            <div className="flex flex-col gap-4 text-center py-4">
+              <div style={{ color: 'var(--color-warning)', display: 'flex', justifyContent: 'center' }}>
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'bold', color: 'var(--color-text-white)' }}>
+                Minecraft IGN Required
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', maxWidth: '380px', margin: '0 auto' }}>
+                Please configure your Minecraft In-Game Name (IGN) in your profile settings before registering for this tournament.
+              </p>
+              <div className="flex flex-col gap-3 mt-4">
+                <Link href="/dashboard/profile" className="btn btn-primary w-full text-center">
+                  Configure Minecraft IGN
+                </Link>
+                <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmitRegistration} className="flex flex-col gap-4">
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                Confirm your entry details.
+              </p>
+              <div className="p-4" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>REGISTERING AS</div>
+                <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                  {userProfile.minecraft_ign}
+                </div>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
+                  If this is incorrect, please update it in your profile settings before registering.
+                </p>
+              </div>
+              {regError && <p style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}>{regError}</p>}
+              <div className="flex justify-end gap-3 mt-4">
+                <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" loading={submittingReg}>
+                  Confirm & Register
+                </Button>
+              </div>
+            </form>
+          )
         )}
       </Modal>
     </div>

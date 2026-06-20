@@ -45,6 +45,8 @@ export default function NewTournamentPage() {
     ip_revealed: false,
     auto_select_count: '',
     auto_fill: false,
+    require_discord: false,
+    ends_at: '',
   })
   
   const fileInputRef = useRef(null)
@@ -149,6 +151,8 @@ export default function NewTournamentPage() {
       discord_invite_url: form.discord_invite_url.trim() || null,
       auto_select_count: form.auto_select_count ? parseInt(form.auto_select_count) : null,
       auto_fill: !!form.auto_fill,
+      require_discord: !!form.require_discord,
+      ends_at: form.ends_at || null,
     }
 
     let { data, error: insertError } = await supabase
@@ -157,11 +161,13 @@ export default function NewTournamentPage() {
       .select()
       .single()
 
-    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count'))) {
+    if (insertError && (insertError.code === '42703' || insertError.message.includes('short_description') || insertError.message.includes('auto_select_count') || insertError.message.includes('require_discord'))) {
       const fallbackPayload = { ...insertPayload }
       delete fallbackPayload.short_description
       delete fallbackPayload.auto_select_count
       delete fallbackPayload.auto_fill
+      delete fallbackPayload.require_discord
+      delete fallbackPayload.ends_at
       const fallbackResult = await supabase
         .from('tournaments')
         .insert(fallbackPayload)
@@ -464,6 +470,18 @@ export default function NewTournamentPage() {
                       helperText="Invite link shown to players if they need to join your server."
                     />
                   </div>
+                  <label className="flex items-center gap-2 cursor-pointer mt-4 p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.require_discord}
+                      onChange={(e) => updateForm('require_discord', e.target.checked)}
+                      style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                    />
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Enforce Discord Membership Gating</span>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Only discord server members can register for the tournament.</span>
+                    </div>
+                  </label>
                 </div>
               </div>
             ) : (
@@ -492,7 +510,7 @@ export default function NewTournamentPage() {
             <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>Settings</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             <Input 
               label="Max Players" 
               type="number" 
@@ -506,6 +524,12 @@ export default function NewTournamentPage() {
               type="datetime-local" 
               value={form.starts_at} 
               onChange={(e) => updateForm('starts_at', e.target.value)} 
+            />
+            <Input 
+              label="Ends At (Optional)" 
+              type="datetime-local" 
+              value={form.ends_at} 
+              onChange={(e) => updateForm('ends_at', e.target.value)} 
             />
           </div>
 
