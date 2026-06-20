@@ -46,6 +46,7 @@ export default function TournamentManagePage() {
   const [newLbName, setNewLbName] = useState('')
   const [lbCreating, setLbCreating] = useState(false)
   const [entryInputs, setEntryInputs] = useState({})
+  const [userRole, setUserRole] = useState(null)
 
   const loadData = async () => {
     const { data: t } = await supabase
@@ -54,6 +55,17 @@ export default function TournamentManagePage() {
       .eq('id', tournamentId)
       .single()
     setTournament(t)
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: membership } = await supabase
+        .from('organization_members')
+        .select('role')
+        .eq('organization_id', orgId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      setUserRole(membership?.role)
+    }
 
     const { data: p } = await supabase
       .from('tournament_players')
@@ -752,23 +764,32 @@ export default function TournamentManagePage() {
         </Card>
 
         {/* Server Token */}
-        <Card className="p-6">
-          <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Server Token</h4>
-          <div className="flex gap-2">
-            <input
-              className="td-input-field"
-              value={tournament.server_token}
-              readOnly
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', flex: 1 }}
-            />
-            <Button variant="secondary" size="sm" onClick={copyToken}>
-              {tokenCopied ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)' }}>
-            Paste this into your plugin&apos;s <code style={{ color: 'var(--color-primary)' }}>config.yml</code>
-          </p>
-        </Card>
+        {userRole === 'OWNER' ? (
+          <Card className="p-6">
+            <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Tournament Secret Key</h4>
+            <div className="flex gap-2">
+              <input
+                className="td-input-field"
+                value={tournament.server_token}
+                readOnly
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', flex: 1 }}
+              />
+              <Button variant="secondary" size="sm" onClick={copyToken}>
+                {tokenCopied ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)' }}>
+              Paste this into your plugin&apos;s <code style={{ color: 'var(--color-primary)' }}>config.yml</code> as the <code style={{ color: 'var(--color-primary)' }}>server-token</code>.
+            </p>
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-muted)' }}>Tournament Secret Key</h4>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger)', margin: 0, fontWeight: '600' }}>
+              🔒 Visible only to the Organization Owner.
+            </p>
+          </Card>
+        )}
       </div>
 
       {/* Server IP Direct Control */}
