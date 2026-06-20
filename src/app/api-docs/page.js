@@ -120,7 +120,7 @@ export default function ApiDocsPage() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/status</span>
                 </div>
                 <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
-                  Updates server status details like player online counts or custom server states.
+                  Updates the tournament status or gates whitelist access settings.
                 </p>
                 <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Request Body:</div>
                 <pre style={{
@@ -133,8 +133,8 @@ export default function ApiDocsPage() {
                   fontFamily: 'var(--font-mono)',
                   marginBottom: '8px'
                 }}>{`{
-  "online_players": 14,
-  "server_state": "LOBBY"
+  "status": "ENDED", // Optional: 'SOON', 'ONGOING', 'ENDED'
+  "whitelist_enabled": true // Optional: boolean
 }`}</pre>
                 <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
                 <pre style={{
@@ -147,7 +147,9 @@ export default function ApiDocsPage() {
                   fontFamily: 'var(--font-mono)'
                 }}>{`{
   "success": true,
-  "message": "Status updated successfully"
+  "updated": {
+    "status": "ENDED"
+  }
 }`}</pre>
               </div>
 

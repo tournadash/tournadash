@@ -10,7 +10,7 @@ import { uploadThumbnail } from '@/lib/supabase/storage'
 
 function generateToken() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let token = 'whitelist_tok_'
+  let token = 'tournament_tok_'
   for (let i = 0; i < 32; i++) {
     token += chars.charAt(Math.floor(Math.random() * chars.length))
   }

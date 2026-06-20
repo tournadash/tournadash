@@ -13,7 +13,7 @@ async function validateToken(request) {
     return { error: 'Invalid token format', status: 401 }
   }
 
-  if (token.startsWith('whitelist_tok_')) {
+  if (token.startsWith('tournament_tok_')) {
     const { data: tournament, error } = await supabaseAdmin
       .from('tournaments')
       .select('*, organizations(id, name)')
