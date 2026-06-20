@@ -63,6 +63,7 @@ export default function TournamentDetailPage() {
   const [minecraftIgn, setMinecraftIgn] = useState('')
   const [submittingReg, setSubmittingReg] = useState(false)
   const [regError, setRegError] = useState('')
+  const [serverIpInfo, setServerIpInfo] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -138,6 +139,15 @@ export default function TournamentDetailPage() {
           .eq('user_id', u.id)
           .maybeSingle()
         setRegistration(reg)
+
+        if (reg?.status === 'SELECTED') {
+          const { data: ipData } = await supabase
+            .from('tournament_server_ips')
+            .select('*')
+            .eq('tournament_id', t.id)
+            .maybeSingle()
+          setServerIpInfo(ipData)
+        }
 
         const { data: memberCheck } = await supabase
           .from('organization_members')
@@ -287,6 +297,36 @@ export default function TournamentDetailPage() {
     setRegError('')
 
     try {
+      // 1. Check max native registrations limit
+      if (tournament.max_registrations) {
+        const { count: currentCount } = await supabase
+          .from('tournament_registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('tournament_id', tournament.id)
+
+        if (currentCount >= tournament.max_registrations) {
+          throw new Error('This tournament registration is full.')
+        }
+      }
+
+      // 2. Determine initial status based on auto-select rule
+      let initialStatus = 'REGISTERED'
+      let shouldWhitelist = false
+
+      if (tournament.auto_select_count) {
+        const { count: selectedCount } = await supabase
+          .from('tournament_registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('tournament_id', tournament.id)
+          .eq('status', 'SELECTED')
+
+        if ((selectedCount || 0) < tournament.auto_select_count) {
+          initialStatus = 'SELECTED'
+          shouldWhitelist = true
+        }
+      }
+
+      // 3. Insert registration record
       const { data, error } = await supabase
         .from('tournament_registrations')
         .insert({
@@ -294,11 +334,31 @@ export default function TournamentDetailPage() {
           user_id: user.id,
           minecraft_ign: minecraftIgn.trim(),
           discord_id: userProfile?.discord_id || null,
+          status: initialStatus
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // 4. If auto-selected, add to whitelist and load IP
+      if (shouldWhitelist) {
+        await supabase
+          .from('tournament_players')
+          .insert({
+            tournament_id: tournament.id,
+            minecraft_ign: minecraftIgn.trim(),
+            added_by: user.id,
+            added_via: 'web'
+          })
+
+        const { data: ipData } = await supabase
+          .from('tournament_server_ips')
+          .select('*')
+          .eq('tournament_id', tournament.id)
+          .maybeSingle()
+        setServerIpInfo(ipData)
+      }
 
       setRegistration(data)
       setRegistrationCount(c => c + 1)
@@ -587,8 +647,53 @@ export default function TournamentDetailPage() {
             {user && isMemberOfOrg && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>Org members cannot react</p>}
           </Card>
 
-          {/* Registration */}
-          {tournament.status === 'SOON' && (
+          {/* Registration Status & Access Widget */}
+          {registration && (
+            <div className="flex flex-col gap-2 mb-4">
+              <div className="p-4 flex flex-col gap-2" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '700', letterSpacing: '0.05em' }}>YOUR ENTRY STATUS</div>
+                <div style={{ fontSize: 'var(--text-base)', fontWeight: 'bold', color: 'var(--color-text-white)' }}>
+                  {registration.status === 'REGISTERED' ? 'Pending Review' : registration.status === 'SELECTED' ? 'Approved / Whitelisted' : 'Rejected'}
+                </div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Minecraft IGN: <strong>{registration.minecraft_ign}</strong></div>
+
+                {/* Server IP sharing block */}
+                {registration.status === 'SELECTED' && (
+                  <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', marginTop: '8px' }}>
+                    {tournament.status === 'ENDED' ? (
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>🔌 Server IP: Hidden (Tournament has ended)</div>
+                    ) : serverIpInfo?.ip_revealed && serverIpInfo?.server_ip ? (
+                      <div>
+                        <div className="td-input-label" style={{ marginBottom: '6px' }}>🎮 SERVER CONNECTION IP</div>
+                        <div className="flex gap-2">
+                          <input
+                            className="td-input-field"
+                            value={serverIpInfo.server_ip}
+                            readOnly
+                            style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', flex: 1, height: '32px' }}
+                          />
+                          <Button variant="secondary" size="sm" style={{ height: '32px', padding: '0 12px' }} onClick={() => {
+                            navigator.clipboard.writeText(serverIpInfo.server_ip)
+                            alert('IP copied to clipboard!')
+                          }}>Copy</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>⏳ Server IP: Will be revealed by organizers soon</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {tournament.status === 'SOON' && (
+                <Button variant="danger" size="sm" onClick={handleWithdrawRegistration} loading={submittingReg} className="w-full">
+                  Withdraw Registration
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Registration Button for Non-registered */}
+          {!registration && (
             <div className="flex flex-col gap-2">
               {tournament.registration_type === 'external' ? (
                 tournament.registration_url ? (
@@ -606,19 +711,6 @@ export default function TournamentDetailPage() {
                   <Link href={`/login?redirect=/tournaments/${slug}`} className="btn btn-primary btn-lg w-full flex items-center justify-center" style={{ textDecoration: 'none' }}>
                     Sign In to Register
                   </Link>
-                ) : registration ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="p-3 text-center" style={{ backgroundColor: 'var(--color-primary-subtle)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '600' }}>YOUR REGISTRATION STATUS</div>
-                      <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', color: 'var(--color-text)', marginTop: '2px' }}>
-                        {registration.status === 'REGISTERED' ? 'Pending Review' : registration.status === 'SELECTED' ? 'Whitelisted / Approved' : 'Rejected'}
-                      </div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: '4px' }}>IGN: {registration.minecraft_ign}</div>
-                    </div>
-                    <Button variant="danger" onClick={handleWithdrawRegistration} loading={submittingReg} className="w-full">
-                      Withdraw Registration
-                    </Button>
-                  </div>
                 ) : !tournament.registration_open ? (
                   <Button variant="secondary" size="lg" disabled className="w-full">
                     Registration Closed
@@ -627,9 +719,13 @@ export default function TournamentDetailPage() {
                   <Button variant="secondary" size="lg" disabled className="w-full">
                     Registration Full
                   </Button>
-                ) : (
+                ) : tournament.status === 'SOON' ? (
                   <Button variant="primary" size="lg" onClick={handleRegisterClick} className="w-full">
                     Register for Tournament
+                  </Button>
+                ) : (
+                  <Button variant="secondary" size="lg" disabled className="w-full">
+                    Registration Closed (Live)
                   </Button>
                 )
               )}

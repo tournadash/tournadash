@@ -29,6 +29,10 @@ export default function TournamentManagePage() {
   const [activeTab, setActiveTab] = useState('whitelist') // whitelist or registrations
   const [regSearch, setRegSearch] = useState('')
 
+  const [serverIp, setServerIp] = useState('')
+  const [ipRevealed, setIpRevealed] = useState(false)
+  const [updatingIp, setUpdatingIp] = useState(false)
+
   const loadData = async () => {
     const { data: t } = await supabase
       .from('tournaments')
@@ -51,6 +55,15 @@ export default function TournamentManagePage() {
       .eq('tournament_id', tournamentId)
       .order('registered_at', { ascending: false })
     setRegistrations(regs || [])
+
+    // Fetch server IP
+    const { data: ipData } = await supabase
+      .from('tournament_server_ips')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .maybeSingle()
+    setServerIp(ipData?.server_ip || '')
+    setIpRevealed(!!ipData?.ip_revealed)
 
     setLoading(false)
   }
@@ -89,6 +102,55 @@ export default function TournamentManagePage() {
     navigator.clipboard.writeText(tournament.server_token)
     setTokenCopied(true)
     setTimeout(() => setTokenCopied(false), 2000)
+  }
+
+  const runAutoFillPromotion = async (tObj = tournament) => {
+    if (!tObj || !tObj.auto_fill || !tObj.auto_select_count) return
+
+    // Count current SELECTED
+    const { count: selectedCount } = await supabase
+      .from('tournament_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('tournament_id', tournamentId)
+      .eq('status', 'SELECTED')
+
+    const needed = tObj.auto_select_count - (selectedCount || 0)
+    if (needed <= 0) return
+
+    // Fetch the next oldest pending registrations
+    const { data: nextRegs } = await supabase
+      .from('tournament_registrations')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .eq('status', 'REGISTERED')
+      .order('registered_at', { ascending: true })
+      .limit(needed)
+
+    if (nextRegs && nextRegs.length > 0) {
+      const { data: { user } } = await supabase.auth.getUser()
+      for (const reg of nextRegs) {
+        await supabase
+          .from('tournament_registrations')
+          .update({ status: 'SELECTED' })
+          .eq('id', reg.id)
+
+        await supabase
+          .from('tournament_players')
+          .insert({
+            tournament_id: tournamentId,
+            minecraft_ign: reg.minecraft_ign,
+            added_by: user?.id,
+            added_via: 'web'
+          })
+      }
+      // Reload states
+      const { data: t } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+      setTournament(t)
+      const { data: p } = await supabase.from('tournament_players').select('*').eq('tournament_id', tournamentId).order('created_at', { ascending: false })
+      setPlayers(p || [])
+      const { data: regs } = await supabase.from('tournament_registrations').select('*, users(display_name, username, avatar_url)').eq('tournament_id', tournamentId).order('registered_at', { ascending: false })
+      setRegistrations(regs || [])
+    }
   }
 
   const changeStatus = async (newStatus) => {
@@ -141,7 +203,14 @@ export default function TournamentManagePage() {
   const removePlayer = async (playerId, ign) => {
     if (!confirm(`Remove ${ign} from the whitelist?`)) return
     await supabase.from('tournament_players').delete().eq('id', playerId)
-    loadData()
+    await supabase
+      .from('tournament_registrations')
+      .update({ status: 'REGISTERED' })
+      .eq('tournament_id', tournamentId)
+      .ilike('minecraft_ign', ign)
+
+    const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+    await runAutoFillPromotion(currentT)
   }
 
   const toggleBan = async (playerId, currentBan) => {
@@ -243,7 +312,9 @@ export default function TournamentManagePage() {
 
     setSuccess(`Rejected registration for ${reg.minecraft_ign}.`)
     setTimeout(() => setSuccess(''), 3000)
-    loadData()
+
+    const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+    await runAutoFillPromotion(currentT)
   }
 
   const handleResetRegistration = async (reg) => {
@@ -263,7 +334,8 @@ export default function TournamentManagePage() {
       .eq('tournament_id', tournamentId)
       .eq('minecraft_ign', reg.minecraft_ign)
 
-    loadData()
+    const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+    await runAutoFillPromotion(currentT)
   }
 
   const handleBulkApprove = async () => {
@@ -478,6 +550,60 @@ export default function TournamentManagePage() {
           </p>
         </Card>
       </div>
+
+      {/* Server IP Direct Control */}
+      <Card className="p-6">
+        <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Minecraft Server Connection</h4>
+        <div className="flex gap-4 items-center">
+          <div style={{ flex: 1 }}>
+            <label className="td-input-label">Minecraft Server IP</label>
+            <input
+              className="td-input-field"
+              value={serverIp}
+              placeholder="e.g. play.mydomain.com (leave blank to clear)"
+              onChange={(e) => setServerIp(e.target.value)}
+              style={{ fontSize: 'var(--text-sm)' }}
+            />
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer" style={{ marginTop: '22px' }}>
+            <input
+              type="checkbox"
+              checked={ipRevealed}
+              onChange={(e) => setIpRevealed(e.target.checked)}
+              style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+            />
+            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>Reveal IP to Whitelisted Participants</span>
+          </label>
+          <Button
+            variant="primary"
+            size="sm"
+            style={{ marginTop: '22px' }}
+            loading={updatingIp}
+            onClick={async () => {
+              setUpdatingIp(true)
+              if (serverIp.trim()) {
+                await supabase
+                  .from('tournament_server_ips')
+                  .upsert({
+                    tournament_id: tournamentId,
+                    server_ip: serverIp.trim(),
+                    ip_revealed: ipRevealed
+                  })
+              } else {
+                await supabase
+                  .from('tournament_server_ips')
+                  .delete()
+                  .eq('tournament_id', tournamentId)
+              }
+              setSuccess('Server IP settings updated!')
+              setTimeout(() => setSuccess(''), 2000)
+              setUpdatingIp(false)
+            }}
+          >
+            Save Connection Settings
+          </Button>
+        </div>
+      </Card>
 
       {/* Stream URL (show when ONGOING) */}
       {tournament.status === 'ONGOING' && (

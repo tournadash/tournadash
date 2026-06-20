@@ -36,6 +36,13 @@ export default function EditTournamentPage() {
       if (error) {
         setError(`Failed to load tournament: ${error.message}`)
       } else if (data) {
+        // Fetch server IP
+        const { data: ipData } = await supabase
+          .from('tournament_server_ips')
+          .select('*')
+          .eq('tournament_id', tournamentId)
+          .maybeSingle()
+
         setForm({
           name: data.name || '',
           slug: data.slug || '',
@@ -55,6 +62,10 @@ export default function EditTournamentPage() {
           max_registrations: data.max_registrations !== null ? String(data.max_registrations) : '',
           discord_guild_id: data.discord_guild_id || '',
           discord_invite_url: data.discord_invite_url || '',
+          server_ip: ipData?.server_ip || '',
+          ip_revealed: !!ipData?.ip_revealed,
+          auto_select_count: data.auto_select_count !== null ? String(data.auto_select_count) : '',
+          auto_fill: !!data.auto_fill,
         })
         setThumbnailPreview(data.banner_url || null)
       }
@@ -163,6 +174,8 @@ export default function EditTournamentPage() {
       max_registrations: form.max_registrations ? parseInt(form.max_registrations) : null,
       discord_guild_id: form.discord_guild_id.trim() || null,
       discord_invite_url: form.discord_invite_url.trim() || null,
+      auto_select_count: form.auto_select_count ? parseInt(form.auto_select_count) : null,
+      auto_fill: !!form.auto_fill,
       banner_url: bannerUrl,
     }
 
@@ -171,9 +184,11 @@ export default function EditTournamentPage() {
       .update(updatePayload)
       .eq('id', tournamentId)
 
-    if (updateError && (updateError.message.includes('short_description') || updateError.code === '42703')) {
+    if (updateError && (updateError.code === '42703' || updateError.message.includes('short_description') || updateError.message.includes('auto_select_count'))) {
       const fallbackPayload = { ...updatePayload }
       delete fallbackPayload.short_description
+      delete fallbackPayload.auto_select_count
+      delete fallbackPayload.auto_fill
       const fallbackResult = await supabase
         .from('tournaments')
         .update(fallbackPayload)
@@ -182,13 +197,25 @@ export default function EditTournamentPage() {
     }
 
     if (updateError) {
-      if (updateError.message.includes('duplicate')) {
-        setError('A tournament with this slug already exists in this organization.')
-      } else {
-        setError(updateError.message)
-      }
+      setError(updateError.message)
       setSaving(false)
       return
+    }
+
+    // Upsert server IP if provided
+    if (form.server_ip && form.server_ip.trim()) {
+      await supabase
+        .from('tournament_server_ips')
+        .upsert({
+          tournament_id: tournamentId,
+          server_ip: form.server_ip.trim(),
+          ip_revealed: !!form.ip_revealed
+        })
+    } else {
+      await supabase
+        .from('tournament_server_ips')
+        .delete()
+        .eq('tournament_id', tournamentId)
     }
 
     setSuccess('Tournament details updated successfully.')
@@ -442,7 +469,30 @@ export default function EditTournamentPage() {
                     onChange={(e) => updateForm('max_registrations', e.target.value)}
                     helperText="Limit total player registrations on-site"
                   />
+                  <Input
+                    label="Auto-Select Whitelist Limit"
+                    type="number"
+                    placeholder="Manual Approval"
+                    value={form.auto_select_count}
+                    onChange={(e) => updateForm('auto_select_count', e.target.value)}
+                    helperText="Auto-approve first N registrations on signup"
+                  />
                 </div>
+
+                {form.auto_select_count && parseInt(form.auto_select_count) > 0 && (
+                  <label className="flex items-center justify-between p-3 mt-2" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', cursor: 'pointer' }}>
+                    <div>
+                      <div style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>Auto-Replace slots on slot removal</div>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: '2px' }}>If an approved player is removed, automatically approve the next registrant in line</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={form.auto_fill}
+                      onChange={(e) => updateForm('auto_fill', e.target.checked)}
+                      style={{ width: '44px', height: '24px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                    />
+                  </label>
+                )}
 
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px', marginTop: '8px' }}>
                   <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: '600', marginBottom: '12px', color: 'var(--color-text)' }}>Discord Verification Bot Requirements</h4>
@@ -478,6 +528,40 @@ export default function EditTournamentPage() {
                 />
               </div>
             )}
+          </div>
+        </Card>
+
+        {/* Server IP Settings */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <rect x="2" y="2" width="20" height="14" rx="2.18" ry="2.18"/>
+              <line x1="12" y1="20" x2="12" y2="16"/>
+              <line x1="8" y1="20" x2="16" y2="20"/>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>Server Connection Settings</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <Input 
+              label="Minecraft Server IP" 
+              placeholder="e.g., play.mydomain.com" 
+              value={form.server_ip} 
+              onChange={(e) => updateForm('server_ip', e.target.value)} 
+              helperText="The server address participants will use to connect"
+            />
+            <label className="flex items-center justify-between p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', height: 'fit-content', marginTop: '24px' }}>
+              <div>
+                <div style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>Reveal IP to Participants</div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>Show the IP to approved participants once selected</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.ip_revealed}
+                onChange={(e) => updateForm('ip_revealed', e.target.checked)}
+                style={{ width: '44px', height: '24px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+              />
+            </label>
           </div>
         </Card>
 

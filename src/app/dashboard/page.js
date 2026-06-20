@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [orgs, setOrgs] = useState([])
+  const [joinedTournaments, setJoinedTournaments] = useState([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -96,6 +97,47 @@ export default function DashboardPage() {
           setOrgs(memberships.map(m => ({
             ...m.organizations,
             role: m.role,
+          })))
+        }
+
+        // Get joined tournaments
+        const { data: regList } = await supabase
+          .from('tournament_registrations')
+          .select(`
+            id,
+            minecraft_ign,
+            status,
+            registered_at,
+            tournaments (
+              id, name, slug, status,
+              organizations ( name )
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('registered_at', { ascending: false })
+
+        if (regList && regList.length > 0) {
+          const selectedTids = regList
+            .filter(r => r.status === 'SELECTED' && r.tournaments)
+            .map(r => r.tournaments.id)
+
+          let ipMap = {}
+          if (selectedTids.length > 0) {
+            const { data: ipData } = await supabase
+              .from('tournament_server_ips')
+              .select('*')
+              .in('tournament_id', selectedTids)
+
+            if (ipData) {
+              ipData.forEach(ip => {
+                ipMap[ip.tournament_id] = ip
+              })
+            }
+          }
+
+          setJoinedTournaments(regList.map(r => ({
+            ...r,
+            serverIpInfo: ipMap[r.tournaments?.id] || null
           })))
         }
       }
@@ -277,6 +319,89 @@ export default function DashboardPage() {
           </Link>
         </Card>
       )}
+      {/* Joined Tournaments */}
+      <div className="flex flex-col gap-3" style={{ marginTop: 'var(--space-4)' }}>
+        <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-lg)' }}>
+          🎮 Tournaments Joined ({joinedTournaments.length})
+        </h3>
+        {joinedTournaments.length > 0 ? (
+          <div className="dashboard-grid">
+            {joinedTournaments.map((reg) => {
+              const t = reg.tournaments
+              if (!t) return null
+              const isSelected = reg.status === 'SELECTED'
+              const revealIp = reg.serverIpInfo?.ip_revealed && reg.serverIpInfo?.server_ip
+              const isEnded = t.status === 'ENDED'
+
+              return (
+                <Card key={reg.id} className="p-6">
+                  <div className="flex justify-between items-start gap-4 mb-3">
+                    <div>
+                      <Link href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
+                        <div className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-1)', color: 'var(--color-primary)' }}>
+                          {t.name}
+                        </div>
+                      </Link>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                        Organized by {t.organizations?.name || 'Unknown'}
+                      </div>
+                    </div>
+                    <Badge variant={t.status === 'ONGOING' ? 'success' : t.status === 'SOON' ? 'primary' : 'neutral'}>
+                      {t.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-col gap-3" style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', marginTop: '12px' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Minecraft IGN:</span>
+                      <span style={{ fontWeight: '600', color: 'var(--color-text-white)' }}>{reg.minecraft_ign}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Your Status:</span>
+                      <Badge variant={isSelected ? 'success' : reg.status === 'REJECTED' ? 'danger' : 'primary'}>
+                        {reg.status === 'SELECTED' ? 'Approved / Whitelisted' : reg.status === 'REJECTED' ? 'Rejected' : 'Pending Review'}
+                      </Badge>
+                    </div>
+
+                    {/* Server IP sharing block */}
+                    {isSelected && (
+                      <div style={{ borderTop: '1px dotted var(--color-border)', paddingTop: '12px', marginTop: '4px' }}>
+                        {isEnded ? (
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>🔌 Server IP: Hidden (Tournament has ended)</div>
+                        ) : revealIp ? (
+                          <div>
+                            <div className="td-input-label" style={{ fontSize: '11px', color: 'var(--color-primary)' }}>SERVER CONNECTION IP</div>
+                            <div className="flex gap-2 mt-1">
+                              <input
+                                className="td-input-field"
+                                value={reg.serverIpInfo.server_ip}
+                                readOnly
+                                style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', flex: 1, height: '28px', padding: '0 8px' }}
+                              />
+                              <Button variant="secondary" size="sm" style={{ height: '28px', padding: '0 10px', fontSize: 'var(--text-xs)' }} onClick={() => {
+                                navigator.clipboard.writeText(reg.serverIpInfo.server_ip)
+                                alert('IP copied to clipboard!')
+                              }}>Copy</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>⏳ Server IP: Will be revealed soon</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <Card className="p-6 text-center" style={{ backgroundColor: 'var(--color-bg-alt)' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+              You haven&apos;t joined any tournaments yet. Browse the <Link href="/tournaments" style={{ color: 'var(--color-primary)' }}>Tournaments page</Link> to sign up!
+            </p>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }
