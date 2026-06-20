@@ -146,6 +146,23 @@ export default function DashboardPage() {
     loadData()
   }, [])
 
+  const handleCancelRegistration = async (regId, tournamentId, tournamentName) => {
+    if (!window.confirm(`Are you sure you want to cancel your registration for "${tournamentName}"?`)) return
+    
+    try {
+      const { error } = await supabase
+        .from('tournament_registrations')
+        .delete()
+        .eq('id', regId)
+
+      if (error) throw error
+
+      setJoinedTournaments(prev => prev.filter(r => r.id !== regId))
+    } catch (err) {
+      alert(`Failed to cancel registration: ${err.message}`)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col gap-6">
@@ -389,11 +406,25 @@ export default function DashboardPage() {
                         )}
                       </div>
                     )}
+
+                    {t.status === 'SOON' && (
+                      <div style={{ borderTop: '1px dotted var(--color-border)', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          style={{ fontSize: 'var(--text-xs)', height: '28px', padding: '0 10px' }}
+                          onClick={() => handleCancelRegistration(reg.id, t.id, t.name)}
+                        >
+                          Cancel Registration
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               )
             })}
           </div>
+
         ) : (
           <Card className="p-6 text-center" style={{ backgroundColor: 'var(--color-bg-alt)' }}>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
