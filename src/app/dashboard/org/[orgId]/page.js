@@ -110,6 +110,7 @@ export default function OrgDashboardPage() {
   const getRoleVariant = (role) => {
     switch (role) {
       case 'OWNER': return 'primary'
+      case 'ADMIN': return 'success'
       case 'MANAGER': return 'warning'
       case 'STAFF': return 'info'
       default: return 'neutral'
@@ -178,7 +179,7 @@ export default function OrgDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      {(userRole === 'OWNER' || userRole === 'MANAGER') && (
+      {(userRole === 'OWNER' || userRole === 'ADMIN' || userRole === 'MANAGER') && (
         <div className="flex flex-col gap-3">
           <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-lg)' }}>Quick Actions</h3>
           <div className="quick-actions">

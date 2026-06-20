@@ -152,7 +152,7 @@ export default function DashboardLayout({ children }) {
         </svg>
       ) 
     },
-    ...((selectedOrg.role === 'OWNER' || selectedOrg.role === 'MANAGER') ? [
+    ...((selectedOrg.role === 'OWNER' || selectedOrg.role === 'ADMIN' || selectedOrg.role === 'MANAGER') ? [
       { 
         href: `/dashboard/org/${selectedOrg.id}/applications`, 
         label: 'Applications', 

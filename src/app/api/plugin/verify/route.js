@@ -9,10 +9,23 @@ export async function POST(request) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
+  if (result.tokenType === 'organization') {
+    const { organization } = result
+    return NextResponse.json({
+      valid: true,
+      tokenType: 'organization',
+      organization: {
+        id: organization.id,
+        name: organization.name,
+      },
+    })
+  }
+
   const { tournament } = result
 
   return NextResponse.json({
     valid: true,
+    tokenType: 'tournament',
     tournament: {
       id: tournament.id,
       name: tournament.name,

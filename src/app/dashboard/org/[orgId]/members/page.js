@@ -17,6 +17,7 @@ export default function MembersPage() {
   const [invites, setInvites] = useState([])
   const [userRole, setUserRole] = useState(null)
   const [myMemberId, setMyMemberId] = useState(null)
+  const [currentUserId, setCurrentUserId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addUsername, setAddUsername] = useState('')
@@ -52,6 +53,7 @@ export default function MembersPage() {
     setInvites(invitesData || [])
 
     if (user) {
+      setCurrentUserId(user.id)
       const myMembership = membersData?.find(m => m.user_id === user.id)
       setUserRole(myMembership?.role)
       setMyMemberId(myMembership?.id || null)
@@ -190,11 +192,14 @@ export default function MembersPage() {
   }
 
   const isOwner = userRole === 'OWNER'
+  const isAdmin = userRole === 'ADMIN'
+  const canInvite = userRole === 'OWNER' || userRole === 'ADMIN'
   const canManage = userRole === 'OWNER' || userRole === 'MANAGER'
 
   const getRoleVariant = (role) => {
     switch (role) {
       case 'OWNER': return 'primary'
+      case 'ADMIN': return 'success'
       case 'MANAGER': return 'warning'
       case 'STAFF': return 'info'
       default: return 'neutral'
@@ -214,7 +219,7 @@ export default function MembersPage() {
               Leave Organization
             </Button>
           )}
-          {canManage && (
+          {canInvite && (
             <Button onClick={() => setShowAddModal(true)} id="add-member-btn">
               + Invite Member
             </Button>
@@ -227,6 +232,9 @@ export default function MembersPage() {
         <div className="flex gap-6 flex-wrap items-center">
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
             <Badge variant="primary">Owner</Badge> Full control
+          </div>
+          <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+            <Badge variant="success">Admin</Badge> Manage members &amp; permissions
           </div>
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
             <Badge variant="warning">Manager</Badge> Manage events &amp; whitelist
@@ -265,7 +273,7 @@ export default function MembersPage() {
                 </div>
               </div>
 
-              {isOwner && member.role !== 'OWNER' && (
+              {(isOwner || isAdmin) && member.role !== 'OWNER' && member.user_id !== currentUserId && (
                 <div className="flex items-center gap-3">
                   <select
                     className="td-input-field"
@@ -273,6 +281,7 @@ export default function MembersPage() {
                     value={member.role}
                     onChange={(e) => handleRoleChange(member.id, e.target.value)}
                   >
+                    <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
                     <option value="STAFF">Staff</option>
                   </select>
@@ -324,7 +333,7 @@ export default function MembersPage() {
                     </div>
                   </div>
 
-                  {canManage && (
+                  {canInvite && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -375,7 +384,8 @@ export default function MembersPage() {
               value={addRole}
               onChange={(e) => setAddRole(e.target.value)}
             >
-              {isOwner && <option value="MANAGER">Manager</option>}
+              <option value="ADMIN">Admin</option>
+              <option value="MANAGER">Manager</option>
               <option value="STAFF">Staff</option>
             </select>
           </div>

@@ -42,7 +42,7 @@ export default function OrgApplicationsPage() {
       
       setUserRole(membership?.role)
 
-      if (membership?.role !== 'OWNER' && membership?.role !== 'MANAGER') {
+      if (membership?.role !== 'OWNER' && membership?.role !== 'ADMIN' && membership?.role !== 'MANAGER') {
         setLoading(false)
         return
       }
@@ -150,13 +150,13 @@ export default function OrgApplicationsPage() {
     )
   }
 
-  if (userRole !== 'OWNER' && userRole !== 'MANAGER') {
+  if (userRole !== 'OWNER' && userRole !== 'ADMIN' && userRole !== 'MANAGER') {
     return (
       <Card className="p-8 text-center flex flex-col items-center justify-center gap-4">
         <span style={{ fontSize: '3rem' }}>🔒</span>
         <h2 className="dashboard-page-title" style={{ fontSize: 'var(--text-lg)', marginBottom: 0 }}>Access Denied</h2>
         <p style={{ color: 'var(--color-text-secondary)', maxWidth: '360px' }}>
-          Only organization Owners and Managers are permitted to review team applications.
+          Only organization Owners, Admins, and Managers are permitted to review team applications.
         </p>
         <Button onClick={() => router.push(`/dashboard/org/${orgId}`)}>Back to Org Dashboard</Button>
       </Card>
@@ -311,7 +311,8 @@ export default function OrgApplicationsPage() {
                 value={assignedRole}
                 onChange={(e) => setAssignedRole(e.target.value)}
               >
-                {userRole === 'OWNER' && <option value="MANAGER">Manager (Can manage events & whitelist)</option>}
+                {(userRole === 'OWNER' || userRole === 'ADMIN') && <option value="ADMIN">Admin (Manage members & permissions)</option>}
+                {(userRole === 'OWNER' || userRole === 'ADMIN') && <option value="MANAGER">Manager (Can manage events & whitelist)</option>}
                 <option value="STAFF">Staff (Can view data & log results)</option>
               </select>
             </div>

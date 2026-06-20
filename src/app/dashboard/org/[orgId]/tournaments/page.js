@@ -69,7 +69,7 @@ export default function OrgTournamentsPage() {
             <h1 className="dashboard-page-title">Organization Tournaments</h1>
             <p className="dashboard-page-subtitle">Manage, edit, and configure all tournaments hosted by this organization.</p>
           </div>
-          {(userRole === 'OWNER' || userRole === 'MANAGER') && (
+          {(userRole === 'OWNER' || userRole === 'ADMIN' || userRole === 'MANAGER') && (
             <Link href={`/dashboard/org/${orgId}/tournaments/new`} className="btn btn-primary">
               + Create Tournament
             </Link>
@@ -130,7 +130,7 @@ export default function OrgTournamentsPage() {
           <p style={{ color: 'var(--color-text-secondary)', maxWidth: '360px', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
             {searchQuery ? 'Try adjusting your search query.' : 'Create your first tournament to get started.'}
           </p>
-          {!searchQuery && (userRole === 'OWNER' || userRole === 'MANAGER') && (
+          {!searchQuery && (userRole === 'OWNER' || userRole === 'ADMIN' || userRole === 'MANAGER') && (
             <Link href={`/dashboard/org/${orgId}/tournaments/new`} className="btn btn-primary">
               + Create Tournament
             </Link>
