@@ -212,6 +212,17 @@ export default function Navbar() {
                       </svg>
                       My Organizations
                     </Link>
+                    <Link
+                      href="/dashboard/tournaments"
+                      className="navbar-user-dropdown-item"
+                      onClick={() => setDropdownOpen(false)}
+                      id="dropdown-my-tournaments"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      My Tournaments
+                    </Link>
                     <div className="navbar-user-dropdown-divider" />
                     <button
                       className="navbar-user-dropdown-item navbar-user-dropdown-item-danger"
@@ -293,6 +304,12 @@ export default function Navbar() {
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               My Profile
+            </Link>
+            <Link href="/dashboard/tournaments" className="navbar-mobile-link">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 'var(--space-2)' }}>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              My Tournaments
             </Link>
             <button
               className="navbar-mobile-link"

@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import Modal from '@/components/ui/Modal'
 
 export default function TournamentManagePage() {
   const { orgId, tournamentId } = useParams()
@@ -32,6 +33,13 @@ export default function TournamentManagePage() {
   const [serverIp, setServerIp] = useState('')
   const [ipRevealed, setIpRevealed] = useState(false)
   const [updatingIp, setUpdatingIp] = useState(false)
+
+  // Whitelist Import States
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importLimitOption, setImportLimitOption] = useState('all')
+  const [importLimitValue, setImportLimitValue] = useState('')
+  const [importLoading, setImportLoading] = useState(false)
 
   const loadData = async () => {
     const { data: t } = await supabase
@@ -315,6 +323,79 @@ export default function TournamentManagePage() {
 
     const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
     await runAutoFillPromotion(currentT)
+  }
+
+  const parseMinecraftNames = (text) => {
+    if (!text) return []
+    const regex = /[a-zA-Z0-9_]{3,16}/g
+    const matches = text.match(regex) || []
+    const names = []
+    const seen = new Set()
+    for (const match of matches) {
+      if (!/^\d+$/.test(match)) {
+        const lower = match.toLowerCase()
+        if (!seen.has(lower)) {
+          names.push(match)
+          seen.add(lower)
+        }
+      }
+    }
+    return names
+  }
+
+  const handleImportWhitelist = async (e) => {
+    e.preventDefault()
+    const parsedNames = parseMinecraftNames(importText)
+    if (parsedNames.length === 0) {
+      alert('No valid player names found in the text.')
+      return
+    }
+
+    setImportLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const existingWhitelistedSet = new Set(players.map(p => p.minecraft_ign.toLowerCase()))
+      let namesToWhitelist = parsedNames.filter(name => !existingWhitelistedSet.has(name.toLowerCase()))
+
+      if (importLimitOption === 'limit') {
+        const limit = parseInt(importLimitValue)
+        if (!isNaN(limit) && limit > 0) {
+          namesToWhitelist = namesToWhitelist.slice(0, limit)
+        }
+      }
+
+      if (namesToWhitelist.length === 0) {
+        alert('All parsed players are already whitelisted.')
+        setImportLoading(false)
+        return
+      }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      const insertRows = namesToWhitelist.map(ign => ({
+        tournament_id: tournamentId,
+        minecraft_ign: ign,
+        added_by: user?.id,
+        added_via: 'web'
+      }))
+
+      const { error: insertError } = await supabase
+        .from('tournament_players')
+        .insert(insertRows)
+
+      if (insertError) throw insertError
+
+      setSuccess(`Successfully whitelisted ${namesToWhitelist.length} players.`)
+      setTimeout(() => setSuccess(''), 3000)
+      setImportModalOpen(false)
+      setImportText('')
+      loadData()
+    } catch (err) {
+      setError(`Failed to import players: ${err.message}`)
+    } finally {
+      setImportLoading(false)
+    }
   }
 
   const handleResetRegistration = async (reg) => {
@@ -697,18 +778,23 @@ export default function TournamentManagePage() {
           </div>
 
           {/* Add Player */}
-          <form onSubmit={addPlayer} className="flex gap-2">
-            <input
-              className="td-input-field"
-              placeholder="Enter Minecraft IGN..."
-              value={newPlayerIgn}
-              onChange={(e) => setNewPlayerIgn(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <Button type="submit" size="sm" loading={addPlayerLoading}>
-              Add Player
+          <div className="flex gap-2 w-full">
+            <form onSubmit={addPlayer} className="flex gap-2" style={{ flex: 1 }}>
+              <input
+                className="td-input-field"
+                placeholder="Enter Minecraft IGN..."
+                value={newPlayerIgn}
+                onChange={(e) => setNewPlayerIgn(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <Button type="submit" size="sm" loading={addPlayerLoading}>
+                Add Player
+              </Button>
+            </form>
+            <Button variant="secondary" size="sm" onClick={() => setImportModalOpen(true)}>
+              Import Whitelist
             </Button>
-          </form>
+          </div>
 
           {/* Players Table */}
           {players.length > 0 ? (
@@ -949,6 +1035,89 @@ export default function TournamentManagePage() {
           Delete Tournament
         </Button>
       </Card>
+      {/* Import Whitelist Modal */}
+      <Modal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        title="Import Whitelist from Text"
+        size="md"
+      >
+        <form onSubmit={handleImportWhitelist} className="flex flex-col gap-4">
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+            Paste a list of players. Ranks, numbers, commas, or bullet points (e.g. <code>1. player</code>, <code>player, player</code>) will be parsed automatically.
+          </p>
+          
+          <textarea
+            className="td-input-field"
+            placeholder="Paste your player list here..."
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            style={{ minHeight: '150px', fontSize: 'var(--text-sm)', padding: '10px', width: '100%', fontFamily: 'var(--font-mono)', backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text)' }}
+            required
+          />
+
+          {importText.trim() && (
+            <div className="p-3" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '600' }}>PARSER PREVIEW</div>
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-white)', marginTop: '4px' }}>
+                Parsed <strong>{parseMinecraftNames(importText).length}</strong> unique players:
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', marginTop: '4px', maxHeight: '60px', overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontFamily: 'var(--font-mono)' }}>
+                {parseMinecraftNames(importText).join(', ')}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <label className="input-label" style={{ marginBottom: '4px' }}>Whitelist Options</label>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: 'var(--color-text-white)' }}>
+                <input
+                  type="radio"
+                  name="import_limit_option"
+                  value="all"
+                  checked={importLimitOption === 'all'}
+                  onChange={() => setImportLimitOption('all')}
+                  style={{ accentColor: 'var(--color-primary)' }}
+                />
+                Whitelist all parsed players
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: 'var(--color-text-white)' }}>
+                <input
+                  type="radio"
+                  name="import_limit_option"
+                  value="limit"
+                  checked={importLimitOption === 'limit'}
+                  onChange={() => setImportLimitOption('limit')}
+                  style={{ accentColor: 'var(--color-primary)' }}
+                />
+                <span>Whitelist only the first</span>
+                <input
+                  type="number"
+                  className="td-input-field"
+                  placeholder="e.g. 10"
+                  value={importLimitValue}
+                  onChange={(e) => setImportLimitValue(e.target.value)}
+                  disabled={importLimitOption !== 'limit'}
+                  style={{ width: '80px', height: '24px', padding: '0 8px', fontSize: 'var(--text-xs)', display: 'inline-block', margin: '0 4px' }}
+                  min="1"
+                />
+                <span>players</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="secondary" onClick={() => setImportModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={importLoading} disabled={!importText.trim()}>
+              Start Whitelisting
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

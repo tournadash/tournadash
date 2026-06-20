@@ -252,9 +252,28 @@ export default function TournamentDetailPage() {
     }
   }
 
+  const handleFollowFromModal = async () => {
+    if (!followed) {
+      await supabase.from('follows').insert({ organization_id: org.id, user_id: user.id })
+      setFollowed(true)
+    }
+    if (tournament.discord_guild_id && tournament.require_discord) {
+      setRegStep(1)
+      if (userProfile?.discord_id) {
+        verifyDiscordMembership()
+      }
+    } else {
+      setRegStep(2)
+    }
+  }
+
   const handleRegisterClick = () => {
     if (!user) {
       router.push(`/login?redirect=/tournaments/${slug}`)
+      return
+    }
+    if (isMemberOfOrg) {
+      alert("Members of this organization cannot register for its own tournaments.")
       return
     }
 
@@ -262,7 +281,9 @@ export default function TournamentDetailPage() {
     setRegError('')
     setDiscordError('')
 
-    if (tournament.discord_guild_id && tournament.require_discord) {
+    if (tournament.require_follow && !followed) {
+      setRegStep('follow')
+    } else if (tournament.discord_guild_id && tournament.require_discord) {
       setRegStep(1)
       if (userProfile?.discord_id) {
         verifyDiscordMembership()
@@ -712,6 +733,10 @@ export default function TournamentDetailPage() {
                   <Link href={`/login?redirect=/tournaments/${slug}`} className="btn btn-primary btn-lg w-full flex items-center justify-center" style={{ textDecoration: 'none' }}>
                     Sign In to Register
                   </Link>
+                ) : isMemberOfOrg ? (
+                  <Button variant="secondary" size="lg" disabled className="w-full">
+                    Org Members Cannot Register
+                  </Button>
                 ) : !tournament.registration_open ? (
                   <Button variant="secondary" size="lg" disabled className="w-full">
                     Registration Closed
@@ -804,7 +829,29 @@ export default function TournamentDetailPage() {
         title="Tournament Registration"
         size="md"
       >
-        {regStep === 1 ? (
+        {regStep === 'follow' ? (
+          <div className="flex flex-col gap-4 text-center py-4">
+            <div style={{ color: 'var(--color-primary)', display: 'flex', justifyContent: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'bold', color: 'var(--color-text-white)' }}>
+              Follow Organization Required
+            </h3>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', maxWidth: '380px', margin: '0 auto' }}>
+              You must follow <strong>{org?.name}</strong> to register for this tournament.
+            </p>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button variant="primary" onClick={handleFollowFromModal}>
+                Follow {org?.name}
+              </Button>
+              <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : regStep === 1 ? (
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3 p-3" style={{ background: 'var(--color-bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style={{ color: '#5865F2' }}>

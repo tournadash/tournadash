@@ -135,7 +135,8 @@ export default function DashboardPage() {
             }
           }
 
-          setJoinedTournaments(regList.map(r => ({
+          const activeRegs = regList.filter(r => r.tournaments && r.tournaments.status !== 'ENDED')
+          setJoinedTournaments(activeRegs.map(r => ({
             ...r,
             serverIpInfo: ipMap[r.tournaments?.id] || null
           })))

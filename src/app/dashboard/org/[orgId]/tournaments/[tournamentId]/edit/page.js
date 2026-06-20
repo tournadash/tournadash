@@ -67,6 +67,7 @@ export default function EditTournamentPage() {
           auto_select_count: data.auto_select_count !== null ? String(data.auto_select_count) : '',
           auto_fill: !!data.auto_fill,
           require_discord: !!data.require_discord,
+          require_follow: !!data.require_follow,
           ends_at: data.ends_at ? data.ends_at.slice(0, 16) : '',
         })
         setThumbnailPreview(data.banner_url || null)
@@ -179,6 +180,7 @@ export default function EditTournamentPage() {
       auto_select_count: form.auto_select_count ? parseInt(form.auto_select_count) : null,
       auto_fill: !!form.auto_fill,
       require_discord: !!form.require_discord,
+      require_follow: !!form.require_follow,
       ends_at: form.ends_at || null,
       banner_url: bannerUrl,
     }
@@ -188,12 +190,13 @@ export default function EditTournamentPage() {
       .update(updatePayload)
       .eq('id', tournamentId)
 
-    if (updateError && (updateError.code === '42703' || updateError.message.includes('short_description') || updateError.message.includes('auto_select_count') || updateError.message.includes('require_discord'))) {
+    if (updateError && (updateError.code === '42703' || updateError.message.includes('short_description') || updateError.message.includes('auto_select_count') || updateError.message.includes('require_discord') || updateError.message.includes('require_follow'))) {
       const fallbackPayload = { ...updatePayload }
       delete fallbackPayload.short_description
       delete fallbackPayload.auto_select_count
       delete fallbackPayload.auto_fill
       delete fallbackPayload.require_discord
+      delete fallbackPayload.require_follow
       delete fallbackPayload.ends_at
       const fallbackResult = await supabase
         .from('tournaments')
@@ -529,6 +532,18 @@ export default function EditTournamentPage() {
                     <div>
                       <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Enforce Discord Membership Gating</span>
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Only discord server members can register for the tournament.</span>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer mt-4 p-3" style={{ background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: 'fit-content' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.require_follow}
+                      onChange={(e) => updateForm('require_follow', e.target.checked)}
+                      style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                    />
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', display: 'block', color: 'var(--color-text)' }}>Require Organization Follow</span>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Users must follow this organization before they can register.</span>
                     </div>
                   </label>
                 </div>
