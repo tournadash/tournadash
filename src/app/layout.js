@@ -20,7 +20,10 @@ export const metadata = {
     default: 'TournaDash — Minecraft Tournament Platform',
     template: '%s | TournaDash',
   },
-  description: 'The ultimate tournament management platform for the Minecraft community. Organize, manage, and spectate Minecraft tournaments with automated whitelisting, real-time dashboards, and in-game plugin integration.',
+  description: 'The ultimate tournament management platform for Minecraft. Organize events with automated whitelisting, live leaderboards, and plugin integration.',
+  alternates: {
+    canonical: 'https://tournadash.vercel.app',
+  },
   keywords: [
     'minecraft tournaments',
     'minecraft tournament platform',

@@ -197,6 +197,120 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ===== FAQ SECTION ===== */}
+      <section className="faq-section" id="faq-section">
+        <div className="container">
+          <div className="section-header">
+            <div className="section-label">FAQ</div>
+            <h2 className="section-title">Frequently Asked Questions</h2>
+            <p className="section-description">
+              Find answers to common questions about setting up and managing Minecraft tournaments on TournaDash.
+            </p>
+          </div>
+
+          <div className="faq-grid">
+            <div className="faq-card gaming-glow-hover">
+              <h3 className="faq-question">What is TournaDash?</h3>
+              <p className="faq-answer">
+                TournaDash is a dedicated management and automation dashboard for Minecraft tournament organizers. It handles player sign-ups, whitelist syncs, and embeds live streams.
+              </p>
+            </div>
+            <div className="faq-card gaming-glow-hover">
+              <h3 className="faq-question">How does the whitelist sync work?</h3>
+              <p className="faq-answer">
+                By installing the TournaDash Minecraft plugin, it automatically syncs whitelisted participants from your web tournament dashboard directly to the game server. It manages joining access based on tournament states.
+              </p>
+            </div>
+            <div className="faq-card gaming-glow-hover">
+              <h3 className="faq-question">Can I whitelist organization members?</h3>
+              <p className="faq-answer">
+                Yes! Staff members registered under your organization will be automatically allowed to join the server at any time, even before the tournament officially starts.
+              </p>
+            </div>
+            <div className="faq-card gaming-glow-hover">
+              <h3 className="faq-question">Is the plugin compatible with my server?</h3>
+              <p className="faq-answer">
+                Yes, the plugin works with Paper, Purpur, and Spigot servers on versions 1.16.5 up to 1.21+.
+              </p>
+            </div>
+            <div className="faq-card gaming-glow-hover">
+              <h3 className="faq-question">How do I automate leaderboard updates?</h3>
+              <p className="faq-answer">
+                You can call the /api/plugin/leaderboard endpoint using your tournament secret token. This allows custom gamemode plugins to automatically submit round rankings and end statuses without manual input.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://tournadash.vercel.app/#organization",
+                "name": "TournaDash",
+                "url": "https://tournadash.vercel.app",
+                "logo": "https://tournadash.vercel.app/favicon.ico",
+                "description": "The ultimate tournament management platform for Minecraft. Organize events with automated whitelisting, live leaderboards, and plugin integration.",
+                "sameAs": [
+                  "https://github.com/tournadash"
+                ]
+              },
+              {
+                "@type": "FAQPage",
+                "mainEntity": [
+                  {
+                    "@type": "Question",
+                    "name": "What is TournaDash?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "TournaDash is a dedicated management and automation dashboard for Minecraft tournament organizers. It handles player sign-ups, whitelist syncs, and embeds live streams."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "How does the whitelist sync work?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "By installing the TournaDash Minecraft plugin, it automatically syncs whitelisted participants from your web tournament dashboard directly to the game server. It manages joining access based on tournament states."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "Can I whitelist organization members?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "Yes! Staff members registered under your organization will be automatically allowed to join the server at any time, even before the tournament officially starts."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "Is the plugin compatible with my server?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "Yes, the plugin works with Paper, Purpur, and Spigot servers on versions 1.16.5 up to 1.21+."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "How do I automate leaderboard updates?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "You can call the /api/plugin/leaderboard endpoint using your tournament secret token. This allows custom gamemode plugins to automatically submit round rankings and end statuses without manual input."
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+        }}
+      />
     </>
   )
 }

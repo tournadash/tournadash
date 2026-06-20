@@ -33,11 +33,33 @@ export default function ApiDocsPage() {
           
           <Card className="p-6">
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-3)' }}>
-              Authentication
+              API Base URL & Authentication
             </h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.6', marginBottom: 'var(--space-4)' }}>
-              All request endpoints used by the game servers are secured using the unique tournament token. You must pass this token in the header of your HTTP requests.
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.6', marginBottom: 'var(--space-3)' }}>
+              All game server requests are routed through our central API. Secure requests using your tournament&apos;s unique secret token.
             </p>
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: '4px', fontWeight: '600' }}>API BASE URL:</div>
+              <pre style={{
+                backgroundColor: 'var(--color-bg-subtle)',
+                border: '1px solid var(--color-border)',
+                padding: 'var(--space-3)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--color-primary)',
+                fontSize: '13px',
+                fontFamily: 'var(--font-mono)'
+              }}>https://tournadash.vercel.app/api/plugin</pre>
+            </div>
+            
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.6', marginBottom: 'var(--space-3)' }}>
+              <strong>How to get your Server Token:</strong> Log into your dashboard, navigate to your Organization page, select the specific tournament, and locate the <strong>Server Token</strong> field on the details view card. 
+              <br />
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>
+                ⚠️ Note: The Server Token (prefixed with <code>tournament_tok_</code>) is only visible to the Organization <strong>OWNER</strong>. Other roles will see a padlock graphic to prevent key leaks.
+              </span>
+            </p>
+
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: '4px', fontWeight: '600' }}>AUTHORIZATION HEADER EXAMPLE:</div>
             <pre style={{
               backgroundColor: 'var(--color-bg-subtle)',
               border: '1px solid var(--color-border)',
@@ -46,7 +68,7 @@ export default function ApiDocsPage() {
               color: 'var(--color-text-secondary)',
               fontSize: '13px',
               fontFamily: 'var(--font-mono)'
-            }}>Authorization: Bearer &lt;your_server_token&gt;</pre>
+            }}>Authorization: Bearer tournament_tok_your_secret_key_here</pre>
           </Card>
 
           <Card className="p-6">
