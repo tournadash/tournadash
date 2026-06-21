@@ -8,7 +8,8 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Avatar from '@/components/ui/Avatar'
 import Modal from '@/components/ui/Modal'
-import { uploadAvatar, deleteImageByUrl } from '@/lib/supabase/storage'
+import { uploadAvatar, deleteImageByUrl, uploadSkin } from '@/lib/supabase/storage'
+import MinecraftSkinViewer from '@/components/ui/MinecraftSkinViewer'
 
 export default function ProfileEditPage() {
   const [profile, setProfile] = useState(null)
@@ -23,6 +24,12 @@ export default function ProfileEditPage() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [usernameError, setUsernameError] = useState('')
   const [checkingUsername, setCheckingUsername] = useState(false)
+
+  const skinFileInputRef = useRef(null)
+  const [skinFile, setSkinFile] = useState(null)
+  const [skinPreview, setSkinPreview] = useState(null)
+  const [searchingSkin, setSearchingSkin] = useState(false)
+  const [searchIgn, setSearchIgn] = useState('')
 
   // IGN change confirm states
   const [showIgnConfirmModal, setShowIgnConfirmModal] = useState(false)
@@ -73,6 +80,56 @@ export default function ProfileEditPage() {
     fileInputRef.current.click()
   }
 
+  const handleSkinFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 1 * 1024 * 1024) {
+        setError('Skin file size must be less than 1MB.')
+        return
+      }
+      setSkinFile(file)
+      setSkinPreview(URL.createObjectURL(file))
+      setError('')
+    }
+  }
+
+  const handleSearchOnlineSkin = async (ignName) => {
+    const targetIgn = (ignName || searchIgn).trim()
+    if (!targetIgn) {
+      setError('Please enter a Minecraft IGN to search.')
+      return
+    }
+
+    setSearchingSkin(true)
+    setError('')
+    try {
+      const res = await fetch(`https://playerdb.co/api/player/minecraft/${targetIgn}`)
+      const json = await res.json()
+      if (json.success && json.data?.player?.id) {
+        const uuid = json.data.player.id
+        const crafatarUrl = `https://crafatar.com/skins/${uuid}`
+        
+        setSkinPreview(crafatarUrl)
+        setSkinFile(null)
+        updateField('minecraft_skin_url', crafatarUrl)
+        setSuccess(`Found skin for ${json.data.player.username}! Click 'Save Changes' to apply it.`)
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        setError(`Could not find a Minecraft player named "${targetIgn}".`)
+      }
+    } catch (err) {
+      setError(`Error searching skin: ${err.message}`)
+    } finally {
+      setSearchingSkin(false)
+    }
+  }
+
+  const handleIgnBlur = async () => {
+    const ign = profile?.minecraft_ign?.trim()
+    if (!ign || ign === originalIgn) return
+    handleSearchOnlineSkin(ign)
+  }
+
   const handleSave = async (e) => {
     if (e) e.preventDefault()
     if (usernameError) {
@@ -115,6 +172,7 @@ export default function ProfileEditPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     let avatarUrl = profile.avatar_url
+    let skinUrl = profile.minecraft_skin_url
 
     if (avatarFile) {
       try {
@@ -124,6 +182,19 @@ export default function ProfileEditPage() {
         }
       } catch (uploadError) {
         setError(`Failed to upload avatar: ${uploadError.message}`)
+        setSaving(false)
+        return
+      }
+    }
+
+    if (skinFile) {
+      try {
+        skinUrl = await uploadSkin(user.id, skinFile)
+        if (profile.minecraft_skin_url && profile.minecraft_skin_url.includes('supabase.co')) {
+          await deleteImageByUrl(profile.minecraft_skin_url)
+        }
+      } catch (uploadError) {
+        setError(`Failed to upload skin: ${uploadError.message}`)
         setSaving(false)
         return
       }
@@ -139,6 +210,7 @@ export default function ProfileEditPage() {
         username: profile.username,
         bio: profile.bio,
         minecraft_ign: formattedIgn,
+        minecraft_skin_url: skinUrl,
         ign_change_count: nextChangeCount,
         social_youtube: profile.social_youtube,
         social_discord: profile.social_discord,
@@ -156,8 +228,15 @@ export default function ProfileEditPage() {
     } else {
       setSuccess('Profile updated successfully!')
       setOriginalIgn(newIgn || '')
-      setProfile(prev => ({ ...prev, avatar_url: avatarUrl, ign_change_count: nextChangeCount, minecraft_ign: formattedIgn }))
+      setProfile(prev => ({ 
+        ...prev, 
+        avatar_url: avatarUrl, 
+        minecraft_skin_url: skinUrl, 
+        ign_change_count: nextChangeCount, 
+        minecraft_ign: formattedIgn 
+      }))
       setAvatarFile(null)
+      setSkinFile(null)
       setTimeout(() => setSuccess(''), 3000)
       router.refresh()
     }
@@ -432,22 +511,92 @@ export default function ProfileEditPage() {
             </h3>
           </div>
 
-          <Input
-            id="profile-ign"
-            label="Minecraft In-Game Name (IGN)"
-            type="text"
-            placeholder="Steve"
-            value={profile?.minecraft_ign || ''}
-            onChange={(e) => updateField('minecraft_ign', e.target.value)}
-            disabled={profile?.ign_change_count >= 2}
-            helperText={
-              profile?.ign_change_count >= 2 
-                ? "Locked: You have reached the maximum of 2 IGN changes." 
-                : profile?.ign_change_count === 1
-                  ? "Warning: This is your final change. Saving it will lock your IGN from further edits."
-                  : "You can change your Minecraft IGN at most twice. (1 change remaining after this)"
-            }
-          />
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* 3D Skin Viewer on Left */}
+            <div style={{ flexShrink: 0, alignSelf: 'center' }}>
+              <label className="input-label" style={{ marginBottom: '8px', display: 'block', textAlign: 'center' }}>3D Avatar Model</label>
+              <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} />
+            </div>
+
+            {/* Config controls on Right */}
+            <div className="flex-1 flex flex-col gap-4" style={{ width: '100%' }}>
+              <div className="flex gap-2 items-end">
+                <div style={{ flex: 1 }}>
+                  <Input
+                    id="profile-ign"
+                    label="Minecraft In-Game Name (IGN)"
+                    type="text"
+                    placeholder="Steve"
+                    value={profile?.minecraft_ign || ''}
+                    onChange={(e) => updateField('minecraft_ign', e.target.value)}
+                    onBlur={handleIgnBlur}
+                    disabled={profile?.ign_change_count >= 2}
+                    helperText={
+                      profile?.ign_change_count >= 2 
+                        ? "Locked: You have reached the maximum of 2 IGN changes." 
+                        : profile?.ign_change_count === 1
+                          ? "Warning: This is your final change. Saving it will lock your IGN from further edits."
+                          : "You can change your Minecraft IGN at most twice. (1 change remaining after this)"
+                    }
+                  />
+                </div>
+                {profile?.minecraft_ign && profile?.ign_change_count < 2 && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => handleSearchOnlineSkin(profile.minecraft_ign)}
+                    loading={searchingSkin}
+                    style={{ marginBottom: profile?.ign_change_count >= 1 ? '34px' : '22px' }}
+                  >
+                    🔍 Get Active Skin
+                  </Button>
+                )}
+              </div>
+
+              {/* Skin file upload */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>Upload Custom Skin PNG</label>
+                <div className="flex items-center gap-3">
+                  <Button type="button" variant="outline" size="sm" onClick={() => skinFileInputRef.current.click()}>
+                    Choose Skin File
+                  </Button>
+                  <input
+                    ref={skinFileInputRef}
+                    type="file"
+                    accept="image/png"
+                    onChange={handleSkinFileChange}
+                    style={{ display: 'none' }}
+                  />
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                    {skinFile ? skinFile.name : 'Choose a standard 64x64 or 64x32 PNG file'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Custom skin search online */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>Search & Apply Skin Online</label>
+                <div className="flex gap-2">
+                  <div style={{ flex: 1 }}>
+                    <Input
+                      id="search-ign-input"
+                      type="text"
+                      placeholder="Enter Minecraft name to copy skin"
+                      value={searchIgn}
+                      onChange={(e) => setSearchIgn(e.target.value)}
+                    />
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={() => handleSearchOnlineSkin(searchIgn)}
+                    loading={searchingSkin}
+                  >
+                    Apply Skin
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </Card>
 
         <Card>

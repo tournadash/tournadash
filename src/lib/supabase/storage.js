@@ -87,3 +87,9 @@ export async function uploadOrgBanner(orgId, file) {
   const filename = `banners/${orgId}_${Date.now()}.${extension}`
   return await uploadImage('avatars', filename, file)
 }
+
+export async function uploadSkin(userId, file) {
+  const extension = file.name.split('.').pop()
+  const filename = `skins/${userId}_${Date.now()}.${extension}`
+  return await uploadImage('avatars', filename, file)
+}

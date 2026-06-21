@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
+import MinecraftSkinViewer from '@/components/ui/MinecraftSkinViewer'
 
 export default function UserPublicProfilePage() {
   const { username } = useParams()
@@ -99,90 +100,105 @@ export default function UserPublicProfilePage() {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)', maxWidth: '700px' }} id="user-profile">
       {/* Profile Card */}
-      <Card className="p-8 text-center mb-8" style={{ borderTop: '4px solid var(--color-primary)' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
-          <Avatar
-            src={profile.avatar_url}
-            alt={profile.display_name || profile.username}
-            size="xl"
-            fallback={profile.display_name?.[0]?.toUpperCase() || 'U'}
-          />
-        </div>
-        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', marginBottom: 'var(--space-1)', color: 'var(--color-text-white)' }}>
-          {profile.display_name || profile.username}
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
-          @{profile.username || `user_${profile.id.substring(0, 8)}`}
-        </p>
-
-        {profile.minecraft_ign && (
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <Badge variant="success" style={{ fontSize: 'var(--text-xs)', padding: '4px 12px' }}>
-              IGN: {profile.minecraft_ign}
-            </Badge>
-          </div>
-        )}
-
-        {/* Statistics Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'var(--space-4)',
-          maxWidth: '300px',
-          margin: 'var(--space-5) auto var(--space-5) auto',
-          padding: 'var(--space-3) var(--space-4)',
-          backgroundColor: 'var(--color-bg-input)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)'
-        }}>
-          <div>
-            <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-text-white)' }}>
-              {stats.played}
+      <Card className="p-8 mb-8" style={{ borderTop: '4px solid var(--color-primary)' }}>
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-8">
+          {/* 3D Model Panel (only if they have a skin URL or IGN) */}
+          {(profile.minecraft_skin_url || profile.minecraft_ign) && (
+            <div style={{ flexShrink: 0 }} className="flex flex-col items-center animate-on-scroll">
+              <label className="input-label" style={{ marginBottom: '8px', display: 'block', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>Character Model</label>
+              <MinecraftSkinViewer skinUrl={profile.minecraft_skin_url} width={150} height={220} />
             </div>
-            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
-              Played
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-warning)' }}>
-              {stats.wins}
-            </div>
-            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
-              Won
-            </div>
-          </div>
-        </div>
+          )}
 
-        {profile.bio && (
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', maxWidth: '500px', margin: '0 auto' }}>
-            {profile.bio}
-          </p>
-        )}
+          {/* Details Panel */}
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left" style={{ width: '100%' }}>
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <Avatar
+                src={profile.avatar_url}
+                alt={profile.display_name || profile.username}
+                size="xl"
+                fallback={profile.display_name?.[0]?.toUpperCase() || 'U'}
+              />
+            </div>
+            <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', marginBottom: 'var(--space-1)', color: 'var(--color-text-white)' }}>
+              {profile.display_name || profile.username}
+            </h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+              @{profile.username || `user_${profile.id.substring(0, 8)}`}
+            </p>
 
-        {/* Social Links */}
-        {(profile.social_youtube || profile.social_discord || profile.social_twitch) && (
-          <div className="flex justify-center flex-wrap gap-3" style={{ marginTop: 'var(--space-5)' }}>
-            {profile.social_youtube && (
-              <a href={profile.social_youtube} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm">
-                  YouTube
-                </Button>
-              </a>
+            {profile.minecraft_ign && (
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <Badge variant="success" style={{ fontSize: 'var(--text-xs)', padding: '4px 12px' }}>
+                  IGN: {profile.minecraft_ign}
+                </Badge>
+              </div>
             )}
 
-            {profile.social_twitch && (
-              <a href={profile.social_twitch} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm">
-                  Twitch
-                </Button>
-              </a>
-            )}
-          </div>
-        )}
+            {/* Statistics Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 'var(--space-4)',
+              width: '100%',
+              maxWidth: '300px',
+              margin: 'var(--space-4) 0',
+              padding: 'var(--space-3) var(--space-4)',
+              backgroundColor: 'var(--color-bg-input)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              textAlign: 'center'
+            }}>
+              <div>
+                <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-text-white)' }}>
+                  {stats.played}
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
+                  Played
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 'var(--text-lg)', fontWeight: '800', color: 'var(--color-warning)' }}>
+                  {stats.wins}
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', fontWeight: '700' }}>
+                  Won
+                </div>
+              </div>
+            </div>
 
-        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-6)' }}>
-          Member since {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-        </p>
+            {profile.bio && (
+              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', maxWidth: '500px', marginTop: 'var(--space-2)' }}>
+                {profile.bio}
+              </p>
+            )}
+
+            {/* Social Links */}
+            {(profile.social_youtube || profile.social_discord || profile.social_twitch) && (
+              <div className="flex gap-3" style={{ marginTop: 'var(--space-5)' }}>
+                {profile.social_youtube && (
+                  <a href={profile.social_youtube} target="_blank" rel="noopener noreferrer">
+                    <Button variant="secondary" size="sm">
+                      YouTube
+                    </Button>
+                  </a>
+                )}
+
+                {profile.social_twitch && (
+                  <a href={profile.social_twitch} target="_blank" rel="noopener noreferrer">
+                    <Button variant="secondary" size="sm">
+                      Twitch
+                    </Button>
+                  </a>
+                )}
+              </div>
+            )}
+
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--space-6)' }}>
+              Member since {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+        </div>
       </Card>
 
       {/* Organizations */}
