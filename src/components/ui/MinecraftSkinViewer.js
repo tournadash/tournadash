@@ -9,7 +9,7 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
   const [isRotating, setIsRotating] = useState(false)
 
   // Use standard Steve skin as fallback
-  const fallbackSkin = 'https://crafatar.com/skins/85720e6a-72ef-401d-85d7-b08bc8c4146a'
+  const fallbackSkin = '/steve.png'
   const activeSkin = skinUrl || fallbackSkin
 
   useEffect(() => {
@@ -43,8 +43,11 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
         viewerInstance.controls.update()
 
         // Set animations
-        const walk = viewerInstance.animations.add(skinview3d.WalkingAnimation)
-        walk.paused = !isWalking
+        if (isWalking) {
+          viewerInstance.animation = new skinview3d.WalkingAnimation()
+        } else {
+          viewerInstance.animation = null
+        }
 
         viewerInstance.autoRotate = isRotating
         viewerInstance.autoRotateSpeed = 2.0
@@ -72,15 +75,13 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
 
   useEffect(() => {
     if (viewerRef.current) {
-      const walk = viewerRef.current.animations.get('walk')
-      if (walk) {
-        walk.paused = !isWalking
-      } else {
-        // Fallback: toggling default animation list
-        viewerRef.current.animations.animations.forEach(anim => {
-          anim.paused = !isWalking
-        })
-      }
+      import('skinview3d').then((skinview3d) => {
+        if (isWalking) {
+          viewerRef.current.animation = new skinview3d.WalkingAnimation()
+        } else {
+          viewerRef.current.animation = null
+        }
+      })
     }
   }, [isWalking])
 

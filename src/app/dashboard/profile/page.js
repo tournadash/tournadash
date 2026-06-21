@@ -512,13 +512,7 @@ export default function ProfileEditPage() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* 3D Skin Viewer on Left */}
-            <div style={{ flexShrink: 0, alignSelf: 'center' }}>
-              <label className="input-label" style={{ marginBottom: '8px', display: 'block', textAlign: 'center' }}>3D Avatar Model</label>
-              <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} />
-            </div>
-
-            {/* Config controls on Right */}
+            {/* Config controls on Left */}
             <div className="flex-1 flex flex-col gap-4" style={{ width: '100%' }}>
               <div className="flex gap-2 items-end">
                 <div style={{ flex: 1 }}>
@@ -595,6 +589,12 @@ export default function ProfileEditPage() {
                   </Button>
                 </div>
               </div>
+            </div>
+
+            {/* 3D Skin Viewer on Right */}
+            <div style={{ flexShrink: 0, alignSelf: 'center' }} className="flex flex-col items-center">
+              <label className="input-label" style={{ marginBottom: '8px', display: 'block', textAlign: 'center' }}>3D Avatar Model</label>
+              <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} />
             </div>
           </div>
         </Card>
