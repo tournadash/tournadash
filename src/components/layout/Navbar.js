@@ -12,6 +12,8 @@ export default function Navbar() {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
+  const lastScrollY = useRef(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -55,8 +57,19 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      setScrolled(currentScrollY > 20)
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        setHidden(true)
+      } else if (currentScrollY < lastScrollY.current) {
+        setHidden(false)
+      }
+      
+      lastScrollY.current = currentScrollY
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -112,7 +125,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
+      <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${hidden ? 'navbar-hidden' : ''}`} id="main-navbar">
         <div className="navbar-inner">
           {/* Logo / Portal Target */}
           {pathname.startsWith('/organizations/') && pathname.split('/').length >= 3 ? (

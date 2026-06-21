@@ -119,29 +119,29 @@ export default function ProfileEditPage() {
         return
       }
       
-      // 2. Fallback to check cracked skins on Ely.by
-      const elySkinUrl = `https://skinsystem.ely.by/skins/${targetIgn}.png`
+      // 2. Fallback to check cracked skins on MineSkin EU
+      const mineskinUrl = `https://mineskin.eu/skin/${targetIgn}`
       try {
-        const elyRes = await fetch(elySkinUrl, { method: 'HEAD' })
-        if (elyRes.ok) {
-          setSkinPreview(elySkinUrl)
+        const mineRes = await fetch(mineskinUrl, { method: 'HEAD' })
+        if (mineRes.ok) {
+          setSkinPreview(mineskinUrl)
           setSkinFile(null)
-          updateField('minecraft_skin_url', elySkinUrl)
-          setSuccess(`Found skin for cracked account "${targetIgn}" on Ely.by! Click 'Save Changes' to apply.`)
+          updateField('minecraft_skin_url', mineskinUrl)
+          setSuccess(`Found skin for cracked account "${targetIgn}" on MineSkin! Click 'Save Changes' to apply.`)
           setTimeout(() => setSuccess(''), 3000)
           return
         }
       } catch (headErr) {
         // If HEAD fails due to CORS, try loading it anyway
-        setSkinPreview(elySkinUrl)
+        setSkinPreview(mineskinUrl)
         setSkinFile(null)
-        updateField('minecraft_skin_url', elySkinUrl)
-        setSuccess(`Attempting to load cracked skin for "${targetIgn}" from Ely.by...`)
+        updateField('minecraft_skin_url', mineskinUrl)
+        setSuccess(`Attempting to load cracked skin for "${targetIgn}" from MineSkin...`)
         setTimeout(() => setSuccess(''), 3000)
         return
       }
       
-      setError(`Could not find a Minecraft player named "${targetIgn}" on Mojang or Ely.by.`)
+      setError(`Could not find a Minecraft player named "${targetIgn}" on Mojang or MineSkin.`)
     } catch (err) {
       setError(`Error searching skin: ${err.message}`)
     } finally {
