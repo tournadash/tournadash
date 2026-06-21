@@ -1,6 +1,7 @@
 import { Outfit, Inter } from 'next/font/google'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import ThemeProvider from '@/components/providers/ThemeProvider'
 import './globals.css'
 import '@/components/ui/Button.css'
 
@@ -76,11 +77,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
       <body>
-        <Navbar />
-        <main style={{ paddingTop: 'var(--nav-height)' }}>
-          {children}
-        </main>
-        <Footer />
+        <ThemeProvider>
+          <Navbar />
+          <main style={{ paddingTop: 'var(--nav-height)' }}>
+            {children}
+          </main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   )

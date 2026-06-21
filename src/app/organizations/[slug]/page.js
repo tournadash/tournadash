@@ -155,45 +155,7 @@ export default function OrgPublicProfilePage() {
   }
 
   return (
-    <div className={`container ${org.theme === 'vault-op' ? 'vault-op-theme' : ''}`} style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
-      {org.theme === 'vault-op' && (
-        <style dangerouslySetInnerHTML={{__html: `
-          .vault-op-theme {
-            --color-bg-base: #0a0a0a;
-            --color-bg-card: #111111;
-            --color-bg-alt: #1a1a1a;
-            --color-bg-subtle: #222222;
-            --color-border: #333333;
-            --color-primary: #facc15;
-            --color-secondary: #22c55e;
-            --color-text: #ffffff;
-            --color-text-secondary: #a1a1aa;
-            --color-text-muted: #71717a;
-            --radius-sm: 0px;
-            --radius-md: 0px;
-            --radius-lg: 0px;
-            --radius-xl: 0px;
-            --radius-full: 0px;
-            font-family: 'Space Grotesk', 'Inter', monospace;
-          }
-          .vault-op-theme .td-card {
-            border: 2px solid var(--color-border) !important;
-            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1) !important;
-            transition: all 0.2s ease;
-          }
-          .vault-op-theme .td-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px 0px var(--color-primary) !important;
-            border-color: var(--color-primary) !important;
-          }
-          .vault-op-theme button, .vault-op-theme .btn {
-            border-radius: 0 !important;
-            text-transform: uppercase;
-            font-weight: 800 !important;
-            letter-spacing: 0.05em;
-          }
-        `}} />
-      )}
+    <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
       {/* Header Card */}
       <Card className="p-0 mb-8 overflow-hidden relative animate-on-scroll">
         {/* Banner Area */}
