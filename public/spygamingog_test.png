@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>404 - Page not found</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8"/>
+
+	<link rel="shortcut icon" href="https://tlauncher.org/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196"/>
+	<link rel="icon" type="image/png" href="/favicon-120x120.png" sizes="120x120"/>
+	<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96"/>
+	<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16"/>
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#40b5e9">
+	<meta name="apple-mobile-web-app-title" content="TLauncher">
+	<meta name="application-name" content="TLauncher">
+	<meta name="msapplication-TileColor" content="#40b5e9">
+	<meta name="theme-color" content="#ffffff">
+	<meta name="referrer" content="origin-when-cross-origin">
+
+	<meta name="keywords" content=""/>
+	<meta name="description" content=""/>
+	
+		<meta property="og:type" content="website">
+
+	<meta property="og:site_name" content="TLauncher">
+
+	<meta property="og:title" content="404 - Page not found">
+
+	<meta property="og:description" content="">
+
+	<meta property="og:url" content="https://tlauncher.org/skins/spygamingog.png">
+
+	<meta property="og:image" content="https://tlauncher.org/fav-icon-512.png">
+
+	<meta property="og:image:width" content="512">
+
+	<meta property="og:image:height" content="512">
+
+	<meta property="fb:page_id" content="507146873226705"/>
+	<link rel="yandex-tableau-widget" href="https://tlauncher.org/yamanifest.json"/>
+
+			<script src="/assets/node_modules/jquery/dist/jquery.min.js?v=3.x"></script>
+<script src='/assets/node_modules/knockout/build/output/knockout-latest.js?v=3.x'></script>
+
+<script>
+	"use strict";
+
+	const lang = 'en';
+
+
+	const tlVM = {
+		lang: 'en',
+		mainLang: 'en',
+		authInfo: {},
+		user: {},
+		data: {},
+		acc: {},
+		dataObjectLoaded: ko.observable(),
+		viewSpinner: ko.observable(false),
+		popupDialog: {
+			title: ko.observable(),
+			body: ko.observable(''),
+			footer: ko.observable(),
+		},
+		loadFromDatObject: dataObject => {
+			if (dataObject && dataObject.tlVM) {
+				['data', 'acc', 'authInfo', 'user'].forEach(loadKey => {
+					if (dataObject.tlVM.hasOwnProperty(loadKey)) {
+						Object.keys(dataObject.tlVM[loadKey]).forEach(k => {
+							tlVM[loadKey][k] = dataObject.tlVM[loadKey][k];
+						});
+					}
+				});
+
+				afterLoadDataObjectHandler();
+				tlVM.dataObjectLoaded(true);
+			}
+		},
+	}
+
+	function afterLoadDataObjectHandler() {
+		//delete tlVM.dataObjectLoaded;
+
+				['data', 'authInfo', 'user'].forEach(i => {
+			function getSimpleValue(v) {
+				if (typeof v === 'string' && v.length > 0 && v.match(/\D+/g) === null) {
+					return parseInt(v);
+				}
+				return v;
+			}
+
+			Object.keys(tlVM[i]).forEach(dk => {
+				switch (true) {
+					case Array.isArray(tlVM[i][dk]):
+						tlVM[i][dk] = ko.observableArray(tlVM[i][dk]);
+						break;
+					case tlVM[i][dk] instanceof Object:
+						Object.keys(tlVM[i][dk]).forEach(ok => {
+							if (Array.isArray(tlVM[i][dk][ok])) {
+								tlVM[i][dk][ok] = ko.observableArray(tlVM[i][dk][ok]);
+							} else {
+								tlVM[i][dk][ok] = ko.observable(getSimpleValue(tlVM[i][dk][ok]));
+							}
+						});
+						break;
+					default:
+						tlVM[i][dk] = ko.observable(getSimpleValue(tlVM[i][dk]));
+				}
+			})
+		});
+
+		tlVM.user.isForever = ko.pureComputed(() => {
+			const currentTS = new Date();
+			return parseInt(tlVM.user.group()) === 2 && tlVM.user.goldtime() > Math.floor(currentTS.setDate(currentTS.getDate() + 500) / 1000);
+		});
+
+			}
+
+	jQuery.ajax({
+		async: true,
+		url: "/en/ajax/getdataobject/",
+		data: {
+			'lang': 'en',
+			'x_csrf_token': 'fff0e27baecb1b5384d0d38d1e2184c3c1178203000629',
+			'userId': '' || -1,
+		},
+		method: "POST",
+		success: function (responseData) {
+						if (responseData.status === 'ok') {
+				tlVM.loadFromDatObject(responseData);
+			}
+		}
+	});
+</script>
+							<link rel="stylesheet" type="text/css" href="/assets/node_modules/bootstrap/dist/css/bootstrap.min.css?v=3.x"/>
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css" href="/assets/css/premium.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css"
+	  href="/assets/css/registration.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css" href="/assets/css/popup.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css"
+	  href="/assets/css/osselector.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css"
+	  href="/assets/css/adavptive.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css"
+	  href="/assets/css/ya_style.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css"
+	  href="/assets/css/int_adapt.css?v=3.2.9"/>
+<link rel="stylesheet" type="text/css" href="/assets/css/extra.css?v=3.2.9"/>
+<style>
+    body.body_premim main {
+        padding: 0;
+    }
+
+    body.news.mobile aside {
+        display: none;
+    }
+
+    main {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    footer .b-footer-line-2 .copyright {
+        position: inherit;
+        float: left;
+    }
+
+    .b-button_modal {
+        height: auto;
+    }
+
+    @media only screen and (max-width: 769px) {
+        .mobile .b--language-switch {
+            vertical-align: top;
+        }
+    }
+
+    @media only screen and (max-width: 801px) {
+        .body_index header, .body_index header.h--en {
+            background: url(/assets/images/index_header_bg_2.jpg) no-repeat 15% 0;
+        }
+    }
+</style>
+		
+		
+								<script src='/assets/node_modules/moment/moment.js?v=2.x'></script>
+<script>
+	$(() => {
+		if (window.orientation !== undefined) {
+			document.body.classList.add("mobile");
+		}
+	});
+</script>
+								</head>
+
+<body class="body">
+
+	<header style="padding-bottom: 10px;">
+		<div class="container">
+			<div class="b-header-line-1 clearfix">
+	<div class="pull-left">
+				<div class="b-site-info">Latest version:<br>
+			<div class="linkoff">
+				<a href="https://tlauncher.org/en/download_1/minecraft-26-2_31166.html"
+				   title="Download Minecraft 26.2">
+					Minecraft <strong>26.2</strong></a> and
+				<a href="https://tlauncher.org/en/download-pe_35/minecraft-bedrock-edition-1-21_24575.html"
+				   title="Download Minecraft: Bedrock 1.21">
+					Minecraft Bedrock <strong>1.21</strong></a></div>
+		</div>
+	</div>
+
+	<div class="pull-right">
+		<nav role="navigation" class="clearfix">
+	<input type="checkbox" id="nav_trigger" class="nav_trigger">
+	<label for="nav_trigger">
+		<span></span>
+		<span></span>
+		<span></span>
+	</label>
+	<ul class="b-menu b-menu_main">
+		<li class="b-menu__item main-home-link">
+			<a rel="nofollow" CLASS="b-link b-link_main-menu" href="/"
+			   title="Main page">
+				<span class=""></span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu" href="/en/news/"
+			   title="Latest publication">
+				<span>Latest publication</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/download_1/"
+			   title="Download Minecraft">
+				<span>Download Minecraft</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/mods_2/"
+			   title="Mods">
+				<span>Mods</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/premium.html"
+			   title="Premium">
+				<span class="premium">Premium</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/help.html"
+			   title="Help">
+				<span>Help</span>
+			</a>
+		</li>
+
+		<li class="b-menu__item divider"></li>
+
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/catalog/skins/"
+			   title="Download Skins">
+				<span>Download Skins</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/catalog/hd/"
+			   title="Download HD Skins">
+				<span>HD Skins</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/catalog/cloak/"
+			   title="Download Capes">
+				<span>Capes</span>
+			</a>
+		</li>
+		<li class="b-menu__item">
+			<a CLASS="b-link b-link_main-menu"
+			   href="/en/catalog/skins/nickname/"
+			   title="Skins by Nickname">
+				<span>Skins by Nickname</span>
+			</a>
+		</li>
+					<li class="b-menu__item"><a CLASS="b-link b-link_main-menu"
+			                            href="/en/acapes/"
+			                            title="Animated capes">
+					<span class="premium" style="text-transform: capitalize">Animated capes</span>
+				</a>
+			</li>
+			</ul>
+</nav>
+
+			</div>
+</div>
+		</div>
+	</header>
+
+
+	<main>
+		<style>
+            .body {
+                background: url('/assets/images/404.jpg') no-repeat center 0;
+                background-size: cover;
+            }
+
+            .block_404 {
+                text-align: center;
+                width: 606px;
+                margin: 150px auto 0;
+                text-transform: uppercase;
+            }
+
+            .block_404 h1 {
+                font-weight: bold;
+                font-size: 232px;
+                color: #508528;
+            }
+
+            .block_404 .text {
+                font-weight: bold;
+                font-size: 30px;
+                width: 320px;
+                margin: -20px auto 0;
+                line-height: 36px;
+                color: #7C7C7C;
+            }
+
+            .block_404 a {
+                font-weight: bold;
+                font-size: 24px;
+                margin-top: 20px;
+                display: inline-block;
+                color: #fff;
+                background-color: #1A92C0;
+                border-radius: 50px;
+                width: 264px;
+                height: 100px;
+                line-height: 100px;
+                box-shadow: #42424C 0 4px 12px;
+            }
+
+            .block_404 a:hover {
+                text-decoration: none;
+                background-image: linear-gradient(to bottom, #1A92C0, #1AB6C0);
+            }
+
+            .block_404 a:focus, .block_404 a:active {
+                text-decoration: none;
+                background-image: linear-gradient(to bottom, #1481AB, #1A92C0);
+                box-shadow: none;
+            }
+
+            @media screen and (max-width: 580px) {
+                .body {
+                    background-image: url('/assets/images/404_mobile.jpg');
+                }
+
+                .block_404 {
+                    width: 240px;
+                    margin-top: 60px;
+                }
+
+                .block_404 h1 {
+                    font-size: 122px;
+                }
+
+                .block_404 .text {
+                    font-size: 16px;
+                    width: 200px;
+                    line-height: 19px;
+                }
+
+                .block_404 a {
+                    font-size: 14px;
+                    border-radius: 26px;
+                    width: 140px;
+                    height: 52px;
+                    line-height: 52px;
+                }
+            }
+		</style>
+
+				<div class="container">
+			<div class="block_404">
+				<h1>404</h1>
+				<div class="text">Page has been deleted or moved</div>
+				<a href="/">To the main</a>
+			</div>
+		</div>
+	</main>
+
+
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadMainCaptchaCallback&amp;render=explicit" async defer></script>
+	<script src="https://hcaptcha.com/1/api.js?onload=onloadMainCaptchaCallback&amp;recaptchacompat=off&amp;render=explicit&amp;hl=en" async defer></script>
+	<script src="https://www.google.com/recaptcha/api.js?onload=onloadMainCaptchaCallback&amp;render=explicit&amp;hl=en" async defer></script>
+
+			<div id="popup3" class="popups">
+	<div>
+		<span class="button-close-pops"></span>
+		<div class="content3"></div>
+	</div>
+</div>
+<style>
+    .modal-dialog {
+        z-index: 100000;
+    }
+
+    .button-close-pops {
+        border-radius: 0;
+        border: none;
+        padding: 0;
+        margin: 0;
+        width: 25px;
+        height: 25px;
+        /*background-size: cover;*/
+        background: url("/assets/images/close-btn-25.png") no-repeat 0 0;
+        top: 57px;
+    }
+
+    .button-close-pop, .button-close-pops {
+        z-index: 99999;
+        /*border-radius: 15px;*/
+        box-shadow: none;
+        font-size: 2em;
+        /*padding: 0px 6px 2px;*/
+        position: absolute;
+        /**/
+        right: 0;
+        /*top: 50px;*/
+        /**/
+        /*background-color: #FFF;*/
+        /*border: 1px solid #000;*/
+        /**/
+        color: #000;
+        text-shadow: none;
+        cursor: pointer;
+        /**/
+    }
+
+    .popups {
+        background: rgba(0, 0, 0, 0.7) !important;
+        border-radius: 0 !important;
+    }
+
+    #popup3 {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 19999;
+        border-radius: 20px;
+        box-shadow: 0px 0px 5px 5px #999;
+        color: #111;
+        display: none;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, .30);
+    }
+
+    #popup3 > div {
+        margin: 0 auto;
+        width: 300px;;
+        height: 240px;
+        border: 0 solid #FFF;
+        max-width: 789px;
+        background-color: transparent;;
+        overflow: hidden;
+        position: relative;
+        padding: 70px 10px 10px 10px;
+    }
+
+    #popup3 .content3 {
+        margin: 0 auto;
+        width: 100%;
+        height: 100%;
+        border: 1px solid #000;
+        background-color: #FFF;
+        overflow: hidden;
+        text-align: center;
+        padding: 10px;
+    }
+
+    #popupDialog {
+        z-index: 900000;
+    }
+</style>
+
+<div id="popupDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirmPopupDialog"
+     aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header" data-dismiss="modal" data-bind="class: tlVM.Utils.popupDialog.getHeaderClass()">
+				<h5 class="modal-title" id="confirmPopupDialog" data-bind="html: tlVM.Utils.popupDialog.title"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" data-bind="html: tlVM.Utils.popupDialog.body"></div>
+			<div class="modal-footer">
+				<!-- ko if: tlVM.Utils.popupDialog.btn.confirm() -->
+				<button type="button" class="btn btn-primary"
+				        onclick="tlVM.Utils.popupDialog.confirm()"
+				        data-bind="html: tlVM.Utils.popupDialog.btn.confirm"></button>
+				<!-- /ko -->
+				<button type="button" class="btn btn-secondary" data-dismiss="modal"
+				        data-bind="html: tlVM.Utils.popupDialog.btn.close"></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+	<div id="login" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="login">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header" data-dismiss="modal"></div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="wrapper">
+								<span class="h3">Authorization</span>
+																<form method="post">
+									<input type="hidden" name="x_csrf_token"
+									       data-csrf="fff0e27baecb1b5384d0d38d1e2184c3c1178203000629"
+									       value="fff0e27baecb1b5384d0d38d1e2184c3c1178203000629">
+									<input type="hidden" name="page_open" value="auth_modal">
+									<input class="input" type="text" name="_username"
+									       placeholder="Login"
+									       required value=""/><br>
+									<input class="input" type="password" name="_password"
+									       placeholder="Password"
+									       value="" required/><br>
+
+									
+									<div class="footer-line">
+										<input type="submit" value="Sign in"
+										       class="b-button b-button_modal"/>
+										<a rel="nofollow" class="pull-right"
+										   href="/en/reg/"
+										   title="Sign Up">
+											<span>Sign Up</span>
+										</a>
+										<a rel="nofollow"
+										   href="/en/lost/"
+										   title="Reset password"><span>Forgot your password?</span></a>
+									</div>
+									<input id="auth_captcha_current" type="hidden" name="current_captcha"
+									       data-bind="value: tlVM.captcha.current">
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+		<script>
+		"use strict";
+
+		$(() => {
+			$(document).on('shown.bs.modal', '#login', function (e) {
+				$(this).addClass('show');
+				setTimeout(() => tlVM.captcha.fn.renderCaptcha(tlVM.captcha.current(), tlVM.captcha.divId + '-modal'), 10);
+			}).on('hide.bs.modal', '#login', function (e) {
+				$(this).removeClass('show');
+				tlVM.captcha.fn.renderCaptcha(tlVM.captcha.current(), tlVM.captcha.divId);
+			});
+		});
+	</script>
+	<style>
+        #login .input[name="_password"] {
+            margin-bottom: 20px;
+        }
+	</style>
+	
+	<div id="commentCaptchaModal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+
+				<div class="modal-header" data-dismiss="modal"></div>
+
+				<div class="modal-body">
+					<div class="wrapper">
+
+						<span class="h3">Pass the captcha</span>
+
+						<div class="hidden center offset-top-20 b-g-recaptcha"
+						     data-bind="css:{hidden: tlVM.viewSpinner}">
+							<div id="captcha-comment" class="g-recaptcha"
+							     data-sitekey=""></div>
+							<!-- ko ifnot: tlVM.viewSpinner -->
+							<div class="selectNextCaptcha">
+							<span data-bind="click: ()=>callNexCaptcha(true, true, '-comment')">
+								Select next CAPTCHA
+							</span>
+							</div>
+							<!-- /ko -->
+						</div>
+
+						<div class="footer-line">
+							<input type="submit" value="Submit a comment"
+							       class="b-button b-button_modal pull-right">
+						</div>
+
+					</div>
+				</div>
+
+				<div class="modal-footer"></div>
+
+			</div>
+		</div>
+	</div>
+
+	<script>
+		"use strict";
+
+		$(document).on('submit', '.commentForm', function (e) {
+			e.preventDefault();
+			// Let's keep track of which form we're sending right now
+			window._activeCommentForm = this;
+
+			$('#commentCaptchaModal').modal('show');
+		});
+		$(document).on('shown.bs.modal', '#commentCaptchaModal', function () {
+			setTimeout(() => {
+				tlVM.captcha.fn.renderCaptcha(
+						tlVM.captcha.current(),
+						tlVM.captcha.divId + '-comment',
+												{},
+						submitCommentCaptcha
+										);
+			}, 10);
+		});
+
+		$(document).on('hide.bs.modal', '#commentCaptchaModal', function () {
+			tlVM.captcha.fn.renderCaptcha(
+					tlVM.captcha.current(),
+					tlVM.captcha.divId
+			);
+		});
+
+		const submitCommentCaptcha = function () {
+			const form = window._activeCommentForm;
+			if (!form) {
+				return;
+			}
+
+			// 1. Find the CAPTCHA container in the modal
+			const captchaContainer = document.getElementById(tlVM.captcha.divId + '-comment');
+
+			// 2. Collecting ALL hidden CAPTCHA fields
+			const captchaFields = captchaContainer.querySelectorAll('input[type="hidden"], textarea');
+
+			// 3. We collect the extraFields into an object
+			const extra = {};
+			captchaFields.forEach(f => {
+				extra[f.name] = f.value;
+			});
+
+			// 4. Create an empty FormData object and populate it centrally
+			let fd = new FormData();
+			fd = tlVM.captcha.fn.appendNeedFields(fd, extra);
+
+			// 5. Transfer everything from FormData to the DOM form
+			for (const [name, value] of fd.entries()) {
+				let input = form.querySelector(`input[name="${name}"], textarea[name="${name}"]`);
+				if (!input) {
+					input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = name;
+					form.appendChild(input);
+				}
+				input.value = value;
+			}
+
+			// 6. Let's close the modal
+			$('#commentCaptchaModal').modal('hide');
+
+			// 7. Standard POST
+			form.submit();
+
+			// 8. Remove the "record" of the last POST request from the browser history
+			window._activeCommentForm = null;
+			history.replaceState(null, '', location.href);
+		};
+
+		$('#commentCaptchaModal input[type="submit"]').on('click', submitCommentCaptcha);
+	</script>
+
+	<style>
+        #commentCaptchaModal .modal-header,
+        #commentCaptchaModal .modal-footer {
+            display: none;
+        }
+
+        #commentCaptchaModal .modal-dialog {
+            margin-top: 20%;
+            width: 420px;
+        }
+
+        #commentCaptchaModal .modal-content {
+            background: url("/assets/images/auth_bg.jpg") no-repeat right bottom #ECF4F7;
+        }
+
+        #commentCaptchaModal .wrapper {
+            padding: 15px;
+        }
+
+        #commentCaptchaModal .wrapper .h3 {
+            color: #cf5b5b;
+            font-size: 1.875em;
+            font-weight: bold;
+        }
+
+        #commentCaptchaModal .footer-line {
+            margin-top: 20px;
+            height: 40px;
+        }
+
+        #commentCaptchaModal .footer-line .b-button_modal {
+            margin-right: 15px;
+        }
+
+        #commentCaptchaModal .footer-line .pull-right {
+            line-height: 38px;
+        }
+
+        #commentCaptchaModal .footer-line a {
+            font-size: 0.875em;
+            color: #076e95;
+            text-decoration: none;
+        }
+
+        #commentCaptchaModal .footer-line a span {
+            border-bottom: 1px solid #bdd8e3;
+        }
+
+        #commentCaptchaModal .footer-line a:hover {
+            text-decoration: none;
+        }
+
+        #commentCaptchaModal .footer-line a:hover span {
+            border: none;
+        }
+
+        #commentCaptchaModal .alert {
+            margin: 10px 0 0 !important;
+        }
+
+
+	</style>
+	
+	<script type="text/javascript">
+	tlVM.captcha = {
+		systems: JSON.parse('{"turnstile":{"disabled":false,"forOS":["default"],"render":{"explicit":true,"addHashSymbol":true,"options":{"theme":"light","language":"en"}},"key":"0x4AAAAAAApvOosR2lBQBeAW","script":"https:\/\/challenges.cloudflare.com\/turnstile\/v0\/api.js?onload=onloadMainCaptchaCallback&render=explicit","jsObject":"turnstile"},"hcaptcha":{"disabled":false,"forOS":["default","oldWindows"],"render":{"explicit":true,"addHashSymbol":false,"options":{"theme":"light","language":"en"}},"key":"aa37d243-018d-4d7b-94ec-4c28bc8bb098","script":"https:\/\/hcaptcha.com\/1\/api.js?onload=onloadMainCaptchaCallback&recaptchacompat=off&render=explicit&hl=en","jsObject":"hcaptcha"},"recaptcha":{"disabled":false,"forOS":["default","oldWindows"],"render":{"explicit":true,"addHashSymbol":false,"options":{"theme":"light","language":"en"}},"key":"6LfVF3gqAAAAAEo-CyjQvDSuk3bT8k9wsepiVdHK","script":"https:\/\/www.google.com\/recaptcha\/api.js?onload=onloadMainCaptchaCallback&render=explicit&hl=en","jsObject":"grecaptcha"}}' || '[]'),
+		divId: 'captcha' || 'captcha',
+		main: 'turnstile',
+		current: ko.observable(),
+
+		/**
+		 * A local, single-use CAPTCHA solver.
+		 * If set, it is called once and automatically reset.
+		 *
+		 * Examples of use:
+		 *
+		 * @example <caption>1) Set the handler in advance:</caption>
+		 *    tlVM.captcha.onSolvedLocal = function(token, captchaName) {
+		 *        console.log('Капча решена:', captchaName, token);
+		 *        window._activeCommentForm?.submit();
+		 *    };
+		 *
+		 *    tlVM.captcha.fn.renderCaptcha('recaptcha');
+		 *
+		 * @example <caption>2) Pass the handler directly to `renderCaptcha`:</caption>
+		 *    tlVM.captcha.fn.renderCaptcha(
+		 *        'recaptcha',
+		 *        'captchaDiv',
+		 *        {},
+		 *        function(token, captchaName) {
+		 *            console.log('Решена:', captchaName, token);
+		 *            window._activeCommentForm?.submit();
+		 *        }
+		 *    );
+		 *
+		 *
+		 * @type {null|function(string, string|null):void}
+		 */
+		onSolvedLocal: null,
+
+		fn: {
+
+			/**
+			 * Shows or hides the message about a problem loading the CAPTCHA.
+			 *
+			 * @param {string|null} captchaDivId
+			 * @param {boolean} remove
+			 */
+			notCaptchaLoadedMessage: (captchaDivId = null, remove = false) => {
+				const noCaptchaId = 'notCaptcha';
+				const divNoCaptcha = $(`#${noCaptchaId}`);
+				if (divNoCaptcha.length) {
+					divNoCaptcha.remove();
+				}
+				if (!remove) {
+					const msg = 'Problem with captcha loading. Try reloading the page or trying a different browser.'
+							|| 'Captcha load error!';
+					if (!tlVM.captcha.current()) {
+						captchaDivId = captchaDivId ? captchaDivId : tlVM.captcha.divId;
+						$(`<div id="${noCaptchaId}" class="alert alert-warning">${msg}</div>`)
+								.insertAfter($('#' + captchaDivId));
+					}
+				}
+			},
+
+			/**
+			 * Sets the current CAPTCHA system by name or index.
+			 *
+			 * @param {string|number} captcha
+			 */
+			setCurrent: captcha => {
+				let captchaName = '';
+				const index = parseInt(captcha);
+				if (isNaN(index)) {
+					captchaName = captcha;
+				} else {
+					const systems = Object.keys(tlVM.captcha.systems) || [];
+					captchaName = systems.length > index ? systems[index] : '';
+				}
+				if (captchaName) {
+					if (window.hasOwnProperty(tlVM.captcha.systems[captchaName].jsObject)) {
+						tlVM.captcha.current(captchaName);
+					}
+				}
+			},
+
+			/**
+			 * Returns the name of the next CAPTCHA system.
+			 *
+			 * @param {boolean} allowMain
+			 * @param {boolean} retMainIfEmpty
+			 * @returns {string|undefined}
+			 */
+			getNextCaptcha: (allowMain = false, retMainIfEmpty = false) => {
+				let captchaName;
+				let systems = Object.keys(tlVM.captcha.systems) || [];
+				if (!allowMain) {
+					systems = systems.filter(sName => sName !== tlVM.captcha.main);
+				}
+				const current = tlVM.captcha.current() || tlVM.captcha.main;
+				for (let i = 0; i < systems.length; i++) {
+					if (systems[i] === current) {
+						captchaName = systems[i + 1 >= systems.length ? 0 : i + 1];
+						break;
+					}
+				}
+				if (retMainIfEmpty && !captchaName) {
+					return tlVM.captcha.main;
+				}
+				return captchaName;
+			},
+
+			/**
+			 * A universal handler for successfully solving CAPTCHA's.
+			 *
+			 * @param {string} token
+			 * @param {string|null} captchaName
+			 */
+			onSolved: (token, captchaName = null) => {
+				try {
+					if (typeof tlVM.captcha.onSolvedLocal === 'function') {
+						tlVM.captcha.onSolvedLocal(token, captchaName);
+					}
+				} catch (e) {
+									} finally {
+					tlVM.captcha.onSolvedLocal = null;
+				}
+			},
+
+			/**
+			 * Renders a CAPTCHA and optionally accepts a solution handler.
+			 *
+			 * @param {string} captchaName
+			 * @param {string|null} targetId
+			 * @param {Object} options
+			 * @param {null|function(string, string|null):void} [onSolvedCallback=null]
+			 */
+			renderCaptcha: (captchaName, targetId = null, options = {}, onSolvedCallback = null) => {
+				$('#' + (targetId || tlVM.captcha.divId)).html('');
+				tlVM.captcha.fn.setCurrent(captchaName);
+
+				const system = tlVM.captcha.systems[captchaName];
+				if (system) {
+					try {
+						const captchaObject = window[system.jsObject];
+						if (typeof captchaObject === 'object' && captchaObject.render) {
+
+							const renderOptions = Object.assign({
+								sitekey: system.key || ''
+							}, system.render.options || {}, options);
+
+							// If a handler is passed, we incorporate it
+							if (typeof onSolvedCallback === 'function') {
+								tlVM.captcha.onSolvedLocal = onSolvedCallback;
+							}
+							renderOptions.callback = function (token) {
+								tlVM.captcha.fn.onSolved(token, captchaName);
+							};
+
+							if (captchaObject.remove) {
+								try {
+									captchaObject.remove();
+								} catch (e) {
+								}
+							}
+							if (captchaObject.reset) {
+								try {
+									captchaObject.reset();
+								} catch (e) {
+								}
+							}
+
+							if (!targetId) {
+								targetId = tlVM.captcha.divId;
+							}
+							if (document.getElementById(targetId)) {
+								const selector = (system.render.addHashSymbol ? '#' : '') + targetId;
+								captchaObject.render(selector, renderOptions);
+								tlVM.captcha.fn.notCaptchaLoadedMessage(targetId, true);
+								return;
+							}
+						}
+					} catch (e) {
+					}
+				}
+
+				tlVM.captcha.fn.notCaptchaLoadedMessage(targetId);
+				tlVM.captcha.fn.setCurrent('');
+			},
+
+			/**
+			 * Resets the CAPTCHA and clears the local hook.
+			 *
+			 * @param {string|null} targetId
+			 * @param {string|null} captchaName
+			 */
+			resetCaptcha: (targetId = null, captchaName = null) => {
+				tlVM.captcha.onSolvedLocal = null;
+
+				if (!targetId) {
+					targetId = tlVM.captcha.divId;
+				}
+				tlVM.captcha.fn.notCaptchaLoadedMessage(targetId, true);
+
+				captchaName = captchaName || tlVM.captcha.current();
+				if (tlVM.captcha.systems[captchaName]) {
+					const captcha = tlVM.captcha.systems[captchaName];
+					if (typeof window[captcha.jsObject].reset === 'function') {
+						window[captcha.jsObject].reset();
+					}
+				}
+			},
+
+			/**
+			 * Checks whether the system requires explicit rendering.
+			 *
+			 * @param {string} captchaName
+			 * @returns {boolean}
+			 */
+			isExplicit: captchaName => {
+				return !!((tlVM.captcha.systems[captchaName] || {}).render || {}).explicit;
+			},
+
+			/**
+			 * Adds CAPTCHA service fields to the request body.
+			 *
+			 * @param {FormData|Object} fBody
+			 * @param {Object<string, any>=} extraFields
+			 * @returns {FormData|Object}
+			 */
+			appendNeedFields: (fBody, extraFields = null) => {
+				if (!fBody) {
+					return fBody;
+				}
+
+				const currentCaptcha = ko.unwrap(tlVM.captcha.current) || '';
+
+				if (fBody instanceof FormData) {
+					if (!fBody.has('current_captcha')) {
+						fBody.append('current_captcha', currentCaptcha);
+					}
+					if (extraFields && typeof extraFields === 'object') {
+						for (const [name, value] of Object.entries(extraFields)) {
+							fBody.append(name, value);
+						}
+					}
+					return fBody;
+				}
+
+				if (typeof fBody === 'object') {
+					const base = {current_captcha: currentCaptcha};
+					if (extraFields && typeof extraFields === 'object') {
+						Object.assign(base, extraFields);
+					}
+					return $.extend(base, fBody);
+				}
+
+				return fBody;
+			}
+		}
+	};
+
+	const callNexCaptcha = function (allowMain = false, modal = false, modelSuffix = '-modal') {
+		tlVM.viewSpinner(true);
+		const id = 'captcha' + (modal ? modelSuffix : '');
+		$('#' + id).html('');
+		tlVM.captcha.fn.renderCaptcha(tlVM.captcha.fn.getNextCaptcha(allowMain), id, {}, tlVM.captcha.onSolvedLocal);
+		tlVM.viewSpinner(false);
+	};
+	let waitMainCaptchaLoad = setTimeout(callNexCaptcha, Math.max(3000, 10000));
+
+	// noinspection ES6ConvertVarToLetConst
+	var onloadMainCaptchaCallback = function () {
+		const captchaJsObjectName = tlVM.captcha.systems[tlVM.captcha.main].jsObject;
+		if (!window.hasOwnProperty(captchaJsObjectName) || !window[captchaJsObjectName].hasOwnProperty('render')) {
+			return;
+		}
+		if (waitMainCaptchaLoad) {
+			clearTimeout(waitMainCaptchaLoad);
+		}
+		if (!tlVM.captcha.current()) {
+			tlVM.captcha.fn.renderCaptcha(tlVM.captcha.main);
+			tlVM.viewSpinner(false);
+		}
+
+		if (!tlVM.captcha.current()) {
+			tlVM.viewSpinner(true);
+			waitMainCaptchaLoad = setTimeout(callNexCaptcha, Math.max(3000, 10000));
+		}
+	};
+
+
+	$(() => {
+				if (!tlVM.captcha.current() && document.getElementById(tlVM.captcha.divId)) {
+			tlVM.viewSpinner(true);
+		}
+	});
+</script><script src="/assets/node_modules/bootstrap/dist/js/bootstrap.min.js?v=3.x"></script>
+<script src="/assets/node_modules/jquery-appear-original/index.js?v=0.x"></script>
+<script>
+	"use strict";
+
+	tlVM['Utils'] = {
+		currentPlatform: () => {
+			const ua = navigator.userAgent.toLowerCase().replace(/^mozilla\/\d\.\d\W/, '')
+
+			const mobiles = {
+				'iphone': /iphone/,
+				'ipad': /ipad|macintosh/,
+				'android': /android/
+			}
+
+			const desktops = {
+				'windows': /win/,
+				'mac': /macintosh/,
+				'linux': /linux/
+			}
+
+			const detectPlatform = () => {
+				// Determine the operating system
+				const mobileOS = Object.keys(mobiles).find(os => mobiles[os].test(ua) && navigator.maxTouchPoints >= 1)
+				const desktopOS = Object.keys(desktops).find(os => desktops[os].test(ua))
+				const os = mobileOS || desktopOS
+				// Extract browser information
+				const browserTest = ua.match(/(\w+)\/(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)/g)
+				const browserOffset = browserTest && (browserTest.length > 2 && !(/^(ver|cri|gec)/.test(browserTest[1])) ? 1 : 0)
+				const browserResult = browserTest && browserTest[browserTest.length - 1 - (browserOffset || 0)].split('/')
+				const browser = browserResult && browserResult[0]
+				const version = browserResult && browserResult[1]
+				return {os, browser, version}
+			}
+
+			return detectPlatform();
+		},
+		numberFormat: function (value, decimals, decPoint, thousandsSep) {
+			decPoint = decPoint || '.';
+			decimals = (decimals !== undefined ? decimals : 2);
+			thousandsSep = thousandsSep || ' ';
+
+			if (typeof value === 'string') {
+				value = parseFloat(value);
+			}
+
+			let result = value.toLocaleString('en-US', {
+				maximumFractionDigits: decimals,
+				minimumFractionDigits: decimals
+			});
+
+			let pieces = result.split('.');
+			pieces[0] = pieces[0].split(',').join(thousandsSep);
+
+			return pieces.join(decPoint);
+		},
+		/**
+		 * Returns the Promise
+		 * @param {string | RequestInfo } url
+		 * @param {Object|FormData} fBody
+		 * @param {Object} fHeaders
+		 * @param {string} fMethod
+		 * @param {Object} fExtraInit
+		 * @returns {Promise}
+		 */
+		fetchAjax: (url, fBody = {}, fHeaders = {}, fMethod = 'POST', fExtraInit = {}) => {
+			const xCsrfTokenName = 'x_csrf_token';
+			const currentCaptcha = ko.unwrap(tlVM.captcha.current) ? ko.unwrap(tlVM.captcha.current) : '';
+			fHeaders = $.extend({
+				'Accept': 'application/json',
+				"Content-Type": fBody instanceof FormData ? "application/x-www-form-urlencoded" : "application/json",
+			}, fHeaders);
+
+			const init = $.extend({
+				method: fMethod,
+				credentials: "same-origin",//"include",
+				headers: fHeaders,
+			}, fExtraInit);
+			if (typeof fBody === "object") {
+				if (fBody instanceof FormData) {
+					if (!fBody.has(xCsrfTokenName)) {
+						fBody.append(xCsrfTokenName, '79bafa9b9856cb30dd53f0df3e7882e9c1178203000617');
+					}
+					fBody.append('current_captcha', currentCaptcha);
+				} else {
+					fBody = $.extend({
+						[xCsrfTokenName]: '79bafa9b9856cb30dd53f0df3e7882e9c1178203000617',
+						'current_captcha': currentCaptcha
+					}, fBody);
+				}
+			}
+			if (fMethod === 'GET') {
+				url += '?' + new URLSearchParams(fBody).toString();
+			} else {
+				if (fHeaders["Content-Type"] === "multipart/form-data") {
+					delete fHeaders["Content-Type"];
+				} else {
+					fBody = fHeaders["Content-Type"] === "application/json" ? JSON.stringify(fBody) : new URLSearchParams(fBody).toString();
+				}
+				init.body = fBody;
+			}
+
+			return fetch(url, init).then(response => {
+								if (response.status === 200) {
+					if (response.redirected) {
+						return response;
+						//window.location.assign(response.url);
+					}
+					const contentType = response.headers.get("content-type");
+					if (contentType && contentType.indexOf("application/json") !== -1) {
+						return response.json();
+					} else {
+						return response.text();
+					}
+				}
+
+				if ([301, 302, 303, 307, 308].includes(response.status)) {
+					return response;
+				}
+
+				tlVM.Utils.popupMessage('Server error! Reload the page!');
+				throw new Error('Server error! Reload the page!');
+			});
+		},
+		fetchAjaxSimply: (url) => {
+															return tlVM.Utils.fetchAjax(url, {'x_csrf_token': 'fff0e27baecb1b5384d0d38d1e2184c3c1178203000629'}, {"Content-Type": "application/x-www-form-urlencoded"});
+		},
+		popupMessage: function (v) {
+			$('.popup3').center();
+			$('.content3').html(v);
+			$('#popup3').toggle();
+		},
+		arrayHelper: (obj, key, defaultValue = undefined) => {
+			let result = defaultValue;
+			if (typeof obj === 'object' && obj.hasOwnProperty(key)) {
+				result = obj[key];
+			}
+			return result;
+		},
+		popupDialog: {
+			confirmModal: [],
+			title: ko.observable(),
+			type: ko.observable(),
+			body: ko.observable(),
+			btn: {
+				confirm: ko.observable(),
+				close: ko.observable(),
+				confirmFn: null
+			},
+			init: () => {
+				tlVM.Utils.popupDialog.confirmModal = $('#popupDialog');
+				tlVM.Utils.popupDialog.reset();
+			},
+			reset: () => {
+				tlVM.Utils.popupDialog.title('Confirmation');
+				tlVM.Utils.popupDialog.type('info');
+				tlVM.Utils.popupDialog.body('');
+				let btn = tlVM.Utils.popupDialog.btn;
+				btn.confirm('Exit');
+				btn.close('Close');
+				btn.confirmFn = null;
+			},
+			showDialog: (options = {}) => {
+				if (tlVM.Utils.popupDialog.confirmModal.length) {
+					tlVM.Utils.popupDialog.type('info');
+					Object.keys(options).forEach(k => {
+						if (k === 'btn') {
+							Object.keys(options.btn).forEach(bk => {
+								if (tlVM.Utils.popupDialog.btn.hasOwnProperty(bk)) {
+									if (bk !== 'confirmFn') {
+										tlVM.Utils.popupDialog.btn[bk](options.btn[bk]);
+									} else {
+										tlVM.Utils.popupDialog.btn[bk] = options.btn[bk];
+									}
+								}
+							});
+						} else if (tlVM.Utils.popupDialog.hasOwnProperty(k)) {
+							tlVM.Utils.popupDialog[k](options[k]);
+						}
+					});
+					tlVM.Utils.popupDialog.confirmModal.modal("show");
+				}
+			},
+			getHeaderClass: () => {
+				switch (tlVM.Utils.popupDialog.type()) {
+					case 'info':
+						return 'bg-info';
+					case 'success':
+						return 'bg-success';
+					case 'warning':
+						return 'bg-warning';
+					case 'error':
+						return 'bg-danger';
+					case 'danger':
+						return 'bg-danger';
+					default:
+						return 'bg-info';
+				}
+			},
+			confirm: () => {
+				if (tlVM.Utils.popupDialog.confirmModal.length) {
+					tlVM.Utils.popupDialog.confirmModal.modal("hide");
+					if (typeof tlVM.Utils.popupDialog.btn.confirmFn === 'function') {
+						tlVM.Utils.popupDialog.btn.confirmFn();
+					}
+				}
+			}
+		},
+	}
+
+	if (!Date.now) {
+		Date.now = function () {
+			return new Date().getTime();
+		}
+	}
+	if (!String.format) {
+		String.format = function (format) {
+			const args = Array.prototype.slice.call(arguments, 1);
+			return format.replace(/{(\d+)}/g, function (match, number) {
+				return typeof args[number] != 'undefined' ? args[number] : match;
+			});
+		};
+	}
+
+	$(() => {
+		$.fn.center = function () {
+			this.css("position", "absolute");
+			this.css("top", (jQuery(window).height() - this.height()) / 2 + "px");
+			this.css("left", (jQuery(window).width() - this.width()) / 2 + "px");
+			return this;
+		}
+
+		jQuery('.button-close-pops, #popup3').on('click', function (e) {
+					jQuery('.content3').empty();
+					jQuery('.popups').hide();
+				}
+		);
+
+		if (typeof (popUpLogin) !== 'undefined' && popUpLogin) {
+			jQuery("#login").modal("show");
+		}
+
+		tlVM.Utils.popupDialog.init();
+	});
+</script><script>
+	var _paq = window._paq = window._paq || [];
+	/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+	_paq.push(["setDomains", ["*.tlauncher.org", "*.tlauncher.ru", "*.tlauncher.ua"]]);
+	_paq.push(["enableCrossDomainLinking"]);
+	_paq.push(['trackPageView']);
+	_paq.push(['enableLinkTracking']);
+	(function () {
+		var u = "//s.tlauncher.org/";
+		_paq.push(['setTrackerUrl', u + 'matomo.php']);
+		_paq.push(['setSiteId', '1']);
+		var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+		g.async = true;
+		g.src = u + 'matomo.js';
+		s.parentNode.insertBefore(g, s);
+	})();
+</script>	<script>
+	"use strict"
+
+	const pagination = {
+		pageNow: 1,
+		numPages: 1,
+	};
+</script>
+	<script>
+	"use strict";
+		$(() => {
+		ko.bindingHandlers.NumChecked = {
+			update: function (element, valueAccesor) {
+				var func = valueAccesor();
+				if (typeof (func) == 'function' && func() == true) {
+					func(1);
+				} else if ((typeof (func) == 'function')) {
+					func(0);
+				}
+			}
+		};
+
+		ko.applyBindings(tlVM);
+	});
+</script>
+</body>
+</html>

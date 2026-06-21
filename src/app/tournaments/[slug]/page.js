@@ -869,94 +869,124 @@ export default function TournamentDetailPage() {
             {user && isMemberOfOrg && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>Org members cannot react</p>}
           </Card>
 
-          {/* Registration Status & Access Widget */}
-          {registration && (
-            <div className="flex flex-col gap-2 mb-4">
-              <div className="p-4 flex flex-col gap-2" style={{ backgroundColor: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '700', letterSpacing: '0.05em' }}>YOUR ENTRY STATUS</div>
-                <div style={{ fontSize: 'var(--text-base)', fontWeight: 'bold', color: 'var(--color-text-white)' }}>
-                  {registration.status === 'REGISTERED' ? 'Pending Review' : registration.status === 'SELECTED' ? 'Approved / Whitelisted' : 'Rejected'}
-                </div>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Minecraft IGN: <strong>{registration.minecraft_ign}</strong></div>
-
-                {/* Server IP sharing block */}
-                {registration.status === 'SELECTED' && (
-                  <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', marginTop: '8px' }}>
-                    {tournament.status === 'ENDED' ? (
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>🔌 Server IP: Hidden (Tournament has ended)</div>
-                    ) : serverIpInfo?.ip_revealed && serverIpInfo?.server_ip ? (
-                      <div>
-                        <div className="td-input-label" style={{ marginBottom: '6px' }}>🎮 SERVER CONNECTION IP</div>
-                        <div className="flex gap-2">
-                          <input
-                            className="td-input-field"
-                            value={serverIpInfo.server_ip}
-                            readOnly
-                            style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', flex: 1, height: '32px' }}
-                          />
-                          <Button variant="secondary" size="sm" style={{ height: '32px', padding: '0 12px' }} onClick={() => {
-                            navigator.clipboard.writeText(serverIpInfo.server_ip)
-                            alert('IP copied to clipboard!')
-                          }}>Copy</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>⏳ Server IP: Will be revealed by organizers soon</div>
-                    )}
+          {/* Unified Registration Status Card */}
+          <Card className="p-0" style={{ border: '2px solid var(--color-border)', overflow: 'hidden' }}>
+            <div style={{ padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-subtle)', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: '800', letterSpacing: '0.05em' }}>REGISTRATION DESK</div>
+            </div>
+            
+            <div className="p-5 flex flex-col gap-4">
+              {/* If user is registered */}
+              {registration ? (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '700' }}>YOUR ENTRY STATUS</div>
+                    <div style={{ 
+                      fontSize: 'var(--text-xl)', 
+                      fontWeight: '900', 
+                      color: registration.status === 'SELECTED' ? 'var(--color-success)' : registration.status === 'REGISTERED' ? 'var(--color-warning)' : 'var(--color-danger)'
+                    }}>
+                      {registration.status === 'REGISTERED' ? 'PENDING REVIEW' : registration.status === 'SELECTED' ? 'WHITELISTED' : 'REJECTED'}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>IGN: <strong>{registration.minecraft_ign}</strong></div>
                   </div>
-                )}
-              </div>
-              {tournament.status === 'SOON' && (
-                <Button variant="danger" size="sm" onClick={handleWithdrawRegistration} loading={submittingReg} className="w-full">
-                  Withdraw Registration
-                </Button>
-              )}
-            </div>
-          )}
 
-          {/* Registration Button for Non-registered */}
-          {!registration && tournament.status !== 'ENDED' && (
-            <div className="flex flex-col gap-2">
-              {tournament.registration_type === 'external' ? (
-                tournament.registration_url ? (
-                  <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg w-full flex items-center justify-center">
-                    Register Now
-                  </a>
-                ) : (
-                  <Button variant="secondary" size="lg" disabled className="w-full">
-                    Registration Link Unavailable
-                  </Button>
-                )
+                  {/* Server IP sharing block */}
+                  {registration.status === 'SELECTED' && (
+                    <div style={{ backgroundColor: 'var(--color-bg-input)', padding: '12px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                      {tournament.status === 'ENDED' ? (
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontWeight: '700' }}>🔌 SERVER IP: HIDDEN (EVENT ENDED)</div>
+                      ) : serverIpInfo?.ip_revealed && serverIpInfo?.server_ip ? (
+                        <div className="flex flex-col gap-2">
+                          <div style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: '800' }}>🎮 SERVER CONNECTION IP</div>
+                          <div className="flex gap-2">
+                            <input
+                              className="td-input-field"
+                              value={serverIpInfo.server_ip}
+                              readOnly
+                              style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', flex: 1, padding: '8px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-white)' }}
+                            />
+                            <button style={{ padding: '0 12px', backgroundColor: 'var(--color-primary)', color: '#000', fontWeight: '800', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => {
+                              navigator.clipboard.writeText(serverIpInfo.server_ip)
+                              alert('IP copied to clipboard!')
+                            }}>COPY</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', fontWeight: '700' }}>⏳ SERVER IP: TO BE ANNOUNCED</div>
+                      )}
+                    </div>
+                  )}
+
+                  {tournament.status === 'SOON' && (
+                    <button onClick={handleWithdrawRegistration} disabled={submittingReg} style={{ 
+                      width: '100%', padding: '10px', backgroundColor: 'transparent', color: 'var(--color-danger)', fontWeight: '800', border: '1px solid var(--color-danger)', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-danger)'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-danger)'; }}
+                    >
+                      {submittingReg ? 'WITHDRAWING...' : 'WITHDRAW REGISTRATION'}
+                    </button>
+                  )}
+                </>
+              ) : tournament.status === 'ENDED' ? (
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                  <div style={{ fontSize: 'var(--text-xl)', fontWeight: '900', color: 'var(--color-text-muted)', marginBottom: '8px' }}>EVENT CONCLUDED</div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>Registration is permanently closed.</p>
+                </div>
               ) : (
-                // Native Registration
-                !user ? (
-                  <Link href={`/login?redirect=/tournaments/${slug}`} className="btn btn-primary btn-lg w-full flex items-center justify-center" style={{ textDecoration: 'none' }}>
-                    Sign In to Register
-                  </Link>
-                ) : isMemberOfOrg ? (
-                  <Button variant="secondary" size="lg" disabled className="w-full">
-                    Org Members Cannot Register
-                  </Button>
-                ) : !tournament.registration_open ? (
-                  <Button variant="secondary" size="lg" disabled className="w-full">
-                    Registration Closed
-                  </Button>
-                ) : tournament.max_registrations && registrationCount >= tournament.max_registrations ? (
-                  <Button variant="secondary" size="lg" disabled className="w-full">
-                    Registration Full
-                  </Button>
-                ) : tournament.status === 'SOON' ? (
-                  <Button variant="primary" size="lg" onClick={handleRegisterClick} className="w-full">
-                    Register for Tournament
-                  </Button>
-                ) : (
-                  <Button variant="secondary" size="lg" disabled className="w-full">
-                    Registration Closed (Live)
-                  </Button>
-                )
+                /* Registration Button for Non-registered */
+                <div className="flex flex-col gap-3">
+                  {tournament.registration_type === 'external' ? (
+                    tournament.registration_url ? (
+                      <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                        <button style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-primary)', color: '#000', fontWeight: '900', fontSize: 'var(--text-md)', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                          REGISTER NOW (EXTERNAL)
+                        </button>
+                      </a>
+                    ) : (
+                      <button disabled style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-bg-input)', color: 'var(--color-text-muted)', fontWeight: '900', fontSize: 'var(--text-md)', border: '2px solid var(--color-border)', borderRadius: '4px' }}>
+                        LINK UNAVAILABLE
+                      </button>
+                    )
+                  ) : (
+                    // Native Registration
+                    !user ? (
+                      <Link href={`/login?redirect=/tournaments/${slug}`} style={{ textDecoration: 'none' }}>
+                         <button style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-primary)', color: '#000', fontWeight: '900', fontSize: 'var(--text-md)', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                          SIGN IN TO REGISTER
+                        </button>
+                      </Link>
+                    ) : isMemberOfOrg ? (
+                      <button disabled style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-bg-input)', color: 'var(--color-text-muted)', fontWeight: '900', fontSize: 'var(--text-md)', border: '2px solid var(--color-border)', borderRadius: '4px' }}>
+                        ORG MEMBERS CANNOT PLAY
+                      </button>
+                    ) : !tournament.registration_open ? (
+                      <button disabled style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-bg-input)', color: 'var(--color-text-muted)', fontWeight: '900', fontSize: 'var(--text-md)', border: '2px solid var(--color-border)', borderRadius: '4px' }}>
+                        REGISTRATION CLOSED
+                      </button>
+                    ) : tournament.max_registrations && registrationCount >= tournament.max_registrations ? (
+                      <button disabled style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-bg-input)', color: 'var(--color-warning)', fontWeight: '900', fontSize: 'var(--text-md)', border: '2px solid var(--color-border)', borderRadius: '4px' }}>
+                        REGISTRATION FULL
+                      </button>
+                    ) : tournament.status === 'SOON' ? (
+                       <button onClick={handleRegisterClick} style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-primary)', color: '#000', fontWeight: '900', fontSize: 'var(--text-md)', border: 'none', borderRadius: '4px', cursor: 'pointer', transition: 'transform 0.1s' }}
+                         onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                         onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                       >
+                        REGISTER NOW
+                      </button>
+                    ) : (
+                      <button disabled style={{ width: '100%', padding: '14px', backgroundColor: 'var(--color-bg-input)', color: 'var(--color-text-muted)', fontWeight: '900', fontSize: 'var(--text-md)', border: '2px solid var(--color-border)', borderRadius: '4px' }}>
+                        REGISTRATION CLOSED (LIVE)
+                      </button>
+                    )
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </Card>
 
           {/* Info */}
           <Card className="p-5">

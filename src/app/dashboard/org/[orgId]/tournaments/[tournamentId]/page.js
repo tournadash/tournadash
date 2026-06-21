@@ -34,6 +34,10 @@ export default function TournamentManagePage() {
   const [ipRevealed, setIpRevealed] = useState(false)
   const [updatingIp, setUpdatingIp] = useState(false)
 
+  // Broadcast Alert
+  const [broadcastAlert, setBroadcastAlert] = useState('')
+  const [updatingBroadcast, setUpdatingBroadcast] = useState(false)
+
   // Whitelist Import States
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [importText, setImportText] = useState('')
@@ -98,6 +102,8 @@ export default function TournamentManagePage() {
       .maybeSingle()
     setServerIp(ipData?.server_ip || '')
     setIpRevealed(!!ipData?.ip_revealed)
+
+    setBroadcastAlert(t.participant_broadcast_message || '')
 
     // Fetch tournament leaderboards
     const { data: lbs } = await supabase
@@ -920,7 +926,7 @@ export default function TournamentManagePage() {
       {/* Server IP Direct Control */}
       <Card className="p-6">
         <h4 className="dashboard-page-title mb-4" style={{ fontSize: 'var(--text-base)' }}>Minecraft Server Connection</h4>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center mb-6">
           <div style={{ flex: 1 }}>
             <label className="td-input-label">Minecraft Server IP</label>
             <input
@@ -968,6 +974,42 @@ export default function TournamentManagePage() {
           >
             Save Connection Settings
           </Button>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '24px' }}>
+          <h4 className="dashboard-page-title mb-2" style={{ fontSize: 'var(--text-sm)' }}>Participant Broadcast Alert</h4>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+            Post a direct notification to approved players' dashboards (e.g. "Server opens in 5 mins", "Matches delayed").
+          </p>
+          <div className="flex gap-4 items-center">
+            <div style={{ flex: 1 }}>
+              <input
+                className="td-input-field"
+                value={broadcastAlert}
+                placeholder="Enter alert message (leave blank to clear)"
+                onChange={(e) => setBroadcastAlert(e.target.value)}
+                style={{ fontSize: 'var(--text-sm)' }}
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={updatingBroadcast}
+              onClick={async () => {
+                setUpdatingBroadcast(true)
+                await supabase
+                  .from('tournaments')
+                  .update({ participant_broadcast_message: broadcastAlert.trim() || null })
+                  .eq('id', tournamentId)
+                
+                setSuccess('Broadcast alert updated!')
+                setTimeout(() => setSuccess(''), 2000)
+                setUpdatingBroadcast(false)
+              }}
+            >
+              Update Alert
+            </Button>
+          </div>
         </div>
       </Card>
 

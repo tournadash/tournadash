@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
 import useScrollAnimation from '@/hooks/useScrollAnimation'
+import TournamentCard from '@/components/ui/TournamentCard'
 
 export default function OrgPublicProfilePage() {
   const { slug } = useParams()
@@ -21,8 +22,9 @@ export default function OrgPublicProfilePage() {
   const [followerCount, setFollowerCount] = useState(0)
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
-
-  useScrollAnimation('.animate-on-scroll', [loading, org, members, tournaments, leaderboard])
+  const [userRegistrations, setUserRegistrations] = useState({}) // tournament_id -> registration status
+  
+  useScrollAnimation('.animate-on-scroll', [loading, org, members, tournaments, leaderboard, userRegistrations])
 
   useEffect(() => {
     const load = async () => {
@@ -70,6 +72,22 @@ export default function OrgPublicProfilePage() {
       if (u) {
         const { data: follow } = await supabase.from('follows').select('id').eq('organization_id', orgData.id).eq('user_id', u.id).maybeSingle()
         setFollowed(!!follow)
+        
+        // Fetch user's registrations for these tournaments
+        if (t && t.length > 0) {
+          const tIds = t.map(tourn => tourn.id)
+          const { data: regs } = await supabase
+            .from('tournament_registrations')
+            .select('tournament_id, status')
+            .eq('user_id', u.id)
+            .in('tournament_id', tIds)
+            
+          if (regs) {
+            const regMap = {}
+            regs.forEach(r => { regMap[r.tournament_id] = r })
+            setUserRegistrations(regMap)
+          }
+        }
       }
 
       setLoading(false)
@@ -235,196 +253,163 @@ export default function OrgPublicProfilePage() {
         </div>
       </Card>
 
-      {/* Custom Links (Linktree) */}
-      {org.custom_links && org.custom_links.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-8)' }}>
-          {org.custom_links.map((link, i) => (
-            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-              <Card interactive className="p-4 text-center">
-                <span className="flex items-center justify-center gap-2" style={{ fontWeight: '500', color: 'var(--color-primary)', fontSize: 'var(--text-sm)' }}>
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                  </svg>
-                  {link.label}
-                </span>
-              </Card>
-            </a>
-          ))}
-        </div>
-      )}
-
-      {/* Team Members & Leaderboard Row */}
-      <div style={{
-        display: 'flex',
-        gap: 'var(--space-6)',
-        flexWrap: 'wrap',
-        marginBottom: 'var(--space-10)',
-        alignItems: 'flex-start'
-      }}>
-        {/* Left: Team Members */}
-        <div style={{ flex: '1 1 50%', minWidth: '300px' }}>
-          <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Team Members</h3>
-          {members.length > 0 ? (
-            <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-              {members.map((m) => (
-                <Link key={m.id} href={`/users/${m.users?.username || m.user_id}`} style={{ textDecoration: 'none' }}>
-                  <Card interactive className="flex items-center gap-3 animate-on-scroll" style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <Avatar
-                      src={m.users?.avatar_url}
-                      alt={m.users?.display_name || ''}
-                      size="lg"
-                      fallback={m.users?.display_name?.[0]?.toUpperCase() || 'U'}
-                    />
-                    <div>
-                      <div style={{ fontWeight: '500', fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>
-                        {m.users?.display_name}
-                      </div>
-                      <Badge variant={m.role === 'OWNER' ? 'danger' : m.role === 'MANAGER' ? 'primary' : 'neutral'} style={{ fontSize: '9px', padding: '1px 4px', marginTop: '2px' }}>
-                        {m.role}
-                      </Badge>
-                    </div>
-                  </Card>
+      {/* Main Two-Column Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: 'var(--space-8)', alignItems: 'start' }} className="animate-on-scroll">
+        
+        {/* Left Column: Featured Events & Announcements */}
+        <div className="flex flex-col gap-8">
+          
+          {/* Featured Events */}
+          <div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-4)',
+              borderBottom: '2px solid var(--color-border)',
+              paddingBottom: '8px'
+            }}>
+              <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800' }}>FEATURED EVENTS</h3>
+              {tournaments.length > 0 && (
+                <Link
+                  href={`/organizations/${slug}/tournaments`}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: 'var(--text-xs)', textDecoration: 'none', padding: '6px 12px', fontWeight: '800' }}
+                >
+                  VIEW ALL ➔
                 </Link>
-              ))}
+              )}
             </div>
-          ) : (
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>No team members in this organization.</p>
-          )}
-        </div>
 
-        {/* Right: Leaderboard */}
-        {leaderboard && leaderboard.length > 0 && (
-          <div style={{ width: '320px', flexShrink: 0 }} className="animate-on-scroll">
-            <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>🏆 Top Players Wins</h3>
-            <Card className="p-4" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {leaderboard.map((player, idx) => {
-                const rank = idx + 1
-                return (
-                  <div key={idx} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '6px 12px',
-                    backgroundColor: 'var(--color-bg-input)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                      <span style={{
-                        fontWeight: '800',
-                        fontSize: 'var(--text-sm)',
-                        color: rank === 1 ? 'var(--color-warning)' : rank === 2 ? 'var(--color-text-secondary)' : rank === 3 ? '#cd7f32' : 'var(--color-text-muted)',
-                        width: '18px',
-                        flexShrink: 0
-                      }}>
-                        #{rank}
-                      </span>
-                      <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {player.player_name}
-                      </span>
-                    </div>
-                    <Badge variant="primary" style={{ fontSize: '9px', padding: '2px 6px', flexShrink: 0 }}>
-                      {player.wins} {player.wins === 1 ? 'win' : 'wins'}
-                    </Badge>
-                  </div>
-                )
-              })}
+            {tournaments.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-5)' }}>
+                {tournaments.filter(t => t.status !== 'ENDED').slice(0, 4).map((t) => (
+                  <TournamentCard key={t.id} tournament={t} userRegistration={userRegistrations[t.id]} />
+                ))}
+                {/* Fallback to ended tournaments if no active ones exist */}
+                {tournaments.filter(t => t.status !== 'ENDED').length === 0 && tournaments.slice(0, 2).map((t) => (
+                  <TournamentCard key={t.id} tournament={t} userRegistration={userRegistrations[t.id]} />
+                ))}
+              </div>
+            ) : (
+              <Card className="p-8 text-center flex flex-col items-center justify-center gap-4">
+                <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No tournaments hosted yet.</p>
+              </Card>
+            )}
+          </div>
+
+          {/* Announcements / Bio Box */}
+          <div>
+            <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
+              ANNOUNCEMENTS
+            </h3>
+            <Card className="p-6" style={{ border: '2px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+              {org.bio ? (
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                  {org.bio}
+                </p>
+              ) : (
+                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0 }}>No current announcements.</p>
+              )}
             </Card>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Tournaments Header Row */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 'var(--space-4)'
-      }}>
-        <h3 style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', margin: 0 }}>Tournaments</h3>
-        {tournaments.length > 0 && (
-          <Link
-            href={`/organizations/${slug}/tournaments`}
-            className="btn btn-secondary btn-sm"
-            id="view-all-tournaments-btn"
-            style={{ fontSize: 'var(--text-xs)', textDecoration: 'none', padding: '6px 12px' }}
-          >
-            View All Tournaments ➔
-          </Link>
-        )}
-      </div>
-
-      {tournaments.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-5)' }}>
-          {tournaments.slice(0, 3).map((t) => {
-            return (
-              <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }} className="animate-on-scroll">
-                <Card interactive className="p-0 overflow-hidden">
-                  {/* Thumbnail Image */}
-                  <div style={{ position: 'relative', width: '100%', height: '160px', backgroundColor: 'var(--color-bg-subtle)', overflow: 'hidden' }}>
-                    {t.banner_url ? (
-                      <img src={t.banner_url} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div className="flex items-center justify-center h-full" style={{ color: 'var(--color-text-muted)' }}>
-                        <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
+        {/* Right Column: Highlights & Handles */}
+        <div className="flex flex-col gap-8">
+          
+          {/* Recent Highlights */}
+          <div>
+            <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
+              RECENT HIGHLIGHTS
+            </h3>
+            {tournaments.filter(t => t.status === 'ENDED').length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {tournaments.filter(t => t.status === 'ENDED').slice(0, 3).map(t => (
+                  <Card key={t.id} interactive className="p-4" style={{ border: '2px solid var(--color-border)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: '800', marginBottom: '4px' }}>
+                      {new Date(t.ends_at || t.created_at).toLocaleDateString()}
+                    </div>
+                    <Link href={`/tournaments/${t.slug}`} style={{ fontWeight: '700', color: 'var(--color-text-white)', textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                      {t.name}
+                    </Link>
+                    {t.winner_1st && (
+                      <div style={{ fontSize: '12px', color: 'var(--color-warning)', fontWeight: '600' }}>
+                        🏆 Champion: {t.winner_1st.name}
                       </div>
                     )}
-                  </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-4 text-center" style={{ border: '2px dashed var(--color-border)' }}>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>No recent highlights.</p>
+              </Card>
+            )}
+          </div>
 
-                  <div style={{ padding: 'var(--space-5) var(--space-6) var(--space-6)' }}>
-                    <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-3)' }}>
-                      <h4 style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-md)' }}>
-                        {t.name}
-                      </h4>
-                      <Badge variant={getStatusVariant(t.status)}>
-                        {getStatusLabel(t.status)}
-                      </Badge>
-                    </div>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}>
-                      {t.short_description || (t.description ? (t.description.length > 120 ? t.description.substring(0, 120) + '...' : t.description) : 'No description provided.')}
-                    </p>
-                    <div className="flex gap-4" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)' }}>
-                      <span className="flex items-center gap-1">
-                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        {t.player_count || 0}
+          {/* Community Handles */}
+          <div>
+            <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
+              COMMUNITY
+            </h3>
+            <div className="flex flex-col gap-3">
+              {org.social_discord && (
+                <a href={org.social_discord} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  <button style={{ 
+                    width: '100%', padding: '12px', backgroundColor: '#5865F2', color: 'white', fontWeight: '800', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' 
+                  }}>
+                    JOIN DISCORD ➔
+                  </button>
+                </a>
+              )}
+              {org.social_youtube && (
+                <a href={org.social_youtube} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  <button style={{ 
+                    width: '100%', padding: '12px', backgroundColor: '#FF0000', color: 'white', fontWeight: '800', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' 
+                  }}>
+                    WATCH ON YOUTUBE ➔
+                  </button>
+                </a>
+              )}
+              {org.custom_links && org.custom_links.map((link, i) => (
+                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  <button style={{ 
+                    width: '100%', padding: '12px', backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-white)', fontWeight: '800', border: '2px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' 
+                  }}>
+                    {link.label.toUpperCase()} ➔
+                  </button>
+                </a>
+              ))}
+            </div>
+          </div>
+          
+          {/* Leaderboard/Team Box */}
+          {leaderboard && leaderboard.length > 0 && (
+             <div>
+              <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
+                TOP PLAYERS
+              </h3>
+              <Card className="p-0" style={{ border: '2px solid var(--color-border)', overflow: 'hidden' }}>
+                {leaderboard.map((player, idx) => (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: idx < leaderboard.length - 1 ? '1px solid var(--color-border)' : 'none', backgroundColor: idx % 2 === 0 ? 'var(--color-bg-card)' : 'var(--color-bg-subtle)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: '800', color: idx === 0 ? 'var(--color-warning)' : idx === 1 ? 'var(--color-text-secondary)' : idx === 2 ? '#cd7f32' : 'var(--color-text-muted)' }}>
+                        #{idx + 1}
                       </span>
-                      {t.likes_visible && (
-                        <span className="flex items-center gap-1">
-                          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                          </svg>
-                          {t.like_count || 0}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="16" y1="2" x2="16" y2="6"></line>
-                          <line x1="8" y1="2" x2="8" y2="6"></line>
-                          <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        {new Date(t.created_at).toLocaleDateString()}
-                      </span>
+                      <span style={{ fontWeight: '700', color: 'var(--color-text-white)' }}>{player.player_name}</span>
                     </div>
+                    <Badge variant="primary" style={{ fontWeight: '800' }}>{player.wins} WINS</Badge>
                   </div>
-                </Card>
-              </Link>
-            )
-          })}
+                ))}
+              </Card>
+            </div>
+          )}
+
         </div>
-      ) : (
-        <Card className="p-8 text-center flex flex-col items-center justify-center gap-4 animate-on-scroll">
-          <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No tournaments hosted yet.</p>
-        </Card>
-      )}
+      </div>
     </div>
   )
 }

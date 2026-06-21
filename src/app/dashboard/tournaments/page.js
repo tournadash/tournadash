@@ -27,7 +27,7 @@ export default function MyTournamentsPage() {
           status,
           registered_at,
           tournaments (
-            id, name, slug, status, starts_at, ends_at,
+            id, name, slug, status, starts_at, ends_at, participant_broadcast_message,
             organizations ( name )
           )
         `)
@@ -163,9 +163,16 @@ export default function MyTournamentsPage() {
                     </Badge>
                   </div>
 
-                  {/* Server IP sharing block */}
+                  {/* Server IP sharing block and Broadcast Message */}
                   {isSelected && (
-                    <div style={{ borderTop: '1px dotted var(--color-border)', paddingTop: '12px', marginTop: '4px' }}>
+                    <div style={{ borderTop: '1px dotted var(--color-border)', paddingTop: '12px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {t.participant_broadcast_message && (
+                        <div style={{ background: 'rgba(88, 101, 242, 0.1)', border: '1px solid rgba(88, 101, 242, 0.3)', borderRadius: 'var(--radius-sm)', padding: '8px', marginBottom: '8px' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: 'bold', marginBottom: '2px', textTransform: 'uppercase' }}>ORGANIZER BROADCAST</div>
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-white)' }}>{t.participant_broadcast_message}</div>
+                        </div>
+                      )}
+                      
                       {isEnded ? (
                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>🔌 Server IP: Hidden (Tournament has ended)</div>
                       ) : revealIp ? (

@@ -71,7 +71,10 @@ export default function EditTournamentPage() {
           require_follow: !!data.require_follow,
           is_private: !!data.is_private,
           ends_at: data.ends_at ? data.ends_at.slice(0, 16) : '',
+          registration_deadline: data.registration_deadline ? data.registration_deadline.slice(0, 16) : '',
           prizepool: data.prizepool || '',
+          currency: data.currency || 'USD',
+          minecraft_version: data.minecraft_version || '1.20.1',
         })
         setThumbnailPreview(data.banner_url || null)
       }
@@ -187,8 +190,11 @@ export default function EditTournamentPage() {
       require_follow: !!form.require_follow,
       is_private: !!form.is_private,
       ends_at: form.ends_at || null,
+      registration_deadline: form.registration_deadline || null,
       banner_url: bannerUrl,
       prizepool: form.prizepool.trim() || null,
+      currency: form.currency.trim() || 'USD',
+      minecraft_version: form.minecraft_version.trim() || '1.20.1',
     }
 
     let { error: updateError } = await supabase
@@ -204,7 +210,10 @@ export default function EditTournamentPage() {
       delete fallbackPayload.require_discord
       delete fallbackPayload.require_follow
       delete fallbackPayload.ends_at
+      delete fallbackPayload.registration_deadline
       delete fallbackPayload.prizepool
+      delete fallbackPayload.currency
+      delete fallbackPayload.minecraft_version
       delete fallbackPayload.use_custom_discord
       const fallbackResult = await supabase
         .from('tournaments')
@@ -687,6 +696,42 @@ export default function EditTournamentPage() {
 
           <div className="grid grid-cols-2 gap-6 mb-4">
             <Input 
+              label="Minecraft Version" 
+              type="text" 
+              placeholder="e.g. 1.20.1" 
+              value={form.minecraft_version} 
+              onChange={(e) => updateForm('minecraft_version', e.target.value)} 
+            />
+            <div className="flex gap-4">
+              <div style={{ flex: 2 }}>
+                <Input 
+                  label="Prize Pool Amount (Optional)" 
+                  type="text" 
+                  placeholder="e.g. 1000" 
+                  value={form.prizepool} 
+                  onChange={(e) => updateForm('prizepool', e.target.value)} 
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="input-label" style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: '8px' }}>Currency</label>
+                <select 
+                  className="td-input-field" 
+                  value={form.currency} 
+                  onChange={(e) => updateForm('currency', e.target.value)}
+                  style={{ width: '100%', padding: '12px', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-white)' }}
+                >
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="INR">INR</option>
+                  <option value="Robux">Robux</option>
+                  <option value="Custom">Custom</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-6 mb-4">
+            <Input 
               label="Max Players" 
               type="number" 
               min="2" 
@@ -694,15 +739,6 @@ export default function EditTournamentPage() {
               value={form.max_players} 
               onChange={(e) => updateForm('max_players', e.target.value)} 
             />
-            <Input 
-              label="Prize Pool (Optional)" 
-              type="text" 
-              placeholder="e.g. $1,000, 5000 Robux, Custom, etc." 
-              value={form.prizepool} 
-              onChange={(e) => updateForm('prizepool', e.target.value)} 
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-6">
             <Input 
               label="Starts At" 
               type="datetime-local" 
@@ -714,6 +750,15 @@ export default function EditTournamentPage() {
               type="datetime-local" 
               value={form.ends_at} 
               onChange={(e) => updateForm('ends_at', e.target.value)} 
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <Input 
+              label="Registration Deadline (Optional)" 
+              type="datetime-local" 
+              value={form.registration_deadline} 
+              onChange={(e) => updateForm('registration_deadline', e.target.value)} 
+              helperText="When will registrations automatically close?"
             />
           </div>
 
