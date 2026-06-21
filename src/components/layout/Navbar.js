@@ -114,15 +114,19 @@ export default function Navbar() {
     <>
       <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
         <div className="navbar-inner">
-          {/* Logo */}
-          <Link href="/" className="navbar-logo" id="navbar-logo">
-            <svg className="navbar-logo-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-            <span className="navbar-logo-text">
-              Tourna<span>Dash</span>
-            </span>
-          </Link>
+          {/* Logo / Portal Target */}
+          {pathname.startsWith('/organizations/') && pathname.split('/').length === 3 ? (
+            <div id="navbar-org-portal" className="flex items-center gap-3"></div>
+          ) : (
+            <Link href="/" className="navbar-logo" id="navbar-logo">
+              <svg className="navbar-logo-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <span className="navbar-logo-text">
+                Tourna<span>Dash</span>
+              </span>
+            </Link>
+          )}
 
           {/* Desktop Nav Links */}
           <ul className="navbar-links">
