@@ -183,6 +183,10 @@
 }
 
 .dash-stat-card {
+  padding: 0 !important;
+}
+
+.dash-stat-card .td-card-body {
   padding: var(--space-4) var(--space-5);
   display: grid;
   grid-template-columns: auto 1fr;

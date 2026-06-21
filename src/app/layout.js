@@ -2,6 +2,7 @@ import { Outfit, Inter } from 'next/font/google'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import './globals.css'
+import '@/components/ui/Button.css'
 
 const outfit = Outfit({
   variable: '--font-heading',
