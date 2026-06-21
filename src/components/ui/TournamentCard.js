@@ -30,7 +30,7 @@ export default function TournamentCard({ tournament, userRegistration }) {
   // Determine user status
   let userStatusLabel = 'NOT REGISTERED'
   let userStatusColor = 'var(--color-text-muted)'
-  
+
   if (userRegistration) {
     if (userRegistration.status === 'SELECTED') {
       userStatusLabel = 'WHITELISTED / SELECTED'
@@ -47,10 +47,10 @@ export default function TournamentCard({ tournament, userRegistration }) {
   }
 
   return (
-    <Card interactive className="p-0 overflow-hidden flex flex-col h-full animate-on-scroll tournament-card-bg" style={{ 
-      border: '2px solid var(--color-border)', 
+    <Card interactive className="p-0 overflow-hidden flex flex-col h-full animate-on-scroll tournament-card-bg" style={{
+      border: '2px solid var(--color-border)',
       borderRadius: 'var(--radius-lg)',
-      boxShadow: '0 4px 0 var(--color-border)' 
+      boxShadow: '0 4px 0 var(--color-border)'
     }}>
       {/* Card Header (Banner) */}
       <div style={{ position: 'relative', width: '100%', height: '160px', backgroundColor: 'var(--color-bg-subtle)', overflow: 'hidden' }}>
@@ -63,18 +63,18 @@ export default function TournamentCard({ tournament, userRegistration }) {
             </svg>
           </div>
         )}
-        
+
         {/* Status Badge Top Left (Transparent Text) */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', fontWeight: '800', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,1)', fontSize: '14px', letterSpacing: '0.05em' }}>
           {getStatusDot(tournament.status)} {getStatusLabel(tournament.status)}
         </div>
 
         {/* User Status Bottom Right */}
-        <div style={{ 
-          position: 'absolute', 
-          bottom: '12px', 
-          right: '12px', 
-          fontWeight: '800', 
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          right: '12px',
+          fontWeight: '800',
           color: userStatusColor,
           fontSize: '11px',
           textShadow: '0 2px 4px rgba(0,0,0,0.8)',
@@ -85,12 +85,12 @@ export default function TournamentCard({ tournament, userRegistration }) {
         </div>
 
         {/* Date Top Right */}
-        <div style={{ 
-          position: 'absolute', 
-          top: '12px', 
-          right: '12px', 
-          backgroundColor: 'rgba(0,0,0,0.6)', 
-          padding: '4px 8px', 
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          padding: '4px 8px',
           borderRadius: '4px',
           fontSize: 'var(--text-xs)',
           fontWeight: '600',
@@ -106,7 +106,7 @@ export default function TournamentCard({ tournament, userRegistration }) {
         <h4 style={{ fontWeight: '800', color: 'var(--color-text-white)', fontSize: 'var(--text-md)', margin: '4px 0' }}>
           {tournament.name}
         </h4>
-        
+
         {/* Metadata grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
           <div style={{ backgroundColor: 'var(--color-bg-input)', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
@@ -119,13 +119,13 @@ export default function TournamentCard({ tournament, userRegistration }) {
           </div>
         </div>
 
-        <p style={{ 
-          fontSize: 'var(--text-sm)', 
-          color: 'var(--color-text-secondary)', 
-          marginBottom: 'var(--space-4)', 
-          display: '-webkit-box', 
-          WebkitLineClamp: 2, 
-          WebkitBoxOrient: 'vertical', 
+        <p style={{
+          fontSize: 'var(--text-sm)',
+          color: 'var(--color-text-secondary)',
+          marginBottom: 'var(--space-4)',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
           flex: 1
         }}>
@@ -134,9 +134,9 @@ export default function TournamentCard({ tournament, userRegistration }) {
 
         {/* Action Button */}
         <Link href={`/tournaments/${tournament.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-          <button className="btn btn-secondary" style={{ 
-            width: '100%', 
-            padding: '10px', 
+          <button className="btn btn-secondary" style={{
+            width: '100%',
+            padding: '10px',
             fontWeight: '800',
             textTransform: 'uppercase'
           }}>

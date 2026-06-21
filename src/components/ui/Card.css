@@ -22,7 +22,7 @@
 }
 
 .td-card-header {
-  padding: var(--space-5) var(--space-6) 0;
+  padding: var(--space-3) var(--space-3) 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -41,18 +41,18 @@
 }
 
 .td-card-body {
-  padding: var(--space-6);
+  padding: 10px;
   flex: 1;
 }
 
 .td-card-footer {
-  padding: 0 var(--space-6) var(--space-5);
+  padding: 0 var(--space-3) var(--space-3);
   display: flex;
   align-items: center;
   gap: var(--space-3);
   margin-top: auto;
 }
 
-.td-card-header + .td-card-body {
+.td-card-header+.td-card-body {
   padding-top: var(--space-4);
 }
