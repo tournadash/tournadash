@@ -106,9 +106,9 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
         style={{ 
           border: '1px solid var(--color-border)', 
           borderRadius: 'var(--radius-lg)', 
-          padding: '8px', 
-          backgroundColor: 'var(--color-bg-input)',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
+          padding: '12px', 
+          background: 'linear-gradient(135deg, #0f172a, #064e3b)', 
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 2px 4px rgba(255,255,255,0.05)',
           display: 'inline-flex',
           cursor: 'grab'
         }}

@@ -103,8 +103,10 @@ export default function ProfileEditPage() {
     setSearchingSkin(true)
     setError('')
     try {
+      // 1. Try Mojang account search first via PlayerDB
       const res = await fetch(`https://playerdb.co/api/player/minecraft/${targetIgn}`)
       const json = await res.json()
+      
       if (json.success && json.data?.player?.id) {
         const uuid = json.data.player.id
         const mcHeadsUrl = `https://mc-heads.net/skin/${uuid}`
@@ -112,11 +114,34 @@ export default function ProfileEditPage() {
         setSkinPreview(mcHeadsUrl)
         setSkinFile(null)
         updateField('minecraft_skin_url', mcHeadsUrl)
-        setSuccess(`Found skin for ${json.data.player.username}! Click 'Save Changes' to apply it.`)
+        setSuccess(`Found premium Mojang skin for ${json.data.player.username}! Click 'Save Changes' to apply.`)
         setTimeout(() => setSuccess(''), 3000)
-      } else {
-        setError(`Could not find a Minecraft player named "${targetIgn}".`)
+        return
       }
+      
+      // 2. Fallback to check cracked skins on Ely.by
+      const elySkinUrl = `https://skinsystem.ely.by/skins/${targetIgn}.png`
+      try {
+        const elyRes = await fetch(elySkinUrl, { method: 'HEAD' })
+        if (elyRes.ok) {
+          setSkinPreview(elySkinUrl)
+          setSkinFile(null)
+          updateField('minecraft_skin_url', elySkinUrl)
+          setSuccess(`Found skin for cracked account "${targetIgn}" on Ely.by! Click 'Save Changes' to apply.`)
+          setTimeout(() => setSuccess(''), 3000)
+          return
+        }
+      } catch (headErr) {
+        // If HEAD fails due to CORS, try loading it anyway
+        setSkinPreview(elySkinUrl)
+        setSkinFile(null)
+        updateField('minecraft_skin_url', elySkinUrl)
+        setSuccess(`Attempting to load cracked skin for "${targetIgn}" from Ely.by...`)
+        setTimeout(() => setSuccess(''), 3000)
+        return
+      }
+      
+      setError(`Could not find a Minecraft player named "${targetIgn}" on Mojang or Ely.by.`)
     } catch (err) {
       setError(`Error searching skin: ${err.message}`)
     } finally {
@@ -502,18 +527,18 @@ export default function ProfileEditPage() {
         </Card>
 
         <Card>
-          <div className="flex items-center gap-2 mb-6">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-            </svg>
-            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
-              Minecraft Identity
-            </h3>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             {/* Config controls on Left */}
             <div className="flex flex-col gap-4" style={{ width: '100%' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+                  Minecraft Identity
+                </h3>
+              </div>
+
               <div className="flex gap-2 items-end">
                 <div style={{ flex: 1 }}>
                   <Input
