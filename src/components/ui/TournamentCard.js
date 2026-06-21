@@ -107,17 +107,7 @@ export default function TournamentCard({ tournament, userRegistration }) {
           {tournament.name}
         </h4>
 
-        {/* Metadata grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-          <div style={{ backgroundColor: 'var(--color-bg-input)', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
-            <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Version</div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>{tournament.minecraft_version || '1.20.x'}</div>
-          </div>
-          <div style={{ backgroundColor: 'var(--color-bg-input)', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
-            <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Prize Pool</div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-primary)' }}>{tournament.prizepool || 'TBA'}</div>
-          </div>
-        </div>
+        {/* Removed metadata grid */}
 
         <p style={{
           fontSize: 'var(--text-sm)',

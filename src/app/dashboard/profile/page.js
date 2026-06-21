@@ -559,77 +559,8 @@ export default function ProfileEditPage() {
                     }
                   />
                 </div>
-                {profile?.minecraft_ign && profile?.ign_change_count < 2 && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleSearchOnlineSkin(profile.minecraft_ign)}
-                    loading={searchingSkin}
-                    style={{ marginBottom: profile?.ign_change_count >= 1 ? '34px' : '22px' }}
-                  >
-                    🔍 Get Active Skin
-                  </Button>
-                )}
               </div>
 
-              {/* Skin file upload */}
-              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-                <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>Upload Custom Skin PNG</label>
-                <div className="flex items-center gap-3">
-                  <Button type="button" variant="outline" size="sm" onClick={() => skinFileInputRef.current.click()}>
-                    Choose Skin File
-                  </Button>
-                  <input
-                    ref={skinFileInputRef}
-                    type="file"
-                    accept="image/png"
-                    onChange={handleSkinFileChange}
-                    style={{ display: 'none' }}
-                  />
-                  {(skinFile || (skinPreview && skinPreview !== profile?.minecraft_skin_url)) && (
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        setSkinFile(null)
-                        setSkinPreview(null)
-                        updateField('minecraft_skin_url', profile?.minecraft_skin_url)
-                        setError('')
-                      }}
-                      style={{ color: 'var(--color-danger)', padding: '4px 8px' }}
-                    >
-                      ↩️ Undo Change
-                    </Button>
-                  )}
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                    {skinFile ? skinFile.name : 'Choose a standard 64x64 or 64x32 PNG file'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Custom skin search online */}
-              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-                <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>Search & Apply Skin Online</label>
-                <div className="flex gap-2">
-                  <div style={{ flex: 1 }}>
-                    <Input
-                      id="search-ign-input"
-                      type="text"
-                      placeholder="Enter Minecraft name to copy skin"
-                      value={searchIgn}
-                      onChange={(e) => setSearchIgn(e.target.value)}
-                    />
-                  </div>
-                  <Button 
-                    type="button" 
-                    onClick={() => handleSearchOnlineSkin(searchIgn)}
-                    loading={searchingSkin}
-                  >
-                    Apply Skin
-                  </Button>
-                </div>
-              </div>
             </div>
 
             {/* 3D Skin Viewer on Right */}

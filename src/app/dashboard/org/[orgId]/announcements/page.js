@@ -80,7 +80,7 @@ export default function OrgAnnouncementsPage() {
       <Card className="p-6">
         <form onSubmit={handleCreate} className="flex flex-col gap-4">
           <div>
-            <label className="td-label">New Announcement</label>
+            <label className="td-label" style={{ display: 'block', marginBottom: '8px' }}>New Announcement</label>
             <textarea
               className="td-input-field"
               rows="4"
