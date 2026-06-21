@@ -7,11 +7,27 @@ import Card from '@/components/ui/Card'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('ALL') // ALL, TOURNAMENT, ORGANIZATION, USER
+  const [filters, setFilters] = useState(['ALL']) // array of active filters
   const [results, setResults] = useState({ tournaments: [], organizations: [], users: [] })
+
+  const toggleFilter = (f) => {
+    if (f === 'ALL') {
+      setFilters(['ALL'])
+    } else {
+      let nextFilters = filters.includes(f)
+        ? filters.filter(x => x !== f)
+        : [...filters.filter(x => x !== 'ALL'), f]
+
+      if (nextFilters.length === 0) {
+        nextFilters = ['ALL']
+      }
+      setFilters(nextFilters)
+    }
+  }
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
@@ -31,14 +47,14 @@ export default function SearchPage() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query, filter])
+  }, [query, filters])
 
   const performSearch = async (q) => {
     setLoading(true)
     try {
       const promises = []
 
-      if (filter === 'ALL' || filter === 'TOURNAMENT') {
+      if (filters.includes('ALL') || filters.includes('TOURNAMENT')) {
         promises.push(
           supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').eq('is_private', false).ilike('name', `%${q}%`).limit(10)
         )
@@ -46,7 +62,7 @@ export default function SearchPage() {
         promises.push(Promise.resolve({ data: [] }))
       }
 
-      if (filter === 'ALL' || filter === 'ORGANIZATION') {
+      if (filters.includes('ALL') || filters.includes('ORGANIZATION')) {
         promises.push(
           supabase.from('organizations').select('id, name, slug, follower_count, tournament_count, avatar_url').ilike('name', `%${q}%`).limit(10)
         )
@@ -54,7 +70,7 @@ export default function SearchPage() {
         promises.push(Promise.resolve({ data: [] }))
       }
 
-      if (filter === 'ALL' || filter === 'USER') {
+      if (filters.includes('ALL') || filters.includes('USER')) {
         promises.push(
           supabase.from('users').select('id, display_name, username, avatar_url, minecraft_ign').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,minecraft_ign.ilike.%${q}%`).limit(10)
         )
@@ -115,7 +131,7 @@ export default function SearchPage() {
 
       <div className="container" style={{ maxWidth: '800px' }}>
         {/* Search Bar */}
-        <div style={{ marginBottom: 'var(--space-6)' }}>
+        <div style={{ marginBottom: 'var(--space-6)' }} className="animate-on-scroll">
           <Input
             id="search-input-field"
             placeholder="Type tournament name, organization, username or player IGN..."
@@ -126,28 +142,28 @@ export default function SearchPage() {
         </div>
 
         {/* Filter Pills */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: 'var(--space-8)' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: 'var(--space-8)' }} className="animate-on-scroll">
           <button
-            className={`search-filter-pill ${filter === 'ALL' ? 'active' : ''}`}
-            onClick={() => setFilter('ALL')}
+            className={`search-filter-pill ${filters.includes('ALL') ? 'active' : ''}`}
+            onClick={() => toggleFilter('ALL')}
           >
             All Results
           </button>
           <button
-            className={`search-filter-pill ${filter === 'TOURNAMENT' ? 'active' : ''}`}
-            onClick={() => setFilter('TOURNAMENT')}
+            className={`search-filter-pill ${filters.includes('TOURNAMENT') ? 'active' : ''}`}
+            onClick={() => toggleFilter('TOURNAMENT')}
           >
             Tournaments 🏆
           </button>
           <button
-            className={`search-filter-pill ${filter === 'ORGANIZATION' ? 'active' : ''}`}
-            onClick={() => setFilter('ORGANIZATION')}
+            className={`search-filter-pill ${filters.includes('ORGANIZATION') ? 'active' : ''}`}
+            onClick={() => toggleFilter('ORGANIZATION')}
           >
             Organizations 🏰
           </button>
           <button
-            className={`search-filter-pill ${filter === 'USER' ? 'active' : ''}`}
-            onClick={() => setFilter('USER')}
+            className={`search-filter-pill ${filters.includes('USER') ? 'active' : ''}`}
+            onClick={() => toggleFilter('USER')}
           >
             Players 🎮
           </button>
@@ -162,19 +178,19 @@ export default function SearchPage() {
         )}
 
         {!loading && query.trim().length >= 1 && !hasResults && (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center animate-on-scroll">
             <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No results found for &quot;{query}&quot;</p>
           </Card>
         )}
 
         {!loading && query.trim().length < 1 && (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center animate-on-scroll">
             <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Type at least 1 character to search...</p>
           </Card>
         )}
 
         {!loading && hasResults && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 animate-on-scroll">
             {/* Tournaments */}
             {results.tournaments.length > 0 && (
               <div>
@@ -250,6 +266,7 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

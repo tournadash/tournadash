@@ -81,3 +81,9 @@ export async function uploadAvatar(entityType, entityId, file) {
   const filename = `${entityType}/${entityId}_${Date.now()}.${extension}`
   return await uploadImage('avatars', filename, file)
 }
+
+export async function uploadOrgBanner(orgId, file) {
+  const extension = file.name.split('.').pop()
+  const filename = `banners/${orgId}_${Date.now()}.${extension}`
+  return await uploadImage('avatars', filename, file)
+}

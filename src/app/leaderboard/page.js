@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function LeaderboardPage() {
   const [orgs, setOrgs] = useState([])
@@ -104,7 +105,7 @@ export default function LeaderboardPage() {
       <div className="container">
 
       {/* Tabs */}
-      <div className="flex justify-center gap-2" style={{ marginBottom: 'var(--space-8)' }}>
+      <div className="flex justify-center gap-2 animate-on-scroll" style={{ marginBottom: 'var(--space-8)' }}>
         <Button variant={tab === 'orgs' ? 'primary' : 'secondary'} onClick={() => setTab('orgs')}>
           Top Organizations 🏰
         </Button>
@@ -135,7 +136,7 @@ export default function LeaderboardPage() {
           </div>
 
           {orgs.map((org, i) => (
-            <Link key={org.id} href={`/organizations/${org.slug}`} className="leaderboard-row">
+            <Link key={org.id} href={`/organizations/${org.slug}`} className="leaderboard-row animate-on-scroll">
               <span className="leaderboard-rank">
                 {getRankBadge(i)}
               </span>
@@ -185,7 +186,7 @@ export default function LeaderboardPage() {
           </div>
 
           {tournaments.map((t, i) => (
-            <Link key={t.id} href={`/tournaments/${t.slug}`} className="leaderboard-row">
+            <Link key={t.id} href={`/tournaments/${t.slug}`} className="leaderboard-row animate-on-scroll">
               <span className="leaderboard-rank">
                 {getRankBadge(i)}
               </span>
@@ -217,6 +218,7 @@ export default function LeaderboardPage() {
         </div>
       )}
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

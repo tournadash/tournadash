@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
 import Link from 'next/link'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function GettingStartedPage() {
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function GettingStartedPage() {
         <div className="flex flex-col gap-8">
           
           {/* For Organizers */}
-          <Card className="p-6" style={{ borderLeft: '4px solid var(--color-primary)' }}>
+          <Card className="p-6 animate-on-scroll" style={{ borderLeft: '4px solid var(--color-primary)' }}>
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-3)' }}>
               🏰 For Tournament Organizers
             </h2>
@@ -61,7 +62,7 @@ export default function GettingStartedPage() {
           </Card>
 
           {/* For Competitors */}
-          <Card className="p-6" style={{ borderLeft: '4px solid var(--color-info)' }}>
+          <Card className="p-6 animate-on-scroll" style={{ borderLeft: '4px solid var(--color-info)' }}>
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-3)' }}>
               ⚔️ For Competitors & Players
             </h2>
@@ -86,6 +87,7 @@ export default function GettingStartedPage() {
           </Card>
         </div>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

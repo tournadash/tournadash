@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function TermsPage() {
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function TermsPage() {
       </div>
 
       <div className="container" style={{ maxWidth: '800px' }}>
-        <Card className="p-8" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.8' }}>
+        <Card className="p-8 animate-on-scroll" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.8' }}>
           <h2 style={{ color: 'var(--color-text-white)', fontSize: 'var(--text-lg)', fontWeight: '600', marginBottom: 'var(--space-3)' }}>1. Acceptance of Terms</h2>
           <p style={{ marginBottom: 'var(--space-6)' }}>
             By registering an account, creating organizations, hosting tournaments, or entering whitelist pools on TournaDash, you agree to comply with and be bound by these Terms of Service. If you do not agree, please do not use our services.
@@ -55,6 +56,7 @@ export default function TermsPage() {
           </p>
         </Card>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

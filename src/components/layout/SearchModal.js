@@ -11,8 +11,23 @@ import './SearchModal.css'
 
 export default function SearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('ALL') // ALL, TOURNAMENT, ORGANIZATION, USER
+  const [filters, setFilters] = useState(['ALL']) // array of active filters
   const [results, setResults] = useState({ tournaments: [], organizations: [], users: [] })
+
+  const toggleFilter = (f) => {
+    if (f === 'ALL') {
+      setFilters(['ALL'])
+    } else {
+      let nextFilters = filters.includes(f)
+        ? filters.filter(x => x !== f)
+        : [...filters.filter(x => x !== 'ALL'), f]
+
+      if (nextFilters.length === 0) {
+        nextFilters = ['ALL']
+      }
+      setFilters(nextFilters)
+    }
+  }
   const [loading, setLoading] = useState(false)
   const inputRef = useRef(null)
   const modalRef = useRef(null)
@@ -22,7 +37,7 @@ export default function SearchModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setQuery('')
-      setFilter('ALL')
+      setFilters(['ALL'])
       setResults({ tournaments: [], organizations: [], users: [] })
       setTimeout(() => inputRef.current?.focus(), 50)
       document.body.style.overflow = 'hidden'
@@ -56,14 +71,14 @@ export default function SearchModal({ isOpen, onClose }) {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query, filter])
+  }, [query, filters])
 
   const performSearch = async (q) => {
     setLoading(true)
     try {
       const promises = []
 
-      if (filter === 'ALL' || filter === 'TOURNAMENT') {
+      if (filters.includes('ALL') || filters.includes('TOURNAMENT')) {
         promises.push(
           supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').eq('is_private', false).ilike('name', `%${q}%`).limit(5)
         )
@@ -71,7 +86,7 @@ export default function SearchModal({ isOpen, onClose }) {
         promises.push(Promise.resolve({ data: [] }))
       }
 
-      if (filter === 'ALL' || filter === 'ORGANIZATION') {
+      if (filters.includes('ALL') || filters.includes('ORGANIZATION')) {
         promises.push(
           supabase.from('organizations').select('id, name, slug, follower_count, tournament_count, avatar_url').ilike('name', `%${q}%`).limit(5)
         )
@@ -79,7 +94,7 @@ export default function SearchModal({ isOpen, onClose }) {
         promises.push(Promise.resolve({ data: [] }))
       }
 
-      if (filter === 'ALL' || filter === 'USER') {
+      if (filters.includes('ALL') || filters.includes('USER')) {
         promises.push(
           supabase.from('users').select('id, display_name, username, avatar_url, minecraft_ign').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,minecraft_ign.ilike.%${q}%`).limit(5)
         )
@@ -158,26 +173,26 @@ export default function SearchModal({ isOpen, onClose }) {
         <div className="search-modal-filters">
           <span className="search-filter-label">Filter:</span>
           <button
-            className={`search-filter-pill ${filter === 'ALL' ? 'active' : ''}`}
-            onClick={() => setFilter('ALL')}
+            className={`search-filter-pill ${filters.includes('ALL') ? 'active' : ''}`}
+            onClick={() => toggleFilter('ALL')}
           >
             All
           </button>
           <button
-            className={`search-filter-pill ${filter === 'TOURNAMENT' ? 'active' : ''}`}
-            onClick={() => setFilter('TOURNAMENT')}
+            className={`search-filter-pill ${filters.includes('TOURNAMENT') ? 'active' : ''}`}
+            onClick={() => toggleFilter('TOURNAMENT')}
           >
             Tournaments 🏆
           </button>
           <button
-            className={`search-filter-pill ${filter === 'ORGANIZATION' ? 'active' : ''}`}
-            onClick={() => setFilter('ORGANIZATION')}
+            className={`search-filter-pill ${filters.includes('ORGANIZATION') ? 'active' : ''}`}
+            onClick={() => toggleFilter('ORGANIZATION')}
           >
             Organizations 🏰
           </button>
           <button
-            className={`search-filter-pill ${filter === 'USER' ? 'active' : ''}`}
-            onClick={() => setFilter('USER')}
+            className={`search-filter-pill ${filters.includes('USER') ? 'active' : ''}`}
+            onClick={() => toggleFilter('USER')}
           >
             Players 🎮
           </button>

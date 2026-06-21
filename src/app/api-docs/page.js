@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function ApiDocsPage() {
   useEffect(() => {
@@ -13,9 +14,9 @@ export default function ApiDocsPage() {
     <div id="api-docs-page" style={{ paddingBottom: 'var(--space-16)' }}>
       {/* Immersive Scenic Header Banner */}
       <div 
-        className="page-header-banner" 
+        className="page-header-banner animate-on-scroll" 
         style={{ 
-          backgroundImage: `linear-gradient(to bottom, rgba(9, 12, 21, 0.45) 0%, rgba(9, 12, 21, 1) 100%), url('/minecraft_castle_bg.png')`
+          background: `linear-gradient(to bottom, rgba(9, 12, 21, 0.45) 0%, rgba(9, 12, 21, 1) 100%)`
         }}
       >
         <div className="page-header-banner-content">
@@ -31,7 +32,7 @@ export default function ApiDocsPage() {
       <div className="container" style={{ maxWidth: '800px' }}>
         <div className="flex flex-col gap-8">
           
-          <Card className="p-6">
+          <Card className="p-6 animate-on-scroll">
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-3)' }}>
               API Base URL & Authentication
             </h2>
@@ -71,7 +72,7 @@ export default function ApiDocsPage() {
             }}>Authorization: Bearer tournament_tok_your_secret_key_here</pre>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 animate-on-scroll">
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-4)' }}>
               API Endpoints
             </h2>
@@ -596,10 +597,182 @@ try {
                   </div>
                 </details>
               </div>
+
+              <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
+
+              {/* Endpoint 7 */}
+              <div>
+                <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                  <Badge variant="success" style={{ fontFamily: 'var(--font-mono)' }}>GET</Badge>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/members</span>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
+                  Fetches the list of all members of the organization, including their roles and Minecraft IGNs (if set).
+                </p>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)'
+                }}>{`{
+  "organization_id": "d139de67-1111-2222-3333-444455556666",
+  "total": 1,
+  "members": [
+    {
+      "id": "e1387d89-9e8c-4a3b-821f-0e6d63bcde6b",
+      "user_id": "usr_72ef-401d-85d7",
+      "role": "OWNER",
+      "minecraft_ign": "Steve",
+      "username": "steve_player",
+      "display_name": "Steve Pro",
+      "avatar_url": "https://...",
+      "created_at": "2026-06-20T12:00:00Z"
+    }
+  ]
+}`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Fetch organization members list
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/members"))
+                .header("Authorization", "Bearer " + serverToken)
+                .GET()
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            plugin.getLogger().info("Members loaded: " + response.body());
+        }
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error loading members: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
+              </div>
+
+              <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--color-border)' }} />
+
+              {/* Endpoint 8 */}
+              <div>
+                <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                  <Badge variant="success" style={{ fontFamily: 'var(--font-mono)' }}>GET</Badge>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--color-text-white)' }}>/api/plugin/participants</span>
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '8px' }}>
+                  Fetches the list of players who are whitelisted/approved for this specific tournament.
+                </p>
+                <div style={{ fontWeight: '500', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Response Example:</div>
+                <pre style={{
+                  backgroundColor: 'var(--color-bg-subtle)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)'
+                }}>{`{
+  "tournament_id": "b139de67-1111-2222-3333-444455556666",
+  "total": 1,
+  "active": 1,
+  "participants": [
+    {
+      "id": "p1387d89-9e8c-4a3b-821f-0e6d63bcde6b",
+      "minecraft_ign": "Steve",
+      "minecraft_uuid": "85720e6a-72ef-401d-85d7-b08bc8c4146a",
+      "is_banned": false,
+      "added_via": "plugin",
+      "created_at": "2026-06-21T10:00:00Z"
+    }
+  ]
+}`}</pre>
+
+                {/* Collapsible Sample Code */}
+                <details style={{
+                  marginTop: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-bg-input)',
+                  overflow: 'hidden'
+                }}>
+                  <summary style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: 'var(--color-text-white)',
+                    fontSize: 'var(--text-xs)',
+                    userSelect: 'none',
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    outline: 'none'
+                  }}>
+                    ☕ Java Asynchronous Code Example (Spigot/Paper)
+                  </summary>
+                  <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                    <pre style={{
+                      margin: 0,
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>{`// Fetch tournament participants list
+Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    try {
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://tournadash.vercel.app/api/plugin/participants"))
+                .header("Authorization", "Bearer " + serverToken)
+                .GET()
+                .build();
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            plugin.getLogger().info("Participants loaded: " + response.body());
+        }
+    } catch (Exception e) {
+        plugin.getLogger().severe("Error loading participants: " + e.getMessage());
+    }
+});`}</pre>
+                  </div>
+                </details>
+              </div>
             </div>
           </Card>
         </div>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

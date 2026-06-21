@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function TournamentsBrowsePage() {
   const [tournaments, setTournaments] = useState([])
@@ -78,7 +79,7 @@ export default function TournamentsBrowsePage() {
 
       <div className="container">
         {/* Filters */}
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-6 animate-on-scroll">
         <div className="flex gap-2">
           {['ALL', 'SOON', 'ONGOING', 'ENDED'].map(f => (
             <Button
@@ -116,7 +117,7 @@ export default function TournamentsBrowsePage() {
                 href={`/tournaments/${t.slug}`}
                 style={{ textDecoration: 'none' }}
               >
-                <Card interactive className="p-0 overflow-hidden gaming-glow-hover">
+                <Card interactive className="p-0 overflow-hidden gaming-glow-hover animate-on-scroll">
                   {/* Thumbnail Image */}
                   <div style={{ position: 'relative', width: '100%', height: '180px', backgroundColor: 'var(--color-bg-subtle)', overflow: 'hidden' }}>
                     {t.banner_url ? (
@@ -196,6 +197,7 @@ export default function TournamentsBrowsePage() {
         </Card>
       )}
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

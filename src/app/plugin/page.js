@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function PluginPage() {
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function PluginPage() {
         <div className="flex flex-col gap-8">
           
           {/* Download Box */}
-          <Card className="p-8 text-center" style={{ borderTop: '4px solid var(--color-primary)' }}>
+          <Card className="p-8 text-center animate-on-scroll" style={{ borderTop: '4px solid var(--color-primary)' }}>
             <span style={{ fontSize: '3rem', display: 'block', marginBottom: 'var(--space-3)' }}>🔌</span>
             <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: '700', color: 'var(--color-text-white)', marginBottom: 'var(--space-2)' }}>
               Download TournaDash Plugin
@@ -53,7 +54,7 @@ export default function PluginPage() {
           </Card>
 
           {/* Quick Setup Instructions */}
-          <Card className="p-6">
+          <Card className="p-6 animate-on-scroll">
             <h3 style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', marginBottom: 'var(--space-4)', fontWeight: '600' }}>
               🚀 Quick Setup Guide
             </h3>
@@ -105,7 +106,7 @@ export default function PluginPage() {
           </Card>
 
           {/* Commands Card */}
-          <Card className="p-6">
+          <Card className="p-6 animate-on-scroll">
             <h3 style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', marginBottom: 'var(--space-4)', fontWeight: '600' }}>
               🛠️ Command Reference
             </h3>
@@ -165,6 +166,7 @@ export default function PluginPage() {
           </Card>
         </div>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

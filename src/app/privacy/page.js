@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function PrivacyPage() {
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function PrivacyPage() {
       </div>
 
       <div className="container" style={{ maxWidth: '800px' }}>
-        <Card className="p-8" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.8' }}>
+        <Card className="p-8 animate-on-scroll" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: '1.8' }}>
           <h2 style={{ color: 'var(--color-text-white)', fontSize: 'var(--text-lg)', fontWeight: '600', marginBottom: 'var(--space-3)' }}>1. Information We Collect</h2>
           <p style={{ marginBottom: 'var(--space-6)' }}>
             We collect information you provide directly to us, such as when you create an account, complete your profile details (including your Minecraft In-Game Name and UUID), register for tournaments, or link external authentication providers like Google and Discord.
@@ -55,6 +56,7 @@ export default function PrivacyPage() {
           </p>
         </Card>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

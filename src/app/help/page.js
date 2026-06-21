@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Card from '@/components/ui/Card'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function HelpPage() {
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function HelpPage() {
       <div className="container" style={{ maxWidth: '800px' }}>
         <div className="flex flex-col gap-6">
           {faqs.map((faq, i) => (
-            <Card key={i} className="p-6">
+            <Card key={i} className="p-6 animate-on-scroll">
               <h3 style={{ fontSize: 'var(--text-md)', fontWeight: '600', color: 'var(--color-text-white)', marginBottom: 'var(--space-2)' }}>
                 ❓ {faq.q}
               </h3>
@@ -64,7 +65,7 @@ export default function HelpPage() {
           ))}
 
           {/* Contact Support */}
-          <Card className="p-8 text-center" style={{ marginTop: 'var(--space-6)', borderTop: '4px solid var(--color-primary)' }}>
+          <Card className="p-8 text-center animate-on-scroll" style={{ marginTop: 'var(--space-6)', borderTop: '4px solid var(--color-primary)' }}>
             <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: '700', color: 'var(--color-text-white)', marginBottom: 'var(--space-2)' }}>
               Still need help?
             </h3>
@@ -82,6 +83,7 @@ export default function HelpPage() {
           </Card>
         </div>
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

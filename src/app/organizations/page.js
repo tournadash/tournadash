@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function OrganizationsBrowsePage() {
   const [orgs, setOrgs] = useState([])
@@ -52,7 +53,7 @@ export default function OrganizationsBrowsePage() {
 
       <div className="container">
         {/* Search bar */}
-      <div style={{ maxWidth: '400px', margin: '0 auto var(--space-8)' }}>
+      <div style={{ maxWidth: '400px', margin: '0 auto var(--space-8)' }} className="animate-on-scroll">
         <Input
           placeholder="Search organizations..."
           value={search}
@@ -71,7 +72,7 @@ export default function OrganizationsBrowsePage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
           {filtered.map((org) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <Card interactive className="p-0 overflow-hidden gaming-glow-hover">
+              <Card interactive className="p-0 overflow-hidden gaming-glow-hover animate-on-scroll">
                 {/* Mini Profile Banner Background */}
                 <div style={{
                   height: '90px',
@@ -160,6 +161,7 @@ export default function OrganizationsBrowsePage() {
         </Card>
       )}
       </div>
+      <ScrollAnimationInit />
     </div>
   )
 }

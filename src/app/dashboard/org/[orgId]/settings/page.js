@@ -7,7 +7,7 @@ import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Avatar from '@/components/ui/Avatar'
-import { uploadAvatar, deleteImageByUrl } from '@/lib/supabase/storage'
+import { uploadAvatar, uploadOrgBanner, deleteImageByUrl } from '@/lib/supabase/storage'
 
 export default function OrgSettingsPage() {
   const { orgId } = useParams()
@@ -24,6 +24,10 @@ export default function OrgSettingsPage() {
   const fileInputRef = useRef(null)
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+
+  const bannerFileInputRef = useRef(null)
+  const [bannerFile, setBannerFile] = useState(null)
+  const [bannerPreview, setBannerPreview] = useState(null)
 
   const countWords = (text) => {
     if (!text) return 0
@@ -63,6 +67,23 @@ export default function OrgSettingsPage() {
     fileInputRef.current.click()
   }
 
+  const handleBannerChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        setError('Banner size must be less than 4MB.')
+        return
+      }
+      setBannerFile(file)
+      setBannerPreview(URL.createObjectURL(file))
+      setError('')
+    }
+  }
+
+  const triggerBannerFileInput = () => {
+    bannerFileInputRef.current.click()
+  }
+
   const handleSave = async (e) => {
     e.preventDefault()
     
@@ -77,6 +98,7 @@ export default function OrgSettingsPage() {
     setSuccess('')
     
     let avatarUrl = org.avatar_url
+    let bannerUrl = org.banner_url
 
     if (avatarFile) {
       try {
@@ -86,6 +108,19 @@ export default function OrgSettingsPage() {
         }
       } catch (uploadError) {
         setError(`Failed to upload avatar: ${uploadError.message}`)
+        setSaving(false)
+        return
+      }
+    }
+
+    if (bannerFile) {
+      try {
+        bannerUrl = await uploadOrgBanner(orgId, bannerFile)
+        if (org.banner_url) {
+          await deleteImageByUrl(org.banner_url)
+        }
+      } catch (uploadError) {
+        setError(`Failed to upload banner: ${uploadError.message}`)
         setSaving(false)
         return
       }
@@ -102,6 +137,7 @@ export default function OrgSettingsPage() {
         discord_guild_id: org.discord_guild_id?.trim() || null,
         custom_links: customLinks.filter(l => l.label && l.url),
         avatar_url: avatarUrl,
+        banner_url: bannerUrl,
       })
       .eq('id', orgId)
 
@@ -109,8 +145,9 @@ export default function OrgSettingsPage() {
       setError(err.message)
     } else { 
       setSuccess('Settings saved!')
-      setOrg(prev => ({ ...prev, avatar_url: avatarUrl }))
+      setOrg(prev => ({ ...prev, avatar_url: avatarUrl, banner_url: bannerUrl }))
       setAvatarFile(null)
+      setBannerFile(null)
       setTimeout(() => setSuccess(''), 3000) 
       router.refresh()
     }
@@ -201,7 +238,7 @@ export default function OrgSettingsPage() {
             />
             <div className="flex flex-col gap-2">
               <div>
-                <Button variant="outline" size="sm" onClick={triggerFileInput}>
+                <Button variant="outline" size="sm" type="button" onClick={triggerFileInput}>
                   Change Avatar
                 </Button>
                 <input
@@ -216,6 +253,45 @@ export default function OrgSettingsPage() {
                 JPG, PNG or WEBP. Max 2MB.
               </p>
             </div>
+          </div>
+
+          {/* Banner Upload */}
+          <div className="flex flex-col gap-3 mb-6 pb-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <label className="td-input-label">Organization Banner</label>
+            <div style={{
+              width: '100%',
+              height: '140px',
+              backgroundImage: bannerPreview ? `url(${bannerPreview})` : (org?.banner_url ? `url(${org.banner_url})` : 'none'),
+              backgroundColor: 'var(--color-bg-subtle)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {!bannerPreview && !org?.banner_url && (
+                <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>No banner uploaded</span>
+              )}
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px' }}>
+                <Button variant="secondary" size="sm" type="button" onClick={triggerBannerFileInput}>
+                  Upload Banner
+                </Button>
+                <input
+                  ref={bannerFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBannerChange}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </div>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+              Recommended: 1200x400. Max 4MB.
+            </p>
           </div>
           
           <div className="flex flex-col gap-4">

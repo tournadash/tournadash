@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 
 export default function OrgPublicProfilePage() {
   const { slug } = useParams()
@@ -136,69 +137,98 @@ export default function OrgPublicProfilePage() {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
       {/* Header Card */}
-      <Card className="p-8 mb-8" style={{ borderTop: '4px solid var(--color-primary)' }}>
-        <div className="flex items-start justify-between flex-wrap gap-6">
-          <div className="flex items-center gap-5">
-            <Avatar
-              src={org.avatar_url}
-              alt={org.name}
-              size="xl"
-              fallback={org.name[0]?.toUpperCase() || 'O'}
+      <Card className="p-0 mb-8 overflow-hidden relative animate-on-scroll">
+        {/* Banner Area */}
+        <div style={{
+          height: '200px',
+          width: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          background: org.banner_url ? 'none' : 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(56, 189, 248, 0.25) 100%)'
+        }}>
+          {org.banner_url && (
+            <img
+              src={org.banner_url}
+              alt={`${org.name} Banner`}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
-            <div>
-              <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: '800', marginBottom: 'var(--space-1)' }}>
-                {org.name}
-              </h1>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
-                @{org.slug}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {org.social_discord && (
-              <a href={org.social_discord} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm">
-                  Discord
-                </Button>
-              </a>
-            )}
-            {org.social_youtube && (
-              <a href={org.social_youtube} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm">
-                  YouTube
-                </Button>
-              </a>
-            )}
-            <Button
-              variant={followed ? 'secondary' : 'primary'}
-              size="sm"
-              onClick={handleFollow}
-              disabled={!user || members.some(m => m.user_id === user.id)}
-            >
-              {members.some(m => m.user_id === user?.id) ? 'Member' : (followed ? 'Following' : 'Follow')}
-            </Button>
-          </div>
+          )}
         </div>
 
-        {org.bio && (
-          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)', lineHeight: 'var(--leading-relaxed)', maxWidth: '700px' }}>
-            {org.bio}
-          </p>
-        )}
+        {/* Content Area */}
+        <div className="p-8" style={{ position: 'relative' }}>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6" style={{ marginTop: '-75px', marginBottom: 'var(--space-4)' }}>
+            <div className="flex items-end gap-5 flex-wrap md:flex-nowrap">
+              <div style={{
+                borderRadius: 'var(--radius-full)',
+                border: '4px solid var(--color-bg-card)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                backgroundColor: 'var(--color-bg-card)',
+                display: 'inline-flex',
+                flexShrink: 0
+              }}>
+                <Avatar
+                  src={org.avatar_url}
+                  alt={org.name}
+                  size="xl"
+                  fallback={org.name[0]?.toUpperCase() || 'O'}
+                />
+              </div>
+              <div style={{ marginBottom: 'var(--space-2)' }}>
+                <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: '800', marginBottom: 'var(--space-1)', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                  {org.name}
+                </h1>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', margin: 0 }}>
+                  @{org.slug}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3" style={{ marginBottom: 'var(--space-2)' }}>
+              {org.social_discord && (
+                <a href={org.social_discord} target="_blank" rel="noopener noreferrer">
+                  <Button variant="secondary" size="sm">
+                    Discord
+                  </Button>
+                </a>
+              )}
+              {org.social_youtube && (
+                <a href={org.social_youtube} target="_blank" rel="noopener noreferrer">
+                  <Button variant="secondary" size="sm">
+                    YouTube
+                  </Button>
+                </a>
+              )}
+              <Button
+                variant={followed ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={handleFollow}
+                disabled={!user || members.some(m => m.user_id === user.id)}
+              >
+                {members.some(m => m.user_id === user?.id) ? 'Member' : (followed ? 'Following' : 'Follow')}
+              </Button>
+            </div>
+          </div>
 
-        {/* Stats */}
-        <div className="flex gap-8" style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)' }}>
-          <div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{followerCount}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Followers</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{tournaments.length}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Tournaments</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{members.length}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Team Members</div>
+          {org.bio && (
+            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)', lineHeight: 'var(--leading-relaxed)', maxWidth: '700px' }}>
+              {org.bio}
+            </p>
+          )}
+
+          {/* Stats */}
+          <div className="flex gap-8" style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)' }}>
+            <div>
+              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{followerCount}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Followers</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{tournaments.length}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Tournaments</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{members.length}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Team Members</div>
+            </div>
           </div>
         </div>
       </Card>
@@ -237,11 +267,11 @@ export default function OrgPublicProfilePage() {
             <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
               {members.map((m) => (
                 <Link key={m.id} href={`/users/${m.users?.username || m.user_id}`} style={{ textDecoration: 'none' }}>
-                  <Card interactive className="flex items-center gap-3" style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                  <Card interactive className="flex items-center gap-3 animate-on-scroll" style={{ padding: 'var(--space-3) var(--space-4)' }}>
                     <Avatar
                       src={m.users?.avatar_url}
                       alt={m.users?.display_name || ''}
-                      size="md"
+                      size="lg"
                       fallback={m.users?.display_name?.[0]?.toUpperCase() || 'U'}
                     />
                     <div>
@@ -263,7 +293,7 @@ export default function OrgPublicProfilePage() {
 
         {/* Right: Leaderboard */}
         {leaderboard && leaderboard.length > 0 && (
-          <div style={{ width: '320px', flexShrink: 0 }}>
+          <div style={{ width: '320px', flexShrink: 0 }} className="animate-on-scroll">
             <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>🏆 Top Players Wins</h3>
             <Card className="p-4" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {leaderboard.map((player, idx) => {
@@ -327,7 +357,7 @@ export default function OrgPublicProfilePage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-5)' }}>
           {tournaments.slice(0, 3).map((t) => {
             return (
-              <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
+              <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }} className="animate-on-scroll">
                 <Card interactive className="p-0 overflow-hidden">
                   {/* Thumbnail Image */}
                   <div style={{ position: 'relative', width: '100%', height: '160px', backgroundColor: 'var(--color-bg-subtle)', overflow: 'hidden' }}>
@@ -393,6 +423,7 @@ export default function OrgPublicProfilePage() {
           <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No tournaments hosted yet.</p>
         </Card>
       )}
+      <ScrollAnimationInit />
     </div>
   )
 }
