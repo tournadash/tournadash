@@ -234,22 +234,33 @@ export default function MembersPage() {
       </div>
 
       {/* RBAC Legend */}
-      <Card className="p-4">
-        <div className="flex gap-6 flex-wrap items-center">
+      <div style={{
+        display: 'inline-flex',
+        flexWrap: 'wrap',
+        gap: 'var(--space-4)',
+        padding: '6px 14px',
+        backgroundColor: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-sm)',
+        alignSelf: 'flex-start',
+        alignItems: 'center'
+      }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Legend:</span>
+        <div className="flex gap-4 flex-wrap items-center" style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-            <Badge variant="primary">Owner</Badge> Full control
+            <Badge variant="primary" style={{ fontSize: '9px', padding: '2px 6px' }}>Owner</Badge> Full control
           </div>
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-            <Badge variant="success">Admin</Badge> Manage members &amp; permissions
+            <Badge variant="success" style={{ fontSize: '9px', padding: '2px 6px' }}>Admin</Badge> Manage permissions
           </div>
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-            <Badge variant="warning">Manager</Badge> Manage events &amp; whitelist
+            <Badge variant="warning" style={{ fontSize: '9px', padding: '2px 6px' }}>Manager</Badge> Manage events
           </div>
           <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-            <Badge variant="info">Staff</Badge> View data &amp; log results
+            <Badge variant="info" style={{ fontSize: '9px', padding: '2px 6px' }}>Staff</Badge> View data
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Members List */}
       <div className="flex flex-col gap-3">

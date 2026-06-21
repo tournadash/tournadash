@@ -128,6 +128,10 @@ export default function OrgSettingsPage() {
   }
 
   const handleDelete = async () => {
+    if (userRole !== 'OWNER') {
+      alert('Only the organization OWNER can delete this organization.')
+      return
+    }
     if (!confirm('Are you sure you want to DELETE this organization? This action cannot be undone. All tournaments and data will be lost.')) return
     if (!confirm('This is your FINAL warning. Are you absolutely sure?')) return
 

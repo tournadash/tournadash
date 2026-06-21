@@ -222,39 +222,50 @@ export default function OrgPublicProfilePage() {
         </div>
       )}
 
-      {/* Team Members */}
-      <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Team Members</h3>
-      <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-10)' }}>
-        {members.map((m) => (
-          <Link key={m.id} href={`/users/${m.users?.username || m.user_id}`} style={{ textDecoration: 'none' }}>
-            <Card interactive className="flex items-center gap-3" style={{ padding: 'var(--space-3) var(--space-4)' }}>
-              <Avatar
-                src={m.users?.avatar_url}
-                alt={m.users?.display_name || ''}
-                size="sm"
-                fallback={m.users?.display_name?.[0]?.toUpperCase() || 'U'}
-              />
-              <div>
-                <div style={{ fontWeight: '500', fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>
-                  {m.users?.display_name}
-                </div>
-                <Badge variant={m.role === 'OWNER' ? 'danger' : m.role === 'MANAGER' ? 'primary' : 'neutral'} style={{ fontSize: '9px', padding: '1px 4px', marginTop: '2px' }}>
-                  {m.role}
-                </Badge>
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      {/* Team Members & Leaderboard Row */}
+      <div style={{
+        display: 'flex',
+        gap: 'var(--space-6)',
+        flexWrap: 'wrap',
+        marginBottom: 'var(--space-10)',
+        alignItems: 'flex-start'
+      }}>
+        {/* Left: Team Members */}
+        <div style={{ flex: '1 1 50%', minWidth: '300px' }}>
+          <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Team Members</h3>
+          {members.length > 0 ? (
+            <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+              {members.map((m) => (
+                <Link key={m.id} href={`/users/${m.users?.username || m.user_id}`} style={{ textDecoration: 'none' }}>
+                  <Card interactive className="flex items-center gap-3" style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <Avatar
+                      src={m.users?.avatar_url}
+                      alt={m.users?.display_name || ''}
+                      size="md"
+                      fallback={m.users?.display_name?.[0]?.toUpperCase() || 'U'}
+                    />
+                    <div>
+                      <div style={{ fontWeight: '500', fontSize: 'var(--text-sm)', color: 'var(--color-text-white)' }}>
+                        {m.users?.display_name}
+                      </div>
+                      <Badge variant={m.role === 'OWNER' ? 'danger' : m.role === 'MANAGER' ? 'primary' : 'neutral'} style={{ fontSize: '9px', padding: '1px 4px', marginTop: '2px' }}>
+                        {m.role}
+                      </Badge>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>No team members in this organization.</p>
+          )}
+        </div>
 
-      {/* Leaderboard Section */}
-      {leaderboard && leaderboard.length > 0 && (
-        <div style={{ marginBottom: 'var(--space-10)' }}>
-          <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🏆 Organization Leaderboard</span>
-          </h3>
-          <Card className="p-6">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        {/* Right: Leaderboard */}
+        {leaderboard && leaderboard.length > 0 && (
+          <div style={{ width: '320px', flexShrink: 0 }}>
+            <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>🏆 Top Players Wins</h3>
+            <Card className="p-4" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {leaderboard.map((player, idx) => {
                 const rank = idx + 1
                 return (
@@ -262,40 +273,59 @@ export default function OrgPublicProfilePage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: 'var(--space-3) var(--space-4)',
+                    padding: '6px 12px',
                     backgroundColor: 'var(--color-bg-input)',
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-md)'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                       <span style={{
                         fontWeight: '800',
                         fontSize: 'var(--text-sm)',
                         color: rank === 1 ? 'var(--color-warning)' : rank === 2 ? 'var(--color-text-secondary)' : rank === 3 ? '#cd7f32' : 'var(--color-text-muted)',
-                        width: '20px'
+                        width: '18px',
+                        flexShrink: 0
                       }}>
                         #{rank}
                       </span>
-                      <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)' }}>
+                      <span style={{ fontWeight: '600', color: 'var(--color-text-white)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {player.player_name}
                       </span>
                     </div>
-                    <Badge variant="primary" style={{ fontSize: '10px' }}>
-                      {player.wins} {player.wins === 1 ? 'Win' : 'Wins'}
+                    <Badge variant="primary" style={{ fontSize: '9px', padding: '2px 6px', flexShrink: 0 }}>
+                      {player.wins} {player.wins === 1 ? 'win' : 'wins'}
                     </Badge>
                   </div>
                 )
               })}
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
+        )}
+      </div>
 
-      {/* Tournaments */}
-      <h3 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', color: 'var(--color-text-white)' }}>Tournaments</h3>
+      {/* Tournaments Header Row */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 'var(--space-4)'
+      }}>
+        <h3 style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-white)', margin: 0 }}>Tournaments</h3>
+        {tournaments.length > 0 && (
+          <Link
+            href={`/organizations/${slug}/tournaments`}
+            className="btn btn-secondary btn-sm"
+            id="view-all-tournaments-btn"
+            style={{ fontSize: 'var(--text-xs)', textDecoration: 'none', padding: '6px 12px' }}
+          >
+            View All Tournaments ➔
+          </Link>
+        )}
+      </div>
+
       {tournaments.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-5)' }}>
-          {tournaments.map((t) => {
+          {tournaments.slice(0, 3).map((t) => {
             return (
               <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
                 <Card interactive className="p-0 overflow-hidden">
@@ -366,3 +396,4 @@ export default function OrgPublicProfilePage() {
     </div>
   )
 }
+

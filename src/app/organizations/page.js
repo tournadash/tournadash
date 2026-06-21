@@ -71,35 +71,80 @@ export default function OrganizationsBrowsePage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
           {filtered.map((org) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <Card interactive className="p-6 gaming-glow-hover">
-                <div className="flex items-center gap-4" style={{ marginBottom: 'var(--space-4)' }}>
-                  <Avatar
-                    src={org.avatar_url}
-                    alt={org.name}
-                    size="lg"
-                    fallback={org.name[0]?.toUpperCase() || 'O'}
-                  />
-                  <div>
-                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: '600', color: 'var(--color-text-white)' }}>
-                      {org.name}
-                    </h3>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                      @{org.slug}
-                    </p>
+              <Card interactive className="p-0 overflow-hidden gaming-glow-hover">
+                {/* Mini Profile Banner Background */}
+                <div style={{
+                  height: '90px',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(9, 12, 21, 0.8) 100%)',
+                  borderBottom: '1px solid var(--color-border)',
+                  position: 'relative'
+                }} />
+
+                {/* Overlapping circular avatar & Follower Count Row */}
+                <div style={{
+                  position: 'relative',
+                  marginTop: '-36px',
+                  padding: '0 var(--space-6)',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    border: '4px solid var(--color-bg-card)',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    boxShadow: 'var(--shadow-md)',
+                    backgroundColor: 'var(--color-bg-card)',
+                    display: 'inline-flex'
+                  }}>
+                    <Avatar
+                      src={org.avatar_url}
+                      alt={org.name}
+                      size="lg"
+                      fallback={org.name[0]?.toUpperCase() || 'O'}
+                    />
                   </div>
-                </div>
-
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}>
-                  {org.bio || 'No bio provided.'}
-                </p>
-
-                <div className="flex gap-6" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)' }}>
-                  <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    🎮 {org.tournament_count || 0} tournaments
-                  </span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                  <span style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--color-text-secondary)',
+                    fontWeight: '600',
+                    paddingBottom: '8px'
+                  }}>
                     👥 {org.follower_count || 0} followers
                   </span>
+                </div>
+
+                {/* Info and stats body */}
+                <div style={{ padding: 'var(--space-4) var(--space-6) var(--space-6)' }}>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: '700', color: 'var(--color-text-white)', marginBottom: '2px' }}>
+                    {org.name}
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+                    @{org.slug}
+                  </p>
+
+                  <p style={{
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: 'var(--space-4)',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    minHeight: '44px',
+                    lineHeight: '1.5'
+                  }}>
+                    {org.bio || 'No bio provided.'}
+                  </p>
+
+                  <div className="flex items-center justify-between" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
+                      🎮 {org.tournament_count || 0} tournaments
+                    </span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      View Profile ➔
+                    </span>
+                  </div>
                 </div>
               </Card>
             </Link>

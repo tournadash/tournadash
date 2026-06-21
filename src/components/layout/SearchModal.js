@@ -11,6 +11,7 @@ import './SearchModal.css'
 
 export default function SearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('ALL') // ALL, TOURNAMENT, ORGANIZATION, USER
   const [results, setResults] = useState({ tournaments: [], organizations: [], users: [] })
   const [loading, setLoading] = useState(false)
   const inputRef = useRef(null)
@@ -21,6 +22,7 @@ export default function SearchModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setQuery('')
+      setFilter('ALL')
       setResults({ tournaments: [], organizations: [], users: [] })
       setTimeout(() => inputRef.current?.focus(), 50)
       document.body.style.overflow = 'hidden'
@@ -44,7 +46,7 @@ export default function SearchModal({ isOpen, onClose }) {
   // Debounced search logic
   useEffect(() => {
     const trimmed = query.trim()
-    if (trimmed.length < 2) {
+    if (trimmed.length < 1) {
       setResults({ tournaments: [], organizations: [], users: [] })
       return
     }
@@ -54,16 +56,38 @@ export default function SearchModal({ isOpen, onClose }) {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query])
+  }, [query, filter])
 
   const performSearch = async (q) => {
     setLoading(true)
     try {
-      const [t, o, u] = await Promise.all([
-        supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').eq('is_private', false).ilike('name', `%${q}%`).limit(5),
-        supabase.from('organizations').select('id, name, slug, follower_count, tournament_count, avatar_url').ilike('name', `%${q}%`).limit(5),
-        supabase.from('users').select('id, display_name, username, avatar_url, minecraft_ign').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,minecraft_ign.ilike.%${q}%`).limit(5),
-      ])
+      const promises = []
+
+      if (filter === 'ALL' || filter === 'TOURNAMENT') {
+        promises.push(
+          supabase.from('tournaments').select('id, name, slug, status, player_count, organizations(name)').eq('is_private', false).ilike('name', `%${q}%`).limit(5)
+        )
+      } else {
+        promises.push(Promise.resolve({ data: [] }))
+      }
+
+      if (filter === 'ALL' || filter === 'ORGANIZATION') {
+        promises.push(
+          supabase.from('organizations').select('id, name, slug, follower_count, tournament_count, avatar_url').ilike('name', `%${q}%`).limit(5)
+        )
+      } else {
+        promises.push(Promise.resolve({ data: [] }))
+      }
+
+      if (filter === 'ALL' || filter === 'USER') {
+        promises.push(
+          supabase.from('users').select('id, display_name, username, avatar_url, minecraft_ign').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,minecraft_ign.ilike.%${q}%`).limit(5)
+        )
+      } else {
+        promises.push(Promise.resolve({ data: [] }))
+      }
+
+      const [t, o, u] = await Promise.all(promises)
 
       setResults({
         tournaments: t.data || [],
@@ -130,6 +154,35 @@ export default function SearchModal({ isOpen, onClose }) {
           </button>
         </div>
 
+        {/* Filters Options */}
+        <div className="search-modal-filters">
+          <span className="search-filter-label">Filter:</span>
+          <button
+            className={`search-filter-pill ${filter === 'ALL' ? 'active' : ''}`}
+            onClick={() => setFilter('ALL')}
+          >
+            All
+          </button>
+          <button
+            className={`search-filter-pill ${filter === 'TOURNAMENT' ? 'active' : ''}`}
+            onClick={() => setFilter('TOURNAMENT')}
+          >
+            Tournaments 🏆
+          </button>
+          <button
+            className={`search-filter-pill ${filter === 'ORGANIZATION' ? 'active' : ''}`}
+            onClick={() => setFilter('ORGANIZATION')}
+          >
+            Organizations 🏰
+          </button>
+          <button
+            className={`search-filter-pill ${filter === 'USER' ? 'active' : ''}`}
+            onClick={() => setFilter('USER')}
+          >
+            Players 🎮
+          </button>
+        </div>
+
         {/* Search Results Body */}
         <div className="search-modal-body">
           {loading && (
@@ -139,15 +192,15 @@ export default function SearchModal({ isOpen, onClose }) {
             </div>
           )}
 
-          {!loading && query.trim().length >= 2 && !hasResults && (
+          {!loading && query.trim().length >= 1 && !hasResults && (
             <div className="search-modal-empty">
               <p>No results found for &quot;{query}&quot;</p>
             </div>
           )}
 
-          {!loading && query.trim().length < 2 && (
+          {!loading && query.trim().length < 1 && (
             <div className="search-modal-tip">
-              <p>Type at least 2 characters to search...</p>
+              <p>Type at least 1 character to search...</p>
             </div>
           )}
 

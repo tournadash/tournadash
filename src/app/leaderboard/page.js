@@ -135,30 +135,30 @@ export default function LeaderboardPage() {
           </div>
 
           {orgs.map((org, i) => (
-            <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
-                <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                  {getRankBadge(i)}
-                </span>
-                <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
+            <Link key={org.id} href={`/organizations/${org.slug}`} className="leaderboard-row">
+              <span className="leaderboard-rank">
+                {getRankBadge(i)}
+              </span>
+              <div className="leaderboard-entity-info">
+                <div className="leaderboard-entity-avatar">
                   <Avatar
                     src={org.avatar_url}
                     alt={org.name}
                     size="sm"
                     fallback={org.name[0]?.toUpperCase() || 'O'}
                   />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: '600', color: 'var(--color-text-white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{org.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>@{org.slug}</div>
-                  </div>
                 </div>
-                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
-                  {org.ended_tournament_count || 0}
-                </span>
-                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', fontWeight: '700', color: 'var(--color-primary)' }}>
-                  {org.follower_count || 0}
-                </span>
+                <div className="leaderboard-entity-details">
+                  <div className="leaderboard-entity-name">{org.name}</div>
+                  <div className="leaderboard-entity-sub">@{org.slug}</div>
+                </div>
               </div>
+              <span className="leaderboard-stat-col" style={{ width: '120px', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                {org.ended_tournament_count || 0}
+              </span>
+              <span className="leaderboard-stat-col" style={{ width: '120px', fontWeight: '700', color: 'var(--color-primary)' }}>
+                {org.follower_count || 0}
+              </span>
             </Link>
           ))}
 
@@ -185,27 +185,27 @@ export default function LeaderboardPage() {
           </div>
 
           {tournaments.map((t, i) => (
-            <Link key={t.id} href={`/tournaments/${t.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', gap: 'var(--space-4)' }}>
-                <span style={{ width: '60px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                  {getRankBadge(i)}
-                </span>
-                <div style={{ flex: 1, minWidth: 0, paddingRight: 'var(--space-4)' }}>
-                  <div style={{ fontWeight: '600', color: 'var(--color-text-white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>by {t.organizations?.name}</div>
+            <Link key={t.id} href={`/tournaments/${t.slug}`} className="leaderboard-row">
+              <span className="leaderboard-rank">
+                {getRankBadge(i)}
+              </span>
+              <div className="leaderboard-entity-info">
+                <div className="leaderboard-entity-details">
+                  <div className="leaderboard-entity-name">{t.name}</div>
+                  <div className="leaderboard-entity-sub">by {t.organizations?.name}</div>
                 </div>
-                <span style={{ width: '120px', flexShrink: 0, textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
-                  <Badge variant={getStatusVariant(t.status)} style={{ fontSize: '9px' }}>
-                    {getStatusLabel(t.status)}
-                  </Badge>
-                </span>
-                <span style={{ width: '100px', flexShrink: 0, textAlign: 'center', fontWeight: '600', color: 'var(--color-text-white)' }}>
-                  {t.player_count || 0}
-                </span>
-                <span style={{ width: '100px', flexShrink: 0, fontWeight: '700', color: 'var(--color-danger)', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  ❤️ {t.like_count || 0}
-                </span>
               </div>
+              <span className="leaderboard-stat-col" style={{ width: '120px', display: 'flex', justifyContent: 'center' }}>
+                <Badge variant={getStatusVariant(t.status)} style={{ fontSize: '9px' }}>
+                  {getStatusLabel(t.status)}
+                </Badge>
+              </span>
+              <span className="leaderboard-stat-col" style={{ width: '100px', fontWeight: '600', color: 'var(--color-text-white)' }}>
+                {t.player_count || 0}
+              </span>
+              <span className="leaderboard-stat-col" style={{ width: '100px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                ❤️ {t.like_count || 0}
+              </span>
             </Link>
           ))}
 

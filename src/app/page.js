@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
 import './home.css'
 
 export default async function HomePage() {
@@ -58,12 +59,7 @@ export default async function HomePage() {
         </div>
 
         {/* Content */}
-        <div className="hero-content">
-          <div className="hero-badge">
-            <span className="hero-badge-dot" />
-            🎮 Now in Early Access
-          </div>
-
+        <div className="hero-content animate-on-scroll">
           <h1 className="hero-title">
             <span className="hero-title-line">The Ultimate Platform</span>
             <span className="hero-title-line">
@@ -107,7 +103,7 @@ export default async function HomePage() {
       {/* ===== FEATURES SECTION ===== */}
       <section className="features-section" id="features-section">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header animate-on-scroll">
             <div className="section-label">
               Features
             </div>
@@ -123,7 +119,7 @@ export default async function HomePage() {
             {features.map((feature, i) => (
               <div
                 key={i}
-                className="feature-card gaming-glow-hover"
+                className="feature-card gaming-glow-hover animate-on-scroll"
                 id={`feature-card-${i}`}
               >
                 <div className="feature-icon" style={{ fontSize: '1.5rem' }}>{feature.icon}</div>
@@ -138,7 +134,7 @@ export default async function HomePage() {
       {/* ===== HOW IT WORKS ===== */}
       <section className="how-section" id="how-section">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header animate-on-scroll">
             <div className="section-label">
               How It Works
             </div>
@@ -151,21 +147,21 @@ export default async function HomePage() {
           </div>
 
           <div className="how-steps">
-            <div className="how-step gaming-glow-hover">
+            <div className="how-step gaming-glow-hover animate-on-scroll">
               <div className="how-step-number">1</div>
               <h3 className="how-step-title">Create Your Organization 🏰</h3>
               <p className="how-step-desc">
                 Sign up, create your organization profile, and invite your team members with the right roles and permissions.
               </p>
             </div>
-            <div className="how-step gaming-glow-hover">
+            <div className="how-step gaming-glow-hover animate-on-scroll">
               <div className="how-step-number">2</div>
               <h3 className="how-step-title">Set Up a Tournament 🎮</h3>
               <p className="how-step-desc">
                 Configure your event, add a trailer, set registration links, and grab your unique server token for the plugin.
               </p>
             </div>
-            <div className="how-step gaming-glow-hover">
+            <div className="how-step gaming-glow-hover animate-on-scroll">
               <div className="how-step-number">3</div>
               <h3 className="how-step-title">Go Live & Compete 🏆</h3>
               <p className="how-step-desc">
@@ -179,7 +175,7 @@ export default async function HomePage() {
       {/* ===== CTA SECTION ===== */}
       <section className="cta-section" id="cta-section">
         <div className="container">
-          <div className="cta-box gaming-glow-hover">
+          <div className="cta-box gaming-glow-hover animate-on-scroll">
             <h2 className="cta-title">
               Ready to Level Up Your <span className="text-gradient-primary">Tournaments</span>? 🎮
             </h2>
@@ -201,7 +197,7 @@ export default async function HomePage() {
       {/* ===== FAQ SECTION ===== */}
       <section className="faq-section" id="faq-section">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header animate-on-scroll">
             <div className="section-label">FAQ</div>
             <h2 className="section-title">Frequently Asked Questions</h2>
             <p className="section-description">
@@ -210,31 +206,31 @@ export default async function HomePage() {
           </div>
 
           <div className="faq-grid">
-            <div className="faq-card gaming-glow-hover">
+            <div className="faq-card gaming-glow-hover animate-on-scroll">
               <h3 className="faq-question">What is TournaDash?</h3>
               <p className="faq-answer">
                 TournaDash is a dedicated management and automation dashboard for Minecraft tournament organizers. It handles player sign-ups, whitelist syncs, and embeds live streams.
               </p>
             </div>
-            <div className="faq-card gaming-glow-hover">
+            <div className="faq-card gaming-glow-hover animate-on-scroll">
               <h3 className="faq-question">How does the whitelist sync work?</h3>
               <p className="faq-answer">
                 By installing the TournaDash Minecraft plugin, it automatically syncs whitelisted participants from your web tournament dashboard directly to the game server. It manages joining access based on tournament states.
               </p>
             </div>
-            <div className="faq-card gaming-glow-hover">
+            <div className="faq-card gaming-glow-hover animate-on-scroll">
               <h3 className="faq-question">Can I whitelist organization members?</h3>
               <p className="faq-answer">
                 Yes! Staff members registered under your organization will be automatically allowed to join the server at any time, even before the tournament officially starts.
               </p>
             </div>
-            <div className="faq-card gaming-glow-hover">
+            <div className="faq-card gaming-glow-hover animate-on-scroll">
               <h3 className="faq-question">Is the plugin compatible with my server?</h3>
               <p className="faq-answer">
                 Yes, the plugin works with Paper, Purpur, and Spigot servers on versions 1.16.5 up to 1.21+.
               </p>
             </div>
-            <div className="faq-card gaming-glow-hover">
+            <div className="faq-card gaming-glow-hover animate-on-scroll">
               <h3 className="faq-question">How do I automate leaderboard updates?</h3>
               <p className="faq-answer">
                 You can call the /api/plugin/leaderboard endpoint using your tournament secret token. This allows custom gamemode plugins to automatically submit round rankings and end statuses without manual input.
@@ -311,6 +307,8 @@ export default async function HomePage() {
           })
         }}
       />
+
+      <ScrollAnimationInit />
     </>
   )
 }

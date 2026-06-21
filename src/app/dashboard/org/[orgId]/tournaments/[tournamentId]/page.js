@@ -289,6 +289,10 @@ export default function TournamentManagePage() {
   }
 
   const handleDeleteTournament = async () => {
+    if (userRole !== 'OWNER' && userRole !== 'ADMIN') {
+      alert('Only organization OWNER or ADMIN can delete tournaments.')
+      return
+    }
     if (!window.confirm('WARNING: Are you sure you want to delete this tournament? This will permanently delete all whitelists, registrations, and comments. This action cannot be undone.')) return
     const verification = window.prompt('Please type the tournament name to confirm deletion:')
     if (verification !== tournament.name) {
@@ -1611,15 +1615,17 @@ export default function TournamentManagePage() {
       )}
 
       {/* Danger Zone */}
-      <Card style={{ borderColor: 'rgba(239, 68, 68, 0.25)', backgroundColor: 'rgba(239, 68, 68, 0.02)' }} className="p-6">
-        <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', color: 'var(--color-danger)', marginBottom: '8px' }}>Danger Zone</h4>
-        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-          Deleting the tournament is a permanent action. All registrations, whitelist records, comment threads, and tournament details will be deleted immediately.
-        </p>
-        <Button variant="danger" size="sm" onClick={handleDeleteTournament} loading={saving}>
-          Delete Tournament
-        </Button>
-      </Card>
+      {(userRole === 'OWNER' || userRole === 'ADMIN') && (
+        <Card style={{ borderColor: 'rgba(239, 68, 68, 0.25)', backgroundColor: 'rgba(239, 68, 68, 0.02)' }} className="p-6">
+          <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', color: 'var(--color-danger)', marginBottom: '8px' }}>Danger Zone</h4>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            Deleting the tournament is a permanent action. All registrations, whitelist records, comment threads, and tournament details will be deleted immediately.
+          </p>
+          <Button variant="danger" size="sm" onClick={handleDeleteTournament} loading={saving}>
+            Delete Tournament
+          </Button>
+        </Card>
+      )}
       {/* Import Whitelist Modal */}
       <Modal
         isOpen={importModalOpen}

@@ -214,59 +214,68 @@ export default function OrgDashboardPage() {
 
       {/* Recent Tournaments */}
       <div className="flex flex-col gap-3">
-        <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-lg)' }}>
-          Tournaments ({tournaments.length})
-        </h3>
-        {tournaments.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {tournaments.map((t) => (
-              <Link
-                key={t.id}
-                href={`/dashboard/org/${orgId}/tournaments/${t.id}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <Card interactive className="p-5 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+        {(() => {
+          const soonTournaments = tournaments.filter(t => t.status === 'SOON')
+          return (
+            <>
+              <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-lg)' }}>
+                Upcoming Tournaments ({soonTournaments.length})
+              </h3>
+              {soonTournaments.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {soonTournaments.map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/dashboard/org/${orgId}/tournaments/${t.id}`}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <div className="td-card td-card-interactive gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4) var(--space-5)' }}>
+                        <div className="flex items-center gap-4" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)', marginRight: '8px', flexShrink: 0 }}>
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <div style={{ textAlign: 'left' }}>
+                            <div className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0, fontWeight: '600' }}>
+                              {t.name}
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                              {t.player_count} players &bull; Created {new Date(t.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
+                          <Badge variant="primary">
+                            {t.status}
+                          </Badge>
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Card className="p-8 text-center flex flex-col items-center justify-center gap-4">
+                  <div style={{ color: 'var(--color-text-muted)' }}>
+                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                    <div>
-                      <div className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
-                        {t.name}
-                      </div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                        {t.player_count} players &bull; Created {new Date(t.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={t.status === 'ONGOING' ? 'success' : t.status === 'SOON' ? 'primary' : 'neutral'}>
-                      {t.status}
-                    </Badge>
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </div>
+                  <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>No upcoming tournaments</h4>
+                  <p style={{ color: 'var(--color-text-secondary)', maxWidth: '360px', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
+                    No tournaments scheduled in the SOON status.
+                  </p>
+                  {(userRole === 'OWNER' || userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                    <Link href={`/dashboard/org/${orgId}/tournaments/new`} className="btn btn-primary">
+                      + Create Tournament
+                    </Link>
+                  )}
                 </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <Card className="p-8 text-center flex flex-col items-center justify-center gap-4">
-            <div style={{ color: 'var(--color-text-muted)' }}>
-              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-            <h4 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>No tournaments yet</h4>
-            <p style={{ color: 'var(--color-text-secondary)', maxWidth: '360px', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
-              Create your first tournament to get started with whitelisting and statistics.
-            </p>
-            <Link href={`/dashboard/org/${orgId}/tournaments/new`} className="btn btn-primary">
-              + Create Tournament
-            </Link>
-          </Card>
-        )}
+              )}
+            </>
+          )
+        })()}
       </div>
     </div>
   )
