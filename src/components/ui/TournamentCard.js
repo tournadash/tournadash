@@ -136,20 +136,12 @@ export default function TournamentCard({ tournament, userRegistration }) {
 
         {/* Action Button */}
         <Link href={`/tournaments/${tournament.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-          <button style={{ 
+          <button className="btn btn-secondary" style={{ 
             width: '100%', 
             padding: '10px', 
-            backgroundColor: 'var(--color-bg-input)',
-            border: '2px solid var(--color-border)',
-            color: 'var(--color-text-white)',
             fontWeight: '800',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-white)'; }}
-          >
+            textTransform: 'uppercase'
+          }}>
             VIEW TOURNAMENT ➔
           </button>
         </Link>
