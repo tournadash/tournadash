@@ -8,7 +8,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
-import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
+import useScrollAnimation from '@/hooks/useScrollAnimation'
 
 export default function OrgPublicProfilePage() {
   const { slug } = useParams()
@@ -21,6 +21,8 @@ export default function OrgPublicProfilePage() {
   const [followerCount, setFollowerCount] = useState(0)
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
+
+  useScrollAnimation('.animate-on-scroll', [loading, org, members, tournaments, leaderboard])
 
   useEffect(() => {
     const load = async () => {
@@ -419,11 +421,10 @@ export default function OrgPublicProfilePage() {
           })}
         </div>
       ) : (
-        <Card className="p-8 text-center flex flex-col items-center justify-center gap-4">
+        <Card className="p-8 text-center flex flex-col items-center justify-center gap-4 animate-on-scroll">
           <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No tournaments hosted yet.</p>
         </Card>
       )}
-      <ScrollAnimationInit />
     </div>
   )
 }

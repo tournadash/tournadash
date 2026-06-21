@@ -8,7 +8,7 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
-import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
+import useScrollAnimation from '@/hooks/useScrollAnimation'
 
 export default function TournamentsBrowsePage() {
   const [tournaments, setTournaments] = useState([])
@@ -16,6 +16,8 @@ export default function TournamentsBrowsePage() {
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const supabase = createClient()
+
+  useScrollAnimation('.animate-on-scroll', [loading, tournaments, filter, search])
 
   useEffect(() => {
     document.title = 'Browse Tournaments | TournaDash'
@@ -197,7 +199,6 @@ export default function TournamentsBrowsePage() {
         </Card>
       )}
       </div>
-      <ScrollAnimationInit />
     </div>
   )
 }

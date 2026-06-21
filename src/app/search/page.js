@@ -7,12 +7,16 @@ import Card from '@/components/ui/Card'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
-import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
+import useScrollAnimation from '@/hooks/useScrollAnimation'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(['ALL']) // array of active filters
   const [results, setResults] = useState({ tournaments: [], organizations: [], users: [] })
+  const [loading, setLoading] = useState(false)
+  const supabase = createClient()
+
+  useScrollAnimation('.animate-on-scroll', [loading, query, filters, results])
 
   const toggleFilter = (f) => {
     if (f === 'ALL') {
@@ -28,8 +32,6 @@ export default function SearchPage() {
       setFilters(nextFilters)
     }
   }
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     document.title = 'Search | TournaDash'
@@ -266,7 +268,6 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-      <ScrollAnimationInit />
     </div>
   )
 }

@@ -7,7 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
-import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
+import useScrollAnimation from '@/hooks/useScrollAnimation'
 
 export default function LeaderboardPage() {
   const [orgs, setOrgs] = useState([])
@@ -15,6 +15,8 @@ export default function LeaderboardPage() {
   const [tab, setTab] = useState('orgs')
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+
+  useScrollAnimation('.animate-on-scroll', [loading, tab, orgs, tournaments])
 
   useEffect(() => {
     document.title = 'Leaderboard | TournaDash'
@@ -218,7 +220,6 @@ export default function LeaderboardPage() {
         </div>
       )}
       </div>
-      <ScrollAnimationInit />
     </div>
   )
 }

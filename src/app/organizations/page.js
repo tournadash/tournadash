@@ -6,13 +6,15 @@ import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
-import ScrollAnimationInit from '@/components/ui/ScrollAnimationInit'
+import useScrollAnimation from '@/hooks/useScrollAnimation'
 
 export default function OrganizationsBrowsePage() {
   const [orgs, setOrgs] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const supabase = createClient()
+
+  useScrollAnimation('.animate-on-scroll', [loading, orgs, search])
 
   useEffect(() => {
     document.title = 'Browse Organizations | TournaDash'
@@ -161,7 +163,6 @@ export default function OrganizationsBrowsePage() {
         </Card>
       )}
       </div>
-      <ScrollAnimationInit />
     </div>
   )
 }
