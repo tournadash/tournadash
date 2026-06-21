@@ -54,8 +54,9 @@ export default function ThemesPage() {
       id: 'neon-arcade',
       name: 'Neon Arcade',
       description: 'A blocky, high-contrast retro aesthetic featuring solid borders, sharp corners, and neon yellow accents.',
-      previewColor: '#0a0a0a',
-      accentColor: '#facc15'
+      previewColor: '#121212',
+      accentColor: '#facc15',
+      previewBgImage: "linear-gradient(#0a0a0abf, #0a0a0ad9), url('https://vault-op-tournaments.vercel.app/bg-image.png')"
     }
   ]
 
@@ -101,7 +102,10 @@ export default function ThemesPage() {
             
             <div style={{ 
               height: '140px', 
-              backgroundColor: t.previewColor, 
+              backgroundColor: t.previewColor,
+              backgroundImage: t.previewBgImage || 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               borderBottom: '1px solid var(--color-border)',
               margin: '-24px -24px 24px -24px',
               display: 'flex',
