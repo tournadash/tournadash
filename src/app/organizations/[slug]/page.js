@@ -155,7 +155,45 @@ export default function OrgPublicProfilePage() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
+    <div className={`container ${org.theme === 'vault-op' ? 'vault-op-theme' : ''}`} style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
+      {org.theme === 'vault-op' && (
+        <style dangerouslySetInnerHTML={{__html: `
+          .vault-op-theme {
+            --color-bg-base: #0a0a0a;
+            --color-bg-card: #111111;
+            --color-bg-alt: #1a1a1a;
+            --color-bg-subtle: #222222;
+            --color-border: #333333;
+            --color-primary: #facc15;
+            --color-secondary: #22c55e;
+            --color-text: #ffffff;
+            --color-text-secondary: #a1a1aa;
+            --color-text-muted: #71717a;
+            --radius-sm: 0px;
+            --radius-md: 0px;
+            --radius-lg: 0px;
+            --radius-xl: 0px;
+            --radius-full: 0px;
+            font-family: 'Space Grotesk', 'Inter', monospace;
+          }
+          .vault-op-theme .td-card {
+            border: 2px solid var(--color-border) !important;
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1) !important;
+            transition: all 0.2s ease;
+          }
+          .vault-op-theme .td-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px var(--color-primary) !important;
+            border-color: var(--color-primary) !important;
+          }
+          .vault-op-theme button, .vault-op-theme .btn {
+            border-radius: 0 !important;
+            text-transform: uppercase;
+            font-weight: 800 !important;
+            letter-spacing: 0.05em;
+          }
+        `}} />
+      )}
       {/* Header Card */}
       <Card className="p-0 mb-8 overflow-hidden relative animate-on-scroll">
         {/* Banner Area */}
@@ -236,20 +274,36 @@ export default function OrgPublicProfilePage() {
           )}
 
           {/* Stats */}
-          <div className="flex gap-8" style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)' }}>
-            <div>
-              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{followerCount}</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Followers</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{tournaments.length}</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Tournaments</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', color: 'var(--color-text-white)' }}>{members.length}</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Team Members</div>
-            </div>
-          </div>
+          {(() => {
+            const tournamentsHosted = tournaments.length;
+            const competitorsRegistered = tournaments.reduce((acc, t) => acc + (t.player_count || 0), 0);
+            const prizesDistributed = tournaments.filter(t => t.status === 'ENDED').reduce((acc, t) => {
+              // naive parsing, assuming t.prizepool might be a number or string like "3000"
+              const val = parseFloat(t.prizepool) || 0;
+              return acc + val;
+            }, 0);
+            const activeServers = tournaments.filter(t => t.status === 'ONGOING').length;
+            return (
+              <div className="flex gap-8 flex-wrap" style={{ marginTop: 'var(--space-6)', paddingTop: 'var(--space-5)', borderTop: '1px solid var(--color-border)' }}>
+                <div>
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', color: 'var(--color-text-white)', lineHeight: '1' }}>{tournamentsHosted}+</div>
+                  <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em', marginTop: '4px' }}>TOURNAMENTS HOSTED</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', color: 'var(--color-text-white)', lineHeight: '1' }}>{competitorsRegistered.toLocaleString()}+</div>
+                  <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em', marginTop: '4px' }}>COMPETITORS REGISTERED</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', color: 'var(--color-text-white)', lineHeight: '1' }}>{prizesDistributed.toLocaleString()}rs+</div>
+                  <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em', marginTop: '4px' }}>PRIZES DISTRIBUTED</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', color: 'var(--color-text-white)', lineHeight: '1' }}>{activeServers} ONLINE</div>
+                  <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em', marginTop: '4px' }}>ACTIVE SERVERS</div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </Card>
 

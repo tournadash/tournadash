@@ -234,6 +234,23 @@ export default function TournamentManagePage() {
     setStatusUpdating(false)
   }
 
+  const toggleRegistration = async (newVal) => {
+    setStatusUpdating(true)
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ registration_open: newVal })
+      .eq('id', tournamentId)
+
+    if (!error) {
+      setTournament(prev => ({ ...prev, registration_open: newVal }))
+      setSuccess(`Registration is now ${newVal ? 'OPEN' : 'CLOSED'}`)
+      setTimeout(() => setSuccess(''), 3000)
+    } else {
+      setError(error.message)
+    }
+    setStatusUpdating(false)
+  }
+
   const addPlayer = async (e) => {
     e.preventDefault()
     if (!newPlayerIgn.trim()) return
@@ -860,10 +877,29 @@ export default function TournamentManagePage() {
             ))}
           </div>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)' }}>
-            {tournament.status === 'SOON' && 'Players cannot join the server. Registration is open.'}
-            {tournament.status === 'ONGOING' && 'Only whitelisted players can join. Registration closed.'}
+            {tournament.status === 'SOON' && 'Players cannot join the server. Registration usually opens.'}
+            {tournament.status === 'ONGOING' && 'Only whitelisted players can join. Registration usually closes.'}
             {tournament.status === 'ENDED' && 'Server is locked. Tournament results can be set.'}
           </p>
+
+          <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <div>
+              <div style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-text-white)' }}>Manual Registration Control</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Force registrations open or closed manually.</div>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={tournament.registration_open}
+                onChange={(e) => toggleRegistration(e.target.checked)}
+                disabled={statusUpdating}
+                style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+              />
+              <span style={{ fontSize: 'var(--text-sm)', color: tournament.registration_open ? 'var(--color-primary)' : 'var(--color-text-muted)', fontWeight: '600' }}>
+                {tournament.registration_open ? 'OPEN' : 'CLOSED'}
+              </span>
+            </label>
+          </div>
         </Card>
 
         {/* Public Share Link */}

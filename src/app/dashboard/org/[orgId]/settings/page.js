@@ -138,6 +138,7 @@ export default function OrgSettingsPage() {
         custom_links: customLinks.filter(l => l.label && l.url),
         avatar_url: avatarUrl,
         banner_url: bannerUrl,
+        theme: org.theme || 'default',
       })
       .eq('id', orgId)
 
@@ -319,6 +320,36 @@ export default function OrgSettingsPage() {
                 {countWords(org?.bio)} / 200 words
               </div>
             </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>Public Page Theme</h3>
+          </div>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            Choose the aesthetic layout for your public organization page.
+          </p>
+          <div className="flex flex-col gap-2 max-w-sm">
+            <select
+              value={org?.theme || 'default'}
+              onChange={(e) => setOrg({ ...org, theme: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'var(--color-bg-input)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--text-sm)'
+              }}
+            >
+              <option value="default">Default TournaDash Theme</option>
+              <option value="vault-op">VaultOP Exact Replica</option>
+            </select>
           </div>
         </Card>
 
