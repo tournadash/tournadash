@@ -170,6 +170,7 @@ export default function OrgPublicProfilePage() {
     }
   }
 
+  return (
     <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
       
       {/* Navbar Portal Injection */}
