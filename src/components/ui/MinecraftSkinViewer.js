@@ -30,7 +30,6 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
           canvas: canvasRef.current,
           width: width,
           height: height,
-          skin: activeSkin,
         })
 
         // Enable orbit controls
@@ -51,6 +50,12 @@ export default function MinecraftSkinViewer({ skinUrl, width = 160, height = 240
 
         viewerInstance.autoRotate = isRotating
         viewerInstance.autoRotateSpeed = 2.0
+
+        // Load skin with fallback to local steve if it fails to load/fetch
+        viewerInstance.loadSkin(activeSkin).catch(err => {
+          console.warn('Failed to load skin, falling back to local Steve:', err)
+          viewerInstance.loadSkin('/steve.png').catch(() => {})
+        })
 
         viewerRef.current = viewerInstance
       } catch (err) {

@@ -586,6 +586,22 @@ export default function ProfileEditPage() {
                     onChange={handleSkinFileChange}
                     style={{ display: 'none' }}
                   />
+                  {(skinFile || (skinPreview && skinPreview !== profile?.minecraft_skin_url)) && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        setSkinFile(null)
+                        setSkinPreview(null)
+                        updateField('minecraft_skin_url', profile?.minecraft_skin_url)
+                        setError('')
+                      }}
+                      style={{ color: 'var(--color-danger)', padding: '4px 8px' }}
+                    >
+                      ↩️ Undo Change
+                    </Button>
+                  )}
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
                     {skinFile ? skinFile.name : 'Choose a standard 64x64 or 64x32 PNG file'}
                   </span>
