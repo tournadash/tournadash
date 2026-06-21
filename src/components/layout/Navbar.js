@@ -201,32 +201,6 @@ export default function Navbar() {
                       </svg>
                       My Profile
                     </Link>
-                    <Link
-                      href="/dashboard/org"
-                      className="navbar-user-dropdown-item"
-                      onClick={() => setDropdownOpen(false)}
-                      id="dropdown-orgs"
-                    >
-                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      </svg>
-                      My Organizations
-                    </Link>
-                    <Link
-                      href="/dashboard/themes"
-                      className="navbar-user-dropdown-item"
-                      onClick={() => setDropdownOpen(false)}
-                      id="dropdown-themes"
-                    >
-                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-                        <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-                        <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-                        <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
-                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h3.016C20.04 16.394 22 14.434 22 12c0-5.5-4.5-10-10-10z"></path>
-                      </svg>
-                      Themes
-                    </Link>
                     <div className="navbar-user-dropdown-divider" />
                     <button
                       className="navbar-user-dropdown-item navbar-user-dropdown-item-danger"

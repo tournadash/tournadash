@@ -145,7 +145,18 @@ export default function OrgDashboardPage() {
               </Badge>
             )}
           </div>
-          <p className="dashboard-page-subtitle">{org.bio || 'No description set.'}</p>
+          <div className="flex items-center gap-4 mb-2">
+            <p className="dashboard-page-subtitle" style={{ margin: 0 }}>{org.bio || 'No description set.'}</p>
+            <button 
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/organizations/${org.slug}`);
+                alert('Public link copied to clipboard!');
+              }}
+            >
+              🔗 Copy Public Link
+            </button>
+          </div>
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -16,6 +16,7 @@ export default function OrgTournamentsPage() {
   const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,6 +49,18 @@ export default function OrgTournamentsPage() {
   const filteredTournaments = tournaments.filter((t) =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) return;
+    
+    const { error } = await supabase.from('tournaments').delete().eq('id', id);
+    if (!error) {
+      setTournaments(tournaments.filter(t => t.id !== id));
+    } else {
+      alert('Failed to delete tournament.');
+    }
+  }
 
   if (loading) {
     return (
@@ -88,35 +101,44 @@ export default function OrgTournamentsPage() {
       {filteredTournaments.length > 0 ? (
         <div className="flex flex-col gap-3">
           {filteredTournaments.map((t) => (
-            <Link
+            <div
               key={t.id}
-              href={`/dashboard/org/${orgId}/tournaments/${t.id}`}
-              style={{ textDecoration: 'none' }}
+              onClick={() => router.push(`/dashboard/org/${orgId}/tournaments/${t.id}`)}
+              className="td-card td-card-interactive mb-2 gaming-glow-hover" 
+              style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4) var(--space-5)', cursor: 'pointer' }}
             >
-              <div className="td-card td-card-interactive mb-2 gaming-glow-hover" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4) var(--space-5)' }}>
-                <div className="flex items-center gap-4" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)', marginRight: '16px' }}>
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  <div>
-                    <div className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
-                      {t.name}
-                    </div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                      {t.player_count} players &bull; Created {new Date(t.created_at).toLocaleDateString()}
-                    </div>
+              <div className="flex items-center gap-4" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)', marginRight: '16px' }}>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <div>
+                  <div className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+                    {t.name}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                    {t.player_count} players &bull; Created {new Date(t.created_at).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="flex items-center gap-3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <Badge variant={t.status === 'ONGOING' ? 'success' : t.status === 'SOON' ? 'primary' : 'neutral'}>
-                    {t.status}
-                  </Badge>
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </div>
               </div>
-            </Link>
+              <div className="flex items-center gap-3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                <Badge variant={t.status === 'ONGOING' ? 'success' : t.status === 'SOON' ? 'primary' : 'neutral'}>
+                  {t.status}
+                </Badge>
+                
+                <div className="flex items-center gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => router.push(`/dashboard/org/${orgId}/tournaments/${t.id}/edit`)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px' }}>
+                    ✏️ Edit
+                  </button>
+                  <button onClick={(e) => handleDelete(e, t.id)} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', color: 'var(--color-danger)' }}>
+                    🗑️ Delete
+                  </button>
+                </div>
+
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)', marginLeft: '8px' }}>
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </div>
           ))}
         </div>
       ) : (

@@ -228,11 +228,16 @@ export default function EditTournamentPage() {
       return
     }
 
-    // Upsert server IP if provided
+    // Update server IP
     if (form.server_ip && form.server_ip.trim()) {
       await supabase
         .from('tournament_server_ips')
-        .upsert({
+        .delete()
+        .eq('tournament_id', tournamentId)
+        
+      await supabase
+        .from('tournament_server_ips')
+        .insert({
           tournament_id: tournamentId,
           server_ip: form.server_ip.trim(),
           ip_revealed: !!form.ip_revealed

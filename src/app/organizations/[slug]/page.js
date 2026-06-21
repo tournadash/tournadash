@@ -21,6 +21,7 @@ export default function OrgPublicProfilePage() {
   const [followed, setFollowed] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
   const [leaderboard, setLeaderboard] = useState([])
+  const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [userRegistrations, setUserRegistrations] = useState({}) // tournament_id -> registration status
   
@@ -42,6 +43,14 @@ export default function OrgPublicProfilePage() {
 
       const { data: m } = await supabase.from('organization_members').select('*, users(display_name, username, avatar_url)').eq('organization_id', orgData.id)
       setMembers(m || [])
+
+      const { data: annData } = await supabase
+        .from('organization_announcements')
+        .select('*')
+        .eq('organization_id', orgData.id)
+        .order('created_at', { ascending: false })
+        .limit(3)
+      setAnnouncements(annData || [])
 
       // Fetch organization leaderboard
       const { data: lbData } = await supabase
@@ -284,7 +293,7 @@ export default function OrgPublicProfilePage() {
 
             <Card className="p-4" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ color: 'var(--color-text-secondary)' }}>
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em', marginBottom: '4px' }}>PRIZES DISTRIBUTED</div>
@@ -355,13 +364,28 @@ export default function OrgPublicProfilePage() {
             <h3 style={{ fontSize: 'var(--text-xl)', color: '#38bdf8', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)' }}>
               📢 ANNOUNCEMENTS BULLETIN
             </h3>
-            <Card className="p-6" style={{ border: '2px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
-              {org.bio ? (
-                <p style={{ color: 'var(--color-text-secondary)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                  {org.bio}
-                </p>
+            <Card className="p-0" style={{ border: '2px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+              {announcements.length > 0 ? (
+                <div className="flex flex-col">
+                  {announcements.map((ann, idx) => (
+                    <div key={ann.id} style={{
+                      padding: '16px',
+                      borderBottom: idx < announcements.length - 1 ? '1px solid var(--color-border)' : 'none',
+                      backgroundColor: idx % 2 === 0 ? 'var(--color-bg-card)' : 'var(--color-bg-subtle)'
+                    }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: '800', marginBottom: '4px' }}>
+                        {new Date(ann.created_at).toLocaleDateString()}
+                      </div>
+                      <p style={{ color: 'var(--color-text-white)', margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {ann.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0 }}>No current announcements.</p>
+                <div className="p-6 text-center">
+                  <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0 }}>No current announcements.</p>
+                </div>
               )}
             </Card>
           </Card>

@@ -89,7 +89,7 @@ export default function TournamentCard({ tournament, userRegistration }) {
       </div>
 
       {/* Card Body */}
-      <div style={{ padding: 'var(--space-5)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: 'var(--space-3)', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h4 style={{ fontWeight: '800', color: 'var(--color-text-white)', fontSize: 'var(--text-lg)', marginBottom: 'var(--space-3)' }}>
           {tournament.name}
         </h4>

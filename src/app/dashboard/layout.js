@@ -117,6 +117,19 @@ export default function DashboardLayout({ children }) {
         </svg>
       ) 
     },
+    { 
+      href: '/dashboard/themes', 
+      label: 'Themes', 
+      icon: (
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h3.016C20.04 16.394 22 14.434 22 12c0-5.5-4.5-10-10-10z"></path>
+        </svg>
+      ) 
+    },
   ]
 
   const orgLinks = selectedOrg ? [
@@ -163,6 +176,15 @@ export default function DashboardLayout({ children }) {
             <path d="M4 22h16"/>
             <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/>
             <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"/>
+          </svg>
+        ) 
+      },
+      { 
+        href: `/dashboard/org/${selectedOrg.id}/announcements`, 
+        label: 'Announcements', 
+        icon: (
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         ) 
       }

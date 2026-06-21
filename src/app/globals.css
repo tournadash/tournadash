@@ -429,6 +429,8 @@ body.theme-neon-arcade {
   background-repeat: no-repeat !important;
   background-size: cover !important;
   background-attachment: fixed !important;
+  min-height: 100vh;
+  margin: 0;
 }
 
 body.theme-neon-arcade h1,
@@ -450,6 +452,12 @@ body.theme-neon-arcade h2 { font-size: 1.25rem !important; }
 body.theme-neon-arcade h3,
 body.theme-neon-arcade .dashboard-page-title { font-size: 1rem !important; }
 body.theme-neon-arcade h4, body.theme-neon-arcade h5, body.theme-neon-arcade h6 { font-size: 0.875rem !important; }
+
+/* Keep Home Page Hero Huge */
+body.theme-neon-arcade .hero-title {
+  font-size: 3.5rem !important;
+  line-height: 1.2 !important;
+}
 
 /* Cards / Panels */
 body.theme-neon-arcade .td-card, 
