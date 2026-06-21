@@ -276,7 +276,7 @@ export default function OrgPublicProfilePage() {
         <div className="flex flex-col gap-8">
           
           {/* Featured Events */}
-          <div>
+          <Card className="p-6">
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -312,10 +312,10 @@ export default function OrgPublicProfilePage() {
                 <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No tournaments hosted yet.</p>
               </Card>
             )}
-          </div>
+          </Card>
 
           {/* Announcements / Bio Box */}
-          <div>
+          <Card className="p-6">
             <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
               ANNOUNCEMENTS
             </h3>
@@ -328,14 +328,14 @@ export default function OrgPublicProfilePage() {
                 <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0 }}>No current announcements.</p>
               )}
             </Card>
-          </div>
+          </Card>
         </div>
 
         {/* Right Column: Highlights & Handles */}
         <div className="flex flex-col gap-8">
           
           {/* Recent Highlights */}
-          <div>
+          <Card className="p-6">
             <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
               RECENT HIGHLIGHTS
             </h3>
@@ -362,10 +362,10 @@ export default function OrgPublicProfilePage() {
                 <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>No recent highlights.</p>
               </Card>
             )}
-          </div>
+          </Card>
 
           {/* Community Handles */}
-          <div>
+          <Card className="p-6">
             <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
               COMMUNITY
             </h3>
@@ -398,11 +398,11 @@ export default function OrgPublicProfilePage() {
                 </a>
               ))}
             </div>
-          </div>
+          </Card>
           
           {/* Leaderboard/Team Box */}
           {leaderboard && leaderboard.length > 0 && (
-             <div>
+             <Card className="p-6">
               <h3 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-text-white)', margin: 0, fontWeight: '800', marginBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px' }}>
                 TOP PLAYERS
               </h3>
@@ -421,7 +421,7 @@ export default function OrgPublicProfilePage() {
                   </div>
                 ))}
               </Card>
-            </div>
+            </Card>
           )}
 
         </div>

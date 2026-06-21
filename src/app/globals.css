@@ -425,6 +425,8 @@ body.theme-neon-arcade {
   --radius-full: 0px;
   
   font-family: 'Press Start 2P', monospace, sans-serif !important;
+  font-size: 0.75rem !important; /* Scale down for blocky font */
+  line-height: 1.5 !important;
   background-color: var(--color-bg-base) !important;
   background-image: linear-gradient(#0a0a0abf, #0a0a0ad9), url('https://vault-op-tournaments.vercel.app/bg-image.png') !important;
   background-position: 50% !important;
@@ -445,6 +447,12 @@ body.theme-neon-arcade .dashboard-page-title {
   letter-spacing: 0.05em;
   font-weight: 400 !important;
 }
+
+body.theme-neon-arcade h1 { font-size: 1.5rem !important; }
+body.theme-neon-arcade h2 { font-size: 1.25rem !important; }
+body.theme-neon-arcade h3,
+body.theme-neon-arcade .dashboard-page-title { font-size: 1rem !important; }
+body.theme-neon-arcade h4, body.theme-neon-arcade h5, body.theme-neon-arcade h6 { font-size: 0.875rem !important; }
 
 /* Cards / Panels */
 body.theme-neon-arcade .td-card, 
