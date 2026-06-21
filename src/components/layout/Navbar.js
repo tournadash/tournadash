@@ -115,7 +115,7 @@ export default function Navbar() {
       <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} id="main-navbar">
         <div className="navbar-inner">
           {/* Logo / Portal Target */}
-          {pathname.startsWith('/organizations/') && pathname.split('/').length === 3 ? (
+          {pathname.startsWith('/organizations/') && pathname.split('/').length >= 3 ? (
             <div id="navbar-org-portal" className="flex items-center gap-3"></div>
           ) : (
             <Link href="/" className="navbar-logo" id="navbar-logo">

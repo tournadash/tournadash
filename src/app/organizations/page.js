@@ -74,7 +74,7 @@ export default function OrganizationsBrowsePage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
           {filtered.map((org) => (
             <Link key={org.id} href={`/organizations/${org.slug}`} style={{ textDecoration: 'none' }}>
-              <Card interactive className="p-0 overflow-hidden gaming-glow-hover animate-on-scroll">
+              <Card interactive className="p-0 overflow-hidden gaming-glow-hover animate-on-scroll" style={{ borderRadius: 'var(--radius-lg)' }}>
                 {/* Mini Profile Banner Background */}
                 <div style={{
                   height: '90px',
@@ -118,7 +118,7 @@ export default function OrganizationsBrowsePage() {
                 </div>
 
                 {/* Info and stats body */}
-                <div style={{ padding: 'var(--space-4) var(--space-6) var(--space-6)' }}>
+                <div style={{ padding: '4px' }}>
                   <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: '700', color: 'var(--color-text-white)', marginBottom: '2px' }}>
                     {org.name}
                   </h3>

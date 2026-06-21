@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -22,6 +23,11 @@ export default function OrgAllTournamentsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState('CREATED_DESC')
+  const [portalNode, setPortalNode] = useState(null)
+
+  useEffect(() => {
+    setPortalNode(document.getElementById('navbar-org-portal'))
+  }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -134,6 +140,15 @@ export default function OrgAllTournamentsPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }}>
+      {/* Navbar Portal Injection */}
+      {portalNode && createPortal(
+        <div className="flex items-center gap-3">
+          <Avatar src={org.avatar_url} alt={org.name} size="sm" />
+          <span style={{ fontWeight: '800', display: 'flex', alignItems: 'center' }}>@{org.slug}</span>
+        </div>,
+        portalNode
+      )}
+
       {/* Header Info */}
       <div className="flex items-center gap-4 mb-8">
         <Link href={`/organizations/${org.slug}`}>

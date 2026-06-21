@@ -460,13 +460,21 @@ body.theme-neon-arcade .hero-title {
 }
 
 /* Cards / Panels */
+.tournament-card-bg {
+  background-color: #12151e !important;
+}
+
 body.theme-neon-arcade .td-card, 
 body.theme-neon-arcade .card {
-  background-color: var(--color-bg-card) !important;
+  background-color: #0d0d0d !important;
   border: 4px solid #000 !important;
   box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.1) !important;
   border-radius: 0 !important;
   color: var(--color-text-white) !important;
+}
+
+body.theme-neon-arcade .tournament-card-bg {
+  background-color: #0a0a0a !important;
 }
 
 /* Featured Events Grid Layouts */

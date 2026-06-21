@@ -171,9 +171,17 @@ export default function OrgPublicProfilePage() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
-      
-      {/* Navbar Portal Injection */}
+    <div style={{
+      backgroundImage: "url('https://i.imgur.com/w9U8WdE.png')",
+      backgroundAttachment: 'fixed',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      minHeight: '100vh',
+      width: '100%'
+    }}>
+      <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-16)' }} id="org-public-profile">
+        
+        {/* Navbar Portal Injection */}
       {portalNode && createPortal(
         <div className="flex items-center gap-3">
           <Avatar src={org.avatar_url} alt={org.name} size="sm" />
@@ -217,15 +225,18 @@ export default function OrgPublicProfilePage() {
           <div style={{
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.2)',
+            backgroundColor: 'rgba(0,0,0,0.1)',
             zIndex: 1
           }} />
 
-          {/* Centered Content */}
-          <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px' }}>
-            <h1 style={{ fontSize: 'var(--text-4xl)', fontWeight: '800', color: 'white', margin: 0, textShadow: '0 4px 4px rgba(0,0,0,0.5)' }}>
-              {org.name}
-            </h1>
+          {/* Org Info */}
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
+            <Avatar src={org.avatar_url} alt={org.name} size="xl" style={{ border: '4px solid var(--color-bg)', boxShadow: '0 8px 16px rgba(0,0,0,0.5)' }} fallback={org.name[0]?.toUpperCase() || 'O'} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              <h1 style={{ fontSize: '5rem', fontWeight: '800', color: 'var(--color-text-white)', margin: 0, textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>
+                {org.name}
+              </h1>
+            </div>
             {org.bio && (
               <p style={{ fontSize: 'var(--text-lg)', color: '#e2e8f0', textShadow: '0 2px 4px rgba(0,0,0,0.5)', marginTop: 'var(--space-4)', lineHeight: '1.6' }}>
                 {org.bio}
@@ -262,7 +273,7 @@ export default function OrgPublicProfilePage() {
         return (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }} className="animate-on-scroll">
             
-            <Card className="p-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+            <Card className="p-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', borderRadius: 'var(--radius-lg)' }}>
               <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
                 <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
               </div>
@@ -272,7 +283,7 @@ export default function OrgPublicProfilePage() {
               </div>
             </Card>
 
-            <Card className="p-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+            <Card className="p-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', borderRadius: 'var(--radius-lg)' }}>
               <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
                 <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
@@ -282,7 +293,7 @@ export default function OrgPublicProfilePage() {
               </div>
             </Card>
 
-            <Card className="p-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+            <Card className="p-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', borderRadius: 'var(--radius-lg)' }}>
               <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
                 <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
               </div>
@@ -292,7 +303,7 @@ export default function OrgPublicProfilePage() {
               </div>
             </Card>
 
-            <Card className="p-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+            <Card className="p-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', borderRadius: 'var(--radius-lg)' }}>
               <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
                 <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
               </div>
@@ -477,6 +488,7 @@ export default function OrgPublicProfilePage() {
 
         </div>
       </div>
+    </div>
     </div>
   )
 }

@@ -47,9 +47,9 @@ export default function TournamentCard({ tournament, userRegistration }) {
   }
 
   return (
-    <Card interactive className="p-0 overflow-hidden flex flex-col h-full animate-on-scroll" style={{ 
+    <Card interactive className="p-0 overflow-hidden flex flex-col h-full animate-on-scroll tournament-card-bg" style={{ 
       border: '2px solid var(--color-border)', 
-      borderRadius: 'var(--radius-md)',
+      borderRadius: 'var(--radius-lg)',
       boxShadow: '0 4px 0 var(--color-border)' 
     }}>
       {/* Card Header (Banner) */}
@@ -89,8 +89,8 @@ export default function TournamentCard({ tournament, userRegistration }) {
       </div>
 
       {/* Card Body */}
-      <div style={{ padding: 'var(--space-3)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <h4 style={{ fontWeight: '800', color: 'var(--color-text-white)', fontSize: 'var(--text-lg)', marginBottom: 'var(--space-3)' }}>
+      <div style={{ padding: '4px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <h4 style={{ fontWeight: '800', color: 'var(--color-text-white)', fontSize: 'var(--text-md)', margin: '4px 0' }}>
           {tournament.name}
         </h4>
         
