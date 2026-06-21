@@ -86,7 +86,7 @@ export default function OrgPublicProfilePage() {
       }
 
       if (u) {
-        const { data: follow } = await supabase.from('follows').select('id').eq('organization_id', orgData.id).eq('user_id', u.id).maybeSingle()
+        const { data: follow } = await supabase.from('user_follows').select('id').eq('organization_id', orgData.id).eq('user_id', u.id).maybeSingle()
         setFollowed(!!follow)
 
         // Fetch user's registrations for these tournaments
@@ -114,11 +114,11 @@ export default function OrgPublicProfilePage() {
   const handleFollow = async () => {
     if (!user) return
     if (followed) {
-      await supabase.from('follows').delete().eq('organization_id', org.id).eq('user_id', user.id)
+      await supabase.from('user_follows').delete().eq('organization_id', org.id).eq('user_id', user.id)
       setFollowed(false)
       setFollowerCount(c => c - 1)
     } else {
-      await supabase.from('follows').insert({ organization_id: org.id, user_id: user.id })
+      await supabase.from('user_follows').insert({ organization_id: org.id, user_id: user.id })
       setFollowed(true)
       setFollowerCount(c => c + 1)
     }

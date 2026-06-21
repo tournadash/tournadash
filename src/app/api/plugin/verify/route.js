@@ -21,6 +21,21 @@ export async function POST(request) {
     })
   }
 
+  if (result.tokenType === 'user') {
+    const { user } = result
+    return NextResponse.json({
+      valid: true,
+      tokenType: 'user',
+      user: {
+        id: user.id,
+        username: user.username,
+        display_name: user.display_name,
+        minecraft_ign: user.minecraft_ign,
+        minecraft_uuid: user.minecraft_uuid,
+      },
+    })
+  }
+
   const { tournament } = result
 
   return NextResponse.json({

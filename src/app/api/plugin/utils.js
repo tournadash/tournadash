@@ -37,6 +37,18 @@ async function validateToken(request) {
     }
 
     return { organization, tokenType: 'organization' }
+  } else if (token.startsWith('td_key_')) {
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('id, username, display_name, minecraft_ign, minecraft_uuid')
+      .eq('minecraft_login_token', token)
+      .single()
+
+    if (error || !user) {
+      return { error: 'Invalid user token', status: 401 }
+    }
+
+    return { user, tokenType: 'user' }
   } else {
     return { error: 'Invalid token type prefix', status: 401 }
   }

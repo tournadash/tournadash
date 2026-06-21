@@ -37,6 +37,8 @@ export default function ProfileEditPage() {
   const [ignConfirm2, setIgnConfirm2] = useState('')
   const [ignConfirm3, setIgnConfirm3] = useState('')
   const [pendingIgn, setPendingIgn] = useState('')
+  const [generatingToken, setGeneratingToken] = useState(false)
+  const [showToken, setShowToken] = useState(false)
   
   const router = useRouter()
   const supabase = createClient()
@@ -286,6 +288,34 @@ export default function ProfileEditPage() {
 
   const updateField = (field, value) => {
     setProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleGenerateToken = async () => {
+    setGeneratingToken(true)
+    setError('')
+    setSuccess('')
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) throw new Error('Not authenticated')
+      
+      const randPart = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const newToken = `td_key_${randPart}`
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ minecraft_login_token: newToken })
+        .eq('id', authUser.id)
+
+      if (updateError) throw updateError
+
+      setProfile(prev => ({ ...prev, minecraft_login_token: newToken }))
+      setSuccess('Minecraft login key generated successfully!')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      setError(`Failed to generate key: ${err.message}`)
+    } finally {
+      setGeneratingToken(false)
+    }
   }
 
   const handleLinkDiscord = async () => {
@@ -624,6 +654,49 @@ export default function ProfileEditPage() {
             <div className="flex flex-col items-center justify-center w-full" style={{ alignSelf: 'center' }}>
               <label className="input-label" style={{ marginBottom: '8px', display: 'block', textAlign: 'center' }}>3D Avatar Model</label>
               <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} width={200} height={300} />
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h3 className="dashboard-page-title" style={{ fontSize: 'var(--text-base)', marginBottom: 0 }}>
+              Minecraft Integration Key
+            </h3>
+          </div>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            Use this secret key in the Minecraft Client Mod to link your game to your TournaDash account. Do not share this key with anyone!
+          </p>
+          <div className="flex gap-3 items-end">
+            <div style={{ flex: 1 }}>
+              <Input
+                id="minecraft-login-token"
+                label="Secret Login Key"
+                type={showToken ? 'text' : 'password'}
+                readOnly
+                value={profile?.minecraft_login_token || 'No key generated yet'}
+                style={{ fontFamily: 'monospace' }}
+              />
+            </div>
+            <div className="flex gap-2" style={{ marginBottom: '4px' }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowToken(!showToken)}
+              >
+                {showToken ? 'Hide' : 'Show'}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleGenerateToken}
+                loading={generatingToken}
+              >
+                {profile?.minecraft_login_token ? 'Regenerate Key' : 'Generate Key'}
+              </Button>
             </div>
           </div>
         </Card>
