@@ -107,11 +107,11 @@ export default function ProfileEditPage() {
       const json = await res.json()
       if (json.success && json.data?.player?.id) {
         const uuid = json.data.player.id
-        const crafatarUrl = `https://crafatar.com/skins/${uuid}`
+        const mcHeadsUrl = `https://mc-heads.net/skin/${uuid}`
         
-        setSkinPreview(crafatarUrl)
+        setSkinPreview(mcHeadsUrl)
         setSkinFile(null)
-        updateField('minecraft_skin_url', crafatarUrl)
+        updateField('minecraft_skin_url', mcHeadsUrl)
         setSuccess(`Found skin for ${json.data.player.username}! Click 'Save Changes' to apply it.`)
         setTimeout(() => setSuccess(''), 3000)
       } else {
@@ -511,9 +511,9 @@ export default function ProfileEditPage() {
             </h3>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             {/* Config controls on Left */}
-            <div className="flex-1 flex flex-col gap-4" style={{ width: '100%' }}>
+            <div className="flex flex-col gap-4" style={{ width: '100%' }}>
               <div className="flex gap-2 items-end">
                 <div style={{ flex: 1 }}>
                   <Input
@@ -592,9 +592,9 @@ export default function ProfileEditPage() {
             </div>
 
             {/* 3D Skin Viewer on Right */}
-            <div style={{ flexShrink: 0, alignSelf: 'center' }} className="flex flex-col items-center">
+            <div className="flex flex-col items-center justify-center w-full" style={{ alignSelf: 'center' }}>
               <label className="input-label" style={{ marginBottom: '8px', display: 'block', textAlign: 'center' }}>3D Avatar Model</label>
-              <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} />
+              <MinecraftSkinViewer skinUrl={skinPreview || profile?.minecraft_skin_url} width={200} height={300} />
             </div>
           </div>
         </Card>
