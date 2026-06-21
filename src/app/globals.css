@@ -472,12 +472,14 @@ body.theme-neon-arcade .card {
 /* Featured Events Grid Layouts */
 .featured-events-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-4);
 }
 
-body.theme-neon-arcade .featured-events-grid {
-  grid-template-columns: 1fr !important;
+@media (min-width: 768px) {
+  .featured-events-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Navbar & Footer */
