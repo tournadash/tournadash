@@ -64,11 +64,24 @@ export default function TournamentCard({ tournament, userRegistration }) {
           </div>
         )}
         
-        {/* Status Badge Top Left */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
-          <Badge variant={getStatusVariant(tournament.status)} style={{ fontWeight: '800', border: '2px solid rgba(255,255,255,0.2)' }}>
-            {getStatusDot(tournament.status)} {getStatusLabel(tournament.status)}
-          </Badge>
+        {/* Status Badge Top Left (Transparent Text) */}
+        <div style={{ position: 'absolute', top: '12px', left: '12px', fontWeight: '800', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,1)', fontSize: '14px', letterSpacing: '0.05em' }}>
+          {getStatusDot(tournament.status)} {getStatusLabel(tournament.status)}
+        </div>
+
+        {/* User Status Bottom Right */}
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '12px', 
+          right: '12px', 
+          fontWeight: '800', 
+          color: userStatusColor,
+          fontSize: '11px',
+          textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
+        }}>
+          {userStatusLabel}
         </div>
 
         {/* Date Top Right */}
@@ -118,21 +131,6 @@ export default function TournamentCard({ tournament, userRegistration }) {
         }}>
           {tournament.short_description || (tournament.description ? (tournament.description.length > 120 ? tournament.description.substring(0, 120) + '...' : tournament.description) : 'No description provided.')}
         </p>
-
-        {/* User Registration Status Row */}
-        <div style={{ 
-          backgroundColor: 'var(--color-bg-subtle)', 
-          padding: '10px 12px', 
-          borderRadius: '6px', 
-          marginBottom: 'var(--space-4)',
-          border: '1px solid var(--color-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-muted)' }}>YOUR STATUS:</span>
-          <span style={{ fontSize: '12px', fontWeight: '800', color: userStatusColor }}>{userStatusLabel}</span>
-        </div>
 
         {/* Action Button */}
         <Link href={`/tournaments/${tournament.slug}`} style={{ textDecoration: 'none', display: 'block' }}>

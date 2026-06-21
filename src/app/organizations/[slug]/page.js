@@ -172,10 +172,6 @@ export default function OrgPublicProfilePage() {
 
   return (
     <div style={{
-      backgroundImage: "url('https://i.imgur.com/w9U8WdE.png')",
-      backgroundAttachment: 'fixed',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
       minHeight: '100vh',
       width: '100%'
     }}>
@@ -231,7 +227,6 @@ export default function OrgPublicProfilePage() {
 
           {/* Org Info */}
           <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <Avatar src={org.avatar_url} alt={org.name} size="xl" style={{ border: '4px solid var(--color-bg)', boxShadow: '0 8px 16px rgba(0,0,0,0.5)' }} fallback={org.name[0]?.toUpperCase() || 'O'} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
               <h1 style={{ fontSize: '5rem', fontWeight: '800', color: 'var(--color-text-white)', margin: 0, textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}>
                 {org.name}
