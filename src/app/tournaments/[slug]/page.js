@@ -360,61 +360,24 @@ export default function TournamentDetailPage() {
     setRegError('')
 
     try {
-      // 1. Check max native registrations limit
-      if (tournament.max_registrations) {
-        const { count: currentCount } = await supabase
-          .from('tournament_registrations')
-          .select('*', { count: 'exact', head: true })
-          .eq('tournament_id', tournament.id)
+      const response = await fetch(`/api/tournaments/${tournament.id}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ign: minecraftIgn.trim() })
+      })
 
-        if (currentCount >= tournament.max_registrations) {
-          throw new Error('This tournament registration is full.')
-        }
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit registration.')
       }
 
-      // 2. Determine initial status based on auto-select rule
-      let initialStatus = 'REGISTERED'
-      let shouldWhitelist = false
+      setRegistration(data)
+      setRegistrationCount(c => c + 1)
+      setRegisterModalOpen(false)
 
-      if (tournament.auto_select_count) {
-        const { count: selectedCount } = await supabase
-          .from('tournament_registrations')
-          .select('*', { count: 'exact', head: true })
-          .eq('tournament_id', tournament.id)
-          .eq('status', 'SELECTED')
-
-        if ((selectedCount || 0) < tournament.auto_select_count) {
-          initialStatus = 'SELECTED'
-          shouldWhitelist = true
-        }
-      }
-
-      // 3. Insert registration record
-      const { data, error } = await supabase
-        .from('tournament_registrations')
-        .insert({
-          tournament_id: tournament.id,
-          user_id: user.id,
-          minecraft_ign: minecraftIgn.trim(),
-          discord_id: userProfile?.discord_id || null,
-          status: initialStatus
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // 4. If auto-selected, add to whitelist and load IP
-      if (shouldWhitelist) {
-        await supabase
-          .from('tournament_players')
-          .insert({
-            tournament_id: tournament.id,
-            minecraft_ign: minecraftIgn.trim(),
-            added_by: user.id,
-            added_via: 'web'
-          })
-
+      if (data.status === 'SELECTED') {
         const { data: ipData } = await supabase
           .from('tournament_server_ips')
           .select('*')
@@ -422,10 +385,6 @@ export default function TournamentDetailPage() {
           .maybeSingle()
         setServerIpInfo(ipData)
       }
-
-      setRegistration(data)
-      setRegistrationCount(c => c + 1)
-      setRegisterModalOpen(false)
     } catch (err) {
       setRegError(err.message || 'Failed to submit registration.')
     } finally {
@@ -437,15 +396,18 @@ export default function TournamentDetailPage() {
     if (!window.confirm('Are you sure you want to withdraw your registration?')) return
     setSubmittingReg(true)
     try {
-      const { error } = await supabase
-        .from('tournament_registrations')
-        .delete()
-        .eq('tournament_id', tournament.id)
-        .eq('user_id', user.id)
+      const response = await fetch(`/api/tournaments/${tournament.id}/unregister`, {
+        method: 'POST'
+      })
 
-      if (error) throw error
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to withdraw registration.')
+      }
+
       setRegistration(null)
       setRegistrationCount(c => Math.max(0, c - 1))
+      setServerIpInfo(null)
     } catch (err) {
       alert(`Failed to withdraw registration: ${err.message}`)
     } finally {

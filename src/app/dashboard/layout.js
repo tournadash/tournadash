@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }) {
   const [inviteCount, setInviteCount] = useState(0)
   const pathname = usePathname()
   const supabase = createClient()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -202,8 +203,38 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="dashboard-layout">
+      {/* Mobile Top Bar */}
+      <div className="dashboard-mobile-header">
+        <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(true)}>
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <span className="mobile-header-title">
+          {selectedOrg ? selectedOrg.name : 'Dashboard'}
+        </span>
+        <div style={{ width: 24 }} />
+      </div>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="dashboard-sidebar" id="dashboard-sidebar">
+      <aside className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} id="dashboard-sidebar">
+        {/* Close Button for Mobile inside sidebar */}
+        <div className="sidebar-mobile-close-header">
+          <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)}>
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
         {/* Org Switcher */}
         {selectedOrg ? (
           <div className="sidebar-org" id="sidebar-org-switcher">
@@ -222,6 +253,7 @@ export default function DashboardLayout({ children }) {
               href="/dashboard/org/new"
               className="btn btn-primary btn-sm w-full"
               style={{ justifyContent: 'center' }}
+              onClick={() => setSidebarOpen(false)}
             >
               + Create Organization
             </Link>
@@ -238,6 +270,7 @@ export default function DashboardLayout({ children }) {
                   href={link.href}
                   className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <span className="sidebar-link-icon">{link.icon}</span>
@@ -270,6 +303,7 @@ export default function DashboardLayout({ children }) {
                     <Link
                       href={link.href}
                       className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
+                      onClick={() => setSidebarOpen(false)}
                     >
                       <span className="sidebar-link-icon">{link.icon}</span>
                       {link.label}
@@ -294,7 +328,10 @@ export default function DashboardLayout({ children }) {
                     <Link
                       href={orgPath}
                       className={`sidebar-link sidebar-manage-org-link ${isActive ? 'sidebar-link-active' : ''}`}
-                      onClick={() => setSelectedOrg(org)}
+                      onClick={() => {
+                        setSelectedOrg(org)
+                        setSidebarOpen(false)
+                      }}
                     >
                       <Avatar src={org.avatar_url} alt={org.name} size="xs" fallback="🏰" className="sidebar-manage-org-avatar" />
                       <span className="sidebar-manage-org-info">

@@ -292,6 +292,7 @@ export default function TournamentManagePage() {
 
     const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
     await runAutoFillPromotion(currentT)
+    loadData()
   }
 
   const toggleBan = async (playerId, currentBan) => {
@@ -747,9 +748,9 @@ export default function TournamentManagePage() {
   }
 
   const filteredRegs = registrations.filter(r => 
-    r.minecraft_ign.toLowerCase().includes(regSearch.toLowerCase()) || 
-    r.users?.display_name?.toLowerCase().includes(regSearch.toLowerCase()) ||
-    r.users?.username?.toLowerCase().includes(regSearch.toLowerCase())
+    (r.minecraft_ign?.toLowerCase() || '').includes(regSearch.toLowerCase()) || 
+    (r.users?.display_name?.toLowerCase() || '').includes(regSearch.toLowerCase()) ||
+    (r.users?.username?.toLowerCase() || '').includes(regSearch.toLowerCase())
   )
 
   if (loading) {

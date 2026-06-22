@@ -245,24 +245,19 @@ export default function DashboardPage() {
           Quick Actions
         </h3>
         <div className="quick-actions">
-          <Link href="/dashboard/org/new" className="quick-action-card" id="quick-new-org">
+          <Link
+            href={orgs.length > 0 ? `/dashboard/org/${orgs[0].id}` : '/dashboard/org/new'}
+            className="quick-action-card"
+            id="quick-organizations"
+          >
             <svg className="quick-action-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
-            <span className="quick-action-label">Create Organization</span>
-            <span className="quick-action-desc">Start a new tournament org</span>
-          </Link>
-          <Link
-            href={orgs.length > 0 ? `/dashboard/org/${orgs[0].id}/tournaments/new` : '/dashboard/org/new'}
-            className="quick-action-card"
-            id="quick-new-tournament"
-          >
-            <svg className="quick-action-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-            <span className="quick-action-label">New Tournament</span>
-            <span className="quick-action-desc">Create a new event</span>
+            <span className="quick-action-label">Organizations</span>
+            <span className="quick-action-desc">
+              {orgs.length > 0 ? 'Manage your organizations' : 'Start a new organization'}
+            </span>
           </Link>
           <Link href="/dashboard/profile" className="quick-action-card" id="quick-edit-profile">
             <svg className="quick-action-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
