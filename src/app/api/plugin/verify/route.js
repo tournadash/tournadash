@@ -23,6 +23,18 @@ export async function POST(request) {
 
   if (result.tokenType === 'user') {
     const { user } = result
+
+    // Check IGN match if provided (from mod login)
+    const { searchParams } = new URL(request.url)
+    const requestedIgn = searchParams.get('ign')
+    if (requestedIgn && user.minecraft_ign) {
+      if (requestedIgn.toLowerCase() !== user.minecraft_ign.toLowerCase()) {
+        return NextResponse.json({
+          error: 'IGN mismatch. Your in-game name ("' + requestedIgn + '") does not match your TournaDash account IGN ("' + user.minecraft_ign + '"). Please launch Minecraft with the correct account.'
+        }, { status: 403 })
+      }
+    }
+
     return NextResponse.json({
       valid: true,
       tokenType: 'user',

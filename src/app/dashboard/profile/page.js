@@ -24,6 +24,8 @@ export default function ProfileEditPage() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [usernameError, setUsernameError] = useState('')
   const [checkingUsername, setCheckingUsername] = useState(false)
+  const [disguiseError, setDisguiseError] = useState('')
+  const [checkingDisguise, setCheckingDisguise] = useState(false)
 
   const skinFileInputRef = useRef(null)
   const [skinFile, setSkinFile] = useState(null)
@@ -159,7 +161,7 @@ export default function ProfileEditPage() {
 
   const handleSave = async (e) => {
     if (e) e.preventDefault()
-    if (usernameError) {
+    if (usernameError || disguiseError) {
       setError('Please resolve all validation errors before saving.')
       return
     }
@@ -243,6 +245,7 @@ export default function ProfileEditPage() {
         social_discord: profile.social_discord,
         social_twitch: profile.social_twitch,
         avatar_url: avatarUrl,
+        disguise_ign: profile.disguise_ign ? profile.disguise_ign.trim() : null,
       })
       .eq('id', user.id)
 
@@ -408,7 +411,7 @@ export default function ProfileEditPage() {
       .eq('id', user.id)
       .single()
 
-    if (currentUser?.username === username) {
+    if (currentUser?.username?.toLowerCase() === username.toLowerCase()) {
       setUsernameError('')
       return
     }
@@ -419,13 +422,59 @@ export default function ProfileEditPage() {
     const { data } = await supabase
       .from('users')
       .select('id')
-      .eq('username', username)
+      .ilike('username', username)
+      .neq('id', user.id)
       .maybeSingle()
 
     if (data) {
       setUsernameError('This username is already taken.')
     }
     setCheckingUsername(false)
+  }
+
+  const handleDisguiseBlur = async () => {
+    const disguise = profile?.disguise_ign?.trim()
+    if (!disguise) {
+      setDisguiseError('')
+      return
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,16}$/.test(disguise)) {
+      setDisguiseError('Minecraft IGNs must be 3-16 characters and contain only letters, numbers, and underscores.')
+      return
+    }
+
+    setCheckingDisguise(true)
+    setDisguiseError('')
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // 1. Check conflicts against other users' real IGNs
+    const { data: conflictReal } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('minecraft_ign', disguise)
+      .neq('id', user.id)
+      .maybeSingle()
+
+    if (conflictReal) {
+      setDisguiseError('This name is already used as a real IGN by another player.')
+      setCheckingDisguise(false)
+      return
+    }
+
+    // 2. Check conflicts against other users' disguise IGNs
+    const { data: conflictDisguise } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('disguise_ign', disguise)
+      .neq('id', user.id)
+      .maybeSingle()
+
+    if (conflictDisguise) {
+      setDisguiseError('This name is already used as a disguise IGN by another player.')
+    }
+    setCheckingDisguise(false)
   }
 
   if (loading) {
@@ -588,6 +637,20 @@ export default function ProfileEditPage() {
                     }
                   />
                 </div>
+              </div>
+
+              <div>
+                <Input
+                  id="profile-disguise-ign"
+                  label="Disguise IGN (Optional)"
+                  type="text"
+                  placeholder="e.g. Dream"
+                  value={profile?.disguise_ign || ''}
+                  onChange={(e) => updateField('disguise_ign', e.target.value)}
+                  onBlur={handleDisguiseBlur}
+                  error={disguiseError}
+                  helperText="Optional disguise name to display on TournaDash-enabled Minecraft servers."
+                />
               </div>
 
               {/* Skin file upload */}

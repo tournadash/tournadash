@@ -68,7 +68,7 @@ export async function POST(request, { params }) {
         .select('*')
         .eq('tournament_id', tournamentId)
         .eq('status', 'REGISTERED')
-        .order('created_at', { ascending: true })
+        .order('registered_at', { ascending: true })
         .limit(1)
         .maybeSingle()
 

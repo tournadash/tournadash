@@ -23,7 +23,7 @@ export async function GET(request) {
   // Fetch tournament details
   const { data: tournament, error } = await supabaseAdmin
     .from('tournaments')
-    .select('id, name, status, organization_id, server_connection_ip')
+    .select('id, name, status, organization_id')
     .eq('id', tournamentId)
     .single()
 
@@ -64,8 +64,15 @@ export async function GET(request) {
     return NextResponse.json({ error: 'You are not selected/whitelisted to join this tournament.' }, { status: 403 })
   }
 
-  // If connection IP is empty, return a default/error
-  const ip = tournament.server_connection_ip || 'localhost'
+  // Fetch IP from tournament_server_ips table (not tournaments table)
+  const { data: ipRecord } = await supabaseAdmin
+    .from('tournament_server_ips')
+    .select('server_ip')
+    .eq('tournament_id', tournamentId)
+    .limit(1)
+    .maybeSingle()
+
+  const ip = ipRecord?.server_ip || 'localhost'
 
   return NextResponse.json({ ip })
 }

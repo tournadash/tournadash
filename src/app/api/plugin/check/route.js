@@ -16,6 +16,17 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Missing ign parameter' }, { status: 400 })
   }
 
+  // Fetch disguise_ign for the player (if any)
+  let disguiseIgn = null
+  const { data: user } = await supabaseAdmin
+    .from('users')
+    .select('disguise_ign')
+    .ilike('minecraft_ign', ign)
+    .maybeSingle()
+  if (user) {
+    disguiseIgn = user.disguise_ign || null
+  }
+
   // Handle organization token checks
   if (result.tokenType === 'organization') {
     const { organization } = result
@@ -31,6 +42,7 @@ export async function GET(request) {
         allowed: true,
         reason: 'Organization member',
         is_org_member: true,
+        disguise_ign: disguiseIgn,
       })
     }
 
@@ -56,6 +68,7 @@ export async function GET(request) {
       allowed: true,
       reason: 'Organization member',
       is_org_member: true,
+      disguise_ign: disguiseIgn,
     })
   }
 
@@ -112,5 +125,6 @@ export async function GET(request) {
     allowed: true,
     reason: 'Whitelisted player',
     is_whitelisted: true,
+    disguise_ign: disguiseIgn,
   })
 }

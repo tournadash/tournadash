@@ -70,6 +70,17 @@ export async function GET(request) {
     // For each tournament, check if player is whitelisted or a member of the organization
     const results = []
     for (const t of tournaments) {
+      // Check registration status
+      const { data: reg } = await supabaseAdmin
+        .from('tournament_registrations')
+        .select('status')
+        .eq('tournament_id', t.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const isRegistered = !!reg
+      const registrationStatus = reg?.status || null
+
       // Check membership
       const { data: member } = await supabaseAdmin
         .from('organization_members')
@@ -102,6 +113,8 @@ export async function GET(request) {
         org_name: t.organizations.name,
         org_slug: t.organizations.slug,
         is_selected: isSelected,
+        is_registered: isRegistered,
+        registration_status: registrationStatus,
         join_enabled: joinEnabled
       })
     }

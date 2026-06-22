@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
+import Avatar from '@/components/ui/Avatar'
 
 export default function TournamentManagePage() {
   const { orgId, tournamentId } = useParams()
@@ -242,9 +243,16 @@ export default function TournamentManagePage() {
       .eq('id', tournamentId)
 
     if (!error) {
-      setTournament(prev => ({ ...prev, registration_open: newVal }))
+      const updatedT = { ...tournament, registration_open: newVal }
+      setTournament(updatedT)
       setSuccess(`Registration is now ${newVal ? 'OPEN' : 'CLOSED'}`)
       setTimeout(() => setSuccess(''), 3000)
+
+      // When closing registrations, trigger auto-fill if configured
+      if (!newVal) {
+        await runAutoFillPromotion(updatedT)
+        loadData()
+      }
     } else {
       setError(error.message)
     }
@@ -275,6 +283,12 @@ export default function TournamentManagePage() {
         setError(insertError.message)
       }
     } else {
+      // Also update any matching registration to SELECTED
+      await supabase
+        .from('tournament_registrations')
+        .update({ status: 'SELECTED' })
+        .eq('tournament_id', tournamentId)
+        .ilike('minecraft_ign', newPlayerIgn.trim())
       setNewPlayerIgn('')
       loadData()
     }

@@ -47,6 +47,21 @@ export async function GET(request) {
   for (const t of tournaments) {
     let isSelected = false
     let selectionReason = ''
+    let isRegistered = false
+    let registrationStatus = null
+
+    // Check registration status
+    const { data: reg } = await supabaseAdmin
+      .from('tournament_registrations')
+      .select('status')
+      .eq('tournament_id', t.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (reg) {
+      isRegistered = true
+      registrationStatus = reg.status
+    }
 
     if (isMember) {
       isSelected = true
@@ -87,6 +102,8 @@ export async function GET(request) {
       player_count: t.player_count,
       max_players: t.max_players,
       is_selected: isSelected,
+      is_registered: isRegistered,
+      registration_status: registrationStatus,
       selection_reason: selectionReason,
       join_enabled: joinEnabled
     })
