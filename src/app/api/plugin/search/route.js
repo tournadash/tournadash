@@ -98,7 +98,7 @@ export async function GET(request) {
         .maybeSingle()
 
       const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
-      const joinEnabled = isSelected && t.status === 'ONGOING'
+      const joinEnabled = isSelected && (!!member || t.status === 'ONGOING')
 
       // Get registration count
       const { count: regCount } = await supabaseAdmin

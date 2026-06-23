@@ -89,7 +89,7 @@ export async function GET(request) {
       }
     }
 
-    const joinEnabled = isSelected && t.status === 'ONGOING'
+    const joinEnabled = isSelected && (isMember || t.status === 'ONGOING')
 
     // Get registration count
     const { count: regCount } = await supabaseAdmin

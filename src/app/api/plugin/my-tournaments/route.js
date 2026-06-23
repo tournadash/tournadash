@@ -52,7 +52,7 @@ export async function GET(request) {
       }
 
       const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
-      const joinEnabled = isSelected && r.tournaments.status === 'ONGOING'
+      const joinEnabled = isSelected && (!!member || r.tournaments.status === 'ONGOING')
 
       registeredTournaments.push({
         id: r.tournaments.id,
@@ -119,7 +119,7 @@ export async function GET(request) {
           registration_count: regCount || 0,
           is_registered: isRegistered,
           is_selected: true,
-          join_enabled: t.status === 'ONGOING',
+          join_enabled: true,
           source: 'member'
         })
       }
