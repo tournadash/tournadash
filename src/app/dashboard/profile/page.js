@@ -18,6 +18,7 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+  const [hasOrganization, setHasOrganization] = useState(false)
   
   const fileInputRef = useRef(null)
   const [avatarFile, setAvatarFile] = useState(null)
@@ -61,6 +62,12 @@ export default function ProfileEditPage() {
           .single()
         setProfile(data)
         setOriginalIgn(data?.minecraft_ign || '')
+
+        const { count } = await supabase
+          .from('organization_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        setHasOrganization((count || 0) > 0)
       }
       setLoading(false)
     }
@@ -639,19 +646,21 @@ export default function ProfileEditPage() {
                 </div>
               </div>
 
-              <div>
-                <Input
-                  id="profile-disguise-ign"
-                  label="Disguise IGN (Optional)"
-                  type="text"
-                  placeholder="e.g. Dream"
-                  value={profile?.disguise_ign || ''}
-                  onChange={(e) => updateField('disguise_ign', e.target.value)}
-                  onBlur={handleDisguiseBlur}
-                  error={disguiseError}
-                  helperText="Optional disguise name to display on TournaDash-enabled Minecraft servers."
-                />
-              </div>
+              {hasOrganization && (
+                <div>
+                  <Input
+                    id="profile-disguise-ign"
+                    label="Disguise IGN (Optional)"
+                    type="text"
+                    placeholder="e.g. Dream"
+                    value={profile?.disguise_ign || ''}
+                    onChange={(e) => updateField('disguise_ign', e.target.value)}
+                    onBlur={handleDisguiseBlur}
+                    error={disguiseError}
+                    helperText="Optional disguise name to display on TournaDash-enabled Minecraft servers."
+                  />
+                </div>
+              )}
 
               {/* Skin file upload */}
               <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>

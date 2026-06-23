@@ -22,7 +22,7 @@ export async function GET(request) {
   const { data: user } = await supabaseAdmin
     .from('users')
     .select('minecraft_ign, disguise_ign')
-    .or(`minecraft_ign.ilike.${ign},disguise_ign.ilike.${ign}`)
+    .ilike('minecraft_ign', ign)
     .maybeSingle()
   if (user) {
     disguiseIgn = user.disguise_ign || null
