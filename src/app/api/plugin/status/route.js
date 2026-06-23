@@ -11,6 +11,7 @@ export async function GET(request) {
   return NextResponse.json({
     status: tournament.status,
     whitelist_enabled: tournament.whitelist_enabled,
+    registration_open: tournament.registration_open,
     player_count: tournament.player_count,
     name: tournament.name,
   })
@@ -32,8 +33,12 @@ export async function POST(request) {
     updates.whitelist_enabled = body.whitelist_enabled
   }
 
+  if (typeof body.registration_open === 'boolean') {
+    updates.registration_open = body.registration_open
+  }
+
   if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No valid fields to update. Use status or whitelist_enabled.' }, { status: 400 })
+    return NextResponse.json({ error: 'No valid fields to update. Use status, whitelist_enabled, or registration_open.' }, { status: 400 })
   }
 
   const { error } = await supabaseAdmin
@@ -48,3 +53,4 @@ export async function POST(request) {
     updated: updates,
   })
 }
+

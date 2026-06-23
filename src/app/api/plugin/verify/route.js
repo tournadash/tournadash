@@ -58,8 +58,10 @@ export async function POST(request) {
       name: tournament.name,
       status: tournament.status,
       whitelist_enabled: tournament.whitelist_enabled,
+      registration_open: tournament.registration_open,
       player_count: tournament.player_count,
       organization: tournament.organizations?.name,
     },
   })
 }
+

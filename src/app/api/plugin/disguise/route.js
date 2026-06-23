@@ -14,7 +14,35 @@ export async function GET(request) {
   const ign = searchParams.get('ign')
 
   if (!ign) {
-    return NextResponse.json({ error: 'Missing ign parameter.' }, { status: 400 })
+    let orgId = null
+    if (result.tokenType === 'tournament') {
+      orgId = result.tournament.organization_id
+    } else if (result.tokenType === 'organization') {
+      orgId = result.organization.id
+    }
+
+    if (!orgId) {
+      return NextResponse.json({ error: 'Unauthorized to view all disguises or organization not found.' }, { status: 403 })
+    }
+
+    const { data: members, error } = await supabaseAdmin
+      .from('organization_members')
+      .select('minecraft_ign, users(disguise_ign)')
+      .eq('organization_id', orgId)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    const disguises = (members || []).map(m => ({
+      minecraft_ign: m.minecraft_ign,
+      disguise_ign: m.users?.disguise_ign || null
+    }))
+
+    return NextResponse.json({
+      organization_id: orgId,
+      disguises
+    })
   }
 
   // Look up user by minecraft_ign or disguise_ign
@@ -34,6 +62,7 @@ export async function GET(request) {
     has_disguise: !!user.disguise_ign
   })
 }
+
 
 export async function POST(request) {
   const result = await validateToken(request)

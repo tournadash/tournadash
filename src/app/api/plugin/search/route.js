@@ -56,7 +56,7 @@ export async function GET(request) {
     // Search tournaments that are not ENDED
     const { data: tournaments, error } = await supabaseAdmin
       .from('tournaments')
-      .select('id, name, slug, status, starts_at, ends_at, prizepool, player_count, max_players, registration_open, max_registrations, organizations(id, name, slug)')
+      .select('id, name, slug, status, starts_at, ends_at, prizepool, currency, player_count, max_players, registration_open, max_registrations, organizations(id, name, slug)')
       .or(`name.ilike.%${query}%,slug.ilike.%${query}%`)
       .neq('is_private', true)
       .neq('status', 'ENDED')
@@ -114,6 +114,7 @@ export async function GET(request) {
         starts_at: t.starts_at,
         ends_at: t.ends_at,
         prizepool: t.prizepool,
+        currency: t.currency || 'USD',
         player_count: t.player_count,
         max_players: t.max_players,
         org_name: t.organizations.name,

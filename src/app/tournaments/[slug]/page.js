@@ -11,6 +11,16 @@ import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/ui/Avatar'
 import Modal from '@/components/ui/Modal'
 
+const getCurrencySymbol = (currency) => {
+  if (!currency) return '$';
+  switch (currency.toUpperCase()) {
+    case 'INR': return '₹';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    default: return '$';
+  }
+}
+
 function YouTubeEmbed({ url }) {
   if (!url) return null
   let videoId = ''
@@ -496,7 +506,7 @@ export default function TournamentDetailPage() {
           </span>
           {tournament.prizepool && (
             <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-              💎 Prize Pool: <strong style={{ color: 'var(--color-primary)' }}>{tournament.prizepool}</strong>
+              💎 Prize Pool: <strong style={{ color: 'var(--color-primary)' }}>{getCurrencySymbol(tournament.currency)}{tournament.prizepool}</strong>
             </span>
           )}
           <button 
@@ -967,7 +977,7 @@ export default function TournamentDetailPage() {
               {tournament.prizepool && (
                 <div className="flex justify-between items-center">
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Prize Pool</span>
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-primary)' }}>{tournament.prizepool}</span>
+                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--color-primary)' }}>{getCurrencySymbol(tournament.currency)}{tournament.prizepool}</span>
                 </div>
               )}
               {tournament.registration_type === 'native' && (

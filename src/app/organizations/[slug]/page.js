@@ -265,6 +265,8 @@ export default function OrgPublicProfilePage() {
             return acc + val;
           }, 0);
           const activeServers = tournaments.filter(t => t.status === 'ONGOING').length;
+          const firstEndedWithCurrency = tournaments.find(t => t.status === 'ENDED' && t.currency);
+          const currencySymbol = firstEndedWithCurrency ? (firstEndedWithCurrency.currency === 'INR' ? '₹' : firstEndedWithCurrency.currency === 'EUR' ? '€' : firstEndedWithCurrency.currency === 'GBP' ? '£' : '$') : '₹';
           return (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }} className="animate-on-scroll">
 
@@ -295,8 +297,9 @@ export default function OrgPublicProfilePage() {
                   </div>
                   <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--color-text-muted)', letterSpacing: '0.05em' }}>PRIZES DISTRIBUTED</div>
                 </div>
-                <div className="dash-stat-value" style={{ fontSize: 'var(--text-xl)', color: '#facc15', lineHeight: '1', textShadow: '0 0 12px rgba(250, 204, 21, 0.4)' }}>{prizesDistributed.toLocaleString()}rs+</div>
+                <div className="dash-stat-value" style={{ fontSize: 'var(--text-xl)', color: '#facc15', lineHeight: '1', textShadow: '0 0 12px rgba(250, 204, 21, 0.4)' }}>{currencySymbol}{prizesDistributed.toLocaleString()}+</div>
               </Card>
+
 
               <Card className="p-3" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', paddingLeft: '15%', gap: '8px', borderRadius: 'var(--radius-lg)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

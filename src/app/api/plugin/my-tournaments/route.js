@@ -19,7 +19,7 @@ export async function GET(request) {
     // 1. Get tournaments user is registered for (not ended)
     const { data: registrations } = await supabaseAdmin
       .from('tournament_registrations')
-      .select('tournament_id, status, minecraft_ign, tournaments(id, name, slug, status, organization_id, registration_open, max_registrations, organizations(name, slug))')
+      .select('tournament_id, status, minecraft_ign, tournaments(id, name, slug, status, organization_id, registration_open, max_registrations, prizepool, currency, organizations(name, slug))')
       .eq('user_id', user.id)
 
     const registeredTournaments = []
@@ -63,6 +63,8 @@ export async function GET(request) {
         minecraft_ign: r.minecraft_ign,
         org_name: r.tournaments.organizations?.name || 'Unknown',
         org_slug: r.tournaments.organizations?.slug || '',
+        prizepool: r.tournaments.prizepool || null,
+        currency: r.tournaments.currency || 'USD',
         registration_open: r.tournaments.registration_open || false,
         max_registrations: r.tournaments.max_registrations || null,
         registration_count: regCount || 0,
@@ -84,7 +86,7 @@ export async function GET(request) {
       const orgIds = memberships.map(m => m.organization_id)
       const { data: orgTournaments } = await supabaseAdmin
         .from('tournaments')
-        .select('id, name, slug, status, organization_id, registration_open, max_registrations, organizations(name, slug)')
+        .select('id, name, slug, status, organization_id, registration_open, max_registrations, prizepool, currency, organizations(name, slug)')
         .in('organization_id', orgIds)
         .neq('status', 'ENDED')
 
@@ -114,6 +116,8 @@ export async function GET(request) {
           minecraft_ign: user.minecraft_ign,
           org_name: t.organizations?.name || 'Unknown',
           org_slug: t.organizations?.slug || '',
+          prizepool: t.prizepool || null,
+          currency: t.currency || 'USD',
           registration_open: t.registration_open || false,
           max_registrations: t.max_registrations || null,
           registration_count: regCount || 0,
