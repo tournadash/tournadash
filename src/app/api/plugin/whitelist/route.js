@@ -77,6 +77,20 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Missing ign field' }, { status: 400 })
   }
 
+  // Resolve disguised IGN to real IGN
+  const { data: disguisedUser } = await supabaseAdmin
+    .from('users')
+    .select('minecraft_ign, minecraft_uuid')
+    .eq('disguise_ign', ign.trim())
+    .maybeSingle()
+
+  let finalIgn = ign
+  let finalUuid = uuid
+  if (disguisedUser) {
+    finalIgn = disguisedUser.minecraft_ign
+    finalUuid = disguisedUser.minecraft_uuid || uuid
+  }
+
   let tournamentId = null
   if (result.tokenType === 'tournament') {
     tournamentId = result.tournament.id
@@ -102,8 +116,8 @@ export async function POST(request) {
     .from('tournament_players')
     .insert({
       tournament_id: tournamentId,
-      minecraft_ign: ign,
-      minecraft_uuid: uuid || null,
+      minecraft_ign: finalIgn,
+      minecraft_uuid: finalUuid || null,
       added_via: 'plugin',
     })
     .select()
@@ -121,7 +135,7 @@ export async function POST(request) {
     .from('tournament_registrations')
     .update({ status: 'SELECTED' })
     .eq('tournament_id', tournamentId)
-    .ilike('minecraft_ign', ign.trim())
+    .ilike('minecraft_ign', finalIgn.trim())
 
   return NextResponse.json({ success: true, player: data }, { status: 201 })
 }
@@ -137,6 +151,18 @@ export async function DELETE(request) {
 
   if (!ign) {
     return NextResponse.json({ error: 'Missing ign parameter' }, { status: 400 })
+  }
+
+  // Resolve disguised IGN to real IGN
+  const { data: disguisedUser } = await supabaseAdmin
+    .from('users')
+    .select('minecraft_ign')
+    .eq('disguise_ign', ign.trim())
+    .maybeSingle()
+
+  let finalIgn = ign
+  if (disguisedUser) {
+    finalIgn = disguisedUser.minecraft_ign
   }
 
   let tournamentId = null
@@ -165,7 +191,7 @@ export async function DELETE(request) {
     .from('tournament_registrations')
     .select('status')
     .eq('tournament_id', tournamentId)
-    .ilike('minecraft_ign', ign.trim())
+    .ilike('minecraft_ign', finalIgn.trim())
     .maybeSingle()
 
   const wasSelected = registration?.status === 'SELECTED'
@@ -176,7 +202,7 @@ export async function DELETE(request) {
       .from('tournament_players')
       .update({ is_banned: true })
       .eq('tournament_id', tournamentId)
-      .ilike('minecraft_ign', ign)
+      .ilike('minecraft_ign', finalIgn)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -185,21 +211,21 @@ export async function DELETE(request) {
       .from('tournament_registrations')
       .update({ status: 'REJECTED' })
       .eq('tournament_id', tournamentId)
-      .ilike('minecraft_ign', ign.trim())
+      .ilike('minecraft_ign', finalIgn.trim())
 
     // If they were SELECTED, auto-fill next player
     if (wasSelected) {
       await triggerAutoFillPromotion(tournamentId)
     }
 
-    return NextResponse.json({ success: true, action: 'banned', ign })
+    return NextResponse.json({ success: true, action: 'banned', ign: finalIgn })
   } else {
     // Remove completely
     const { error } = await supabaseAdmin
       .from('tournament_players')
       .delete()
       .eq('tournament_id', tournamentId)
-      .ilike('minecraft_ign', ign)
+      .ilike('minecraft_ign', finalIgn)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -208,14 +234,14 @@ export async function DELETE(request) {
       .from('tournament_registrations')
       .update({ status: 'REGISTERED' })
       .eq('tournament_id', tournamentId)
-      .ilike('minecraft_ign', ign.trim())
+      .ilike('minecraft_ign', finalIgn.trim())
 
     // If they were SELECTED, auto-fill next player
     if (wasSelected) {
       await triggerAutoFillPromotion(tournamentId)
     }
 
-    return NextResponse.json({ success: true, action: 'removed', ign })
+    return NextResponse.json({ success: true, action: 'removed', ign: finalIgn })
   }
 }
 
