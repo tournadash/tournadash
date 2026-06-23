@@ -22,7 +22,7 @@ export async function GET(request) {
 
   const { data: members, error } = await supabaseAdmin
     .from('organization_members')
-    .select('id, user_id, role, minecraft_ign, joined_at, users(display_name, username, avatar_url)')
+    .select('id, user_id, role, minecraft_ign, joined_at, users(display_name, username, avatar_url, disguise_ign)')
     .eq('organization_id', orgId)
     .order('minecraft_ign', { ascending: true })
 
@@ -39,6 +39,7 @@ export async function GET(request) {
     username: m.users?.username || null,
     display_name: m.users?.display_name || null,
     avatar_url: m.users?.avatar_url || null,
+    disguise_ign: m.users?.disguise_ign || null,
     joined_at: m.joined_at
   }))
 

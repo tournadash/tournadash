@@ -56,7 +56,7 @@ export async function GET(request) {
     // Search tournaments that are not ENDED
     const { data: tournaments, error } = await supabaseAdmin
       .from('tournaments')
-      .select('id, name, slug, status, starts_at, ends_at, prizepool, player_count, max_players, organizations(id, name, slug)')
+      .select('id, name, slug, status, starts_at, ends_at, prizepool, player_count, max_players, registration_open, max_registrations, organizations(id, name, slug)')
       .or(`name.ilike.%${query}%,slug.ilike.%${query}%`)
       .neq('is_private', true)
       .neq('status', 'ENDED')
@@ -100,6 +100,12 @@ export async function GET(request) {
       const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
       const joinEnabled = isSelected && t.status === 'ONGOING'
 
+      // Get registration count
+      const { count: regCount } = await supabaseAdmin
+        .from('tournament_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', t.id)
+
       results.push({
         id: t.id,
         name: t.name,
@@ -115,7 +121,10 @@ export async function GET(request) {
         is_selected: isSelected,
         is_registered: isRegistered,
         registration_status: registrationStatus,
-        join_enabled: joinEnabled
+        join_enabled: joinEnabled,
+        registration_open: t.registration_open || false,
+        max_registrations: t.max_registrations || null,
+        registration_count: regCount || 0
       })
     }
 

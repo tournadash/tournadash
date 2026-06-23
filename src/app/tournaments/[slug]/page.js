@@ -844,11 +844,11 @@ export default function TournamentDetailPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: '700' }}>YOUR ENTRY STATUS</div>
                     <div style={{ 
-                      fontSize: 'var(--text-xl)', 
-                      fontWeight: '900', 
-                      color: registration.status === 'SELECTED' ? 'var(--color-success)' : registration.status === 'REGISTERED' ? 'var(--color-warning)' : 'var(--color-danger)'
+                      fontSize: 'var(--text-lg)', fontWeight: '900', 
+                      color: registration.status === 'SELECTED' ? 'var(--color-primary)' : (registration.status === 'REJECTED' || (!tournament.registration_open && registration.status === 'REGISTERED') ? 'var(--color-danger)' : 'var(--color-warning)'),
+                      marginBottom: '4px'
                     }}>
-                      {registration.status === 'REGISTERED' ? 'PENDING REVIEW' : registration.status === 'SELECTED' ? 'WHITELISTED' : 'REJECTED'}
+                      {registration.status === 'SELECTED' ? 'WHITELISTED' : (registration.status === 'REJECTED' ? 'REJECTED' : (!tournament.registration_open && registration.status === 'REGISTERED' ? 'NOT SELECTED' : 'PENDING REVIEW'))}
                     </div>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>IGN: <strong>{registration.minecraft_ign}</strong></div>
                   </div>
@@ -880,7 +880,7 @@ export default function TournamentDetailPage() {
                     </div>
                   )}
 
-                  {tournament.status === 'SOON' && (
+                  {tournament.status === 'SOON' && tournament.registration_open && (
                     <button onClick={handleWithdrawRegistration} disabled={submittingReg} style={{ 
                       width: '100%', padding: '10px', backgroundColor: 'transparent', color: 'var(--color-danger)', fontWeight: '800', border: '1px solid var(--color-danger)', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s'
                     }}

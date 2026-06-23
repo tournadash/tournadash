@@ -116,6 +116,13 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Also update any matching registration to SELECTED
+  await supabaseAdmin
+    .from('tournament_registrations')
+    .update({ status: 'SELECTED' })
+    .eq('tournament_id', tournamentId)
+    .ilike('minecraft_ign', ign.trim())
+
   return NextResponse.json({ success: true, player: data }, { status: 201 })
 }
 
@@ -153,6 +160,16 @@ export async function DELETE(request) {
     tournamentId = tourney.id
   }
 
+  // Fetch current registration status to check if it was SELECTED
+  const { data: registration } = await supabaseAdmin
+    .from('tournament_registrations')
+    .select('status')
+    .eq('tournament_id', tournamentId)
+    .ilike('minecraft_ign', ign.trim())
+    .maybeSingle()
+
+  const wasSelected = registration?.status === 'SELECTED'
+
   if (ban) {
     // Ban: mark as banned instead of deleting
     const { error } = await supabaseAdmin
@@ -162,6 +179,19 @@ export async function DELETE(request) {
       .ilike('minecraft_ign', ign)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Update registration status to REJECTED
+    await supabaseAdmin
+      .from('tournament_registrations')
+      .update({ status: 'REJECTED' })
+      .eq('tournament_id', tournamentId)
+      .ilike('minecraft_ign', ign.trim())
+
+    // If they were SELECTED, auto-fill next player
+    if (wasSelected) {
+      await triggerAutoFillPromotion(tournamentId)
+    }
+
     return NextResponse.json({ success: true, action: 'banned', ign })
   } else {
     // Remove completely
@@ -172,6 +202,55 @@ export async function DELETE(request) {
       .ilike('minecraft_ign', ign)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Update registration status back to REGISTERED
+    await supabaseAdmin
+      .from('tournament_registrations')
+      .update({ status: 'REGISTERED' })
+      .eq('tournament_id', tournamentId)
+      .ilike('minecraft_ign', ign.trim())
+
+    // If they were SELECTED, auto-fill next player
+    if (wasSelected) {
+      await triggerAutoFillPromotion(tournamentId)
+    }
+
     return NextResponse.json({ success: true, action: 'removed', ign })
+  }
+}
+
+// Helper to trigger promotion for auto-fill
+async function triggerAutoFillPromotion(tournamentId) {
+  const { data: tournament } = await supabaseAdmin
+    .from('tournaments')
+    .select('auto_fill, auto_select_count')
+    .eq('id', tournamentId)
+    .single()
+
+  if (tournament?.auto_fill && tournament?.auto_select_count) {
+    const { data: nextReg } = await supabaseAdmin
+      .from('tournament_registrations')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .eq('status', 'REGISTERED')
+      .order('registered_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+
+    if (nextReg) {
+      await supabaseAdmin
+        .from('tournament_registrations')
+        .update({ status: 'SELECTED' })
+        .eq('id', nextReg.id)
+
+      await supabaseAdmin
+        .from('tournament_players')
+        .insert({
+          tournament_id: tournamentId,
+          minecraft_ign: nextReg.minecraft_ign,
+          added_by: nextReg.user_id,
+          added_via: 'plugin_autofill'
+        })
+    }
   }
 }

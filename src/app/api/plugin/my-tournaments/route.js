@@ -19,12 +19,19 @@ export async function GET(request) {
     // 1. Get tournaments user is registered for (not ended)
     const { data: registrations } = await supabaseAdmin
       .from('tournament_registrations')
-      .select('tournament_id, status, minecraft_ign, tournaments(id, name, slug, status, organization_id, organizations(name, slug))')
+      .select('tournament_id, status, minecraft_ign, tournaments(id, name, slug, status, organization_id, registration_open, max_registrations, organizations(name, slug))')
       .eq('user_id', user.id)
 
-    const registeredTournaments = (registrations || [])
-      .filter(r => r.tournaments && r.tournaments.status !== 'ENDED')
-      .map(r => ({
+    const registeredTournaments = []
+    for (const r of (registrations || [])) {
+      if (!r.tournaments || r.tournaments.status === 'ENDED') continue
+
+      const { count: regCount } = await supabaseAdmin
+        .from('tournament_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', r.tournaments.id)
+
+      registeredTournaments.push({
         id: r.tournaments.id,
         name: r.tournaments.name,
         slug: r.tournaments.slug,
@@ -33,8 +40,12 @@ export async function GET(request) {
         minecraft_ign: r.minecraft_ign,
         org_name: r.tournaments.organizations?.name || 'Unknown',
         org_slug: r.tournaments.organizations?.slug || '',
+        registration_open: r.tournaments.registration_open || false,
+        max_registrations: r.tournaments.max_registrations || null,
+        registration_count: regCount || 0,
         source: 'registered'
-      }))
+      })
+    }
 
     // 2. Get tournaments where user is an org member (not ended)
     const { data: memberships } = await supabaseAdmin
@@ -47,21 +58,31 @@ export async function GET(request) {
       const orgIds = memberships.map(m => m.organization_id)
       const { data: orgTournaments } = await supabaseAdmin
         .from('tournaments')
-        .select('id, name, slug, status, organization_id, organizations(name, slug)')
+        .select('id, name, slug, status, organization_id, registration_open, max_registrations, organizations(name, slug)')
         .in('organization_id', orgIds)
         .neq('status', 'ENDED')
 
-      memberTournaments = (orgTournaments || []).map(t => ({
-        id: t.id,
-        name: t.name,
-        slug: t.slug,
-        status: t.status,
-        registration_status: 'MEMBER',
-        minecraft_ign: user.minecraft_ign,
-        org_name: t.organizations?.name || 'Unknown',
-        org_slug: t.organizations?.slug || '',
-        source: 'member'
-      }))
+      for (const t of (orgTournaments || [])) {
+        const { count: regCount } = await supabaseAdmin
+          .from('tournament_registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('tournament_id', t.id)
+
+        memberTournaments.push({
+          id: t.id,
+          name: t.name,
+          slug: t.slug,
+          status: t.status,
+          registration_status: 'MEMBER',
+          minecraft_ign: user.minecraft_ign,
+          org_name: t.organizations?.name || 'Unknown',
+          org_slug: t.organizations?.slug || '',
+          registration_open: t.registration_open || false,
+          max_registrations: t.max_registrations || null,
+          registration_count: regCount || 0,
+          source: 'member'
+        })
+      }
     }
 
     // Deduplicate (member takes priority over registered)

@@ -30,6 +30,10 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 })
     }
 
+    if (!tournament.registration_open) {
+      return NextResponse.json({ error: 'Registration is closed.' }, { status: 400 })
+    }
+
     // Check if user is member of tournament's organization
     const { data: memberCheck } = await supabaseAdmin
       .from('organization_members')
@@ -123,9 +127,70 @@ export async function POST(request, { params }) {
       }
     }
 
+    // 6. Check if registration is now full and needs auto-closing
+    if (tournament.max_registrations) {
+      const { count: newCount } = await supabaseAdmin
+        .from('tournament_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', tournamentId)
+
+      if (newCount >= tournament.max_registrations) {
+        // Automatically close registration
+        await supabaseAdmin
+          .from('tournaments')
+          .update({ registration_open: false })
+          .eq('id', tournamentId)
+
+        // Run auto-whitelist promotion since registrations just closed
+        await triggerAutoWhitelistOnClose(tournamentId, tournament.auto_select_count)
+      }
+    }
+
     return NextResponse.json(registration)
   } catch (error) {
     console.error('Registration API Error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+// Helper to auto-whitelist players when registrations close
+async function triggerAutoWhitelistOnClose(tournamentId, autoSelectCount) {
+  if (!autoSelectCount || autoSelectCount <= 0) return
+
+  // Count current SELECTED registrations
+  const { count: selectedCount } = await supabaseAdmin
+    .from('tournament_registrations')
+    .select('*', { count: 'exact', head: true })
+    .eq('tournament_id', tournamentId)
+    .eq('status', 'SELECTED')
+
+  const needed = autoSelectCount - (selectedCount || 0)
+  if (needed <= 0) return
+
+  // Find next oldest REGISTERED players and promote them
+  const { data: nextRegs } = await supabaseAdmin
+    .from('tournament_registrations')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .eq('status', 'REGISTERED')
+    .order('registered_at', { ascending: true })
+    .limit(needed)
+
+  if (nextRegs && nextRegs.length > 0) {
+    for (const reg of nextRegs) {
+      await supabaseAdmin
+        .from('tournament_registrations')
+        .update({ status: 'SELECTED' })
+        .eq('id', reg.id)
+
+      await supabaseAdmin
+        .from('tournament_players')
+        .insert({
+          tournament_id: tournamentId,
+          minecraft_ign: reg.minecraft_ign,
+          added_by: reg.user_id,
+          added_via: 'web_autowhitelist'
+        })
+    }
   }
 }

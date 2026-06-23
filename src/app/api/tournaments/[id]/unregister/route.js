@@ -25,6 +25,10 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 })
     }
 
+    if (!tournament.registration_open) {
+      return NextResponse.json({ error: 'Registration is closed. You cannot cancel registration.' }, { status: 400 })
+    }
+
     // 2. Fetch the registration record
     const { data: registration, error: regError } = await supabaseAdmin
       .from('tournament_registrations')

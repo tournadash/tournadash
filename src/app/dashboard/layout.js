@@ -15,6 +15,7 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname()
   const supabase = createClient()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -202,158 +203,171 @@ export default function DashboardLayout({ children }) {
   ] : []
 
   return (
-    <div className="dashboard-layout">
-      {/* Mobile Top Bar */}
-      <div className="dashboard-mobile-header">
-        <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(true)}>
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <div className={`dashboard-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Dashboard Top Header (visible on both desktop and mobile) */}
+      <div className="dashboard-header">
+        <button 
+          className="sidebar-toggle-btn" 
+          onClick={() => {
+            if (window.innerWidth <= 768) {
+              setSidebarOpen(true)
+            } else {
+              setSidebarCollapsed(!sidebarCollapsed)
+            }
+          }}
+          title="Toggle Sidebar"
+          id="sidebar-toggle-button"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span className="mobile-header-title">
+        <span className="dashboard-header-title">
           {selectedOrg ? selectedOrg.name : 'Dashboard'}
         </span>
         <div style={{ width: 24 }} />
       </div>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} id="dashboard-sidebar">
-        {/* Close Button for Mobile inside sidebar */}
-        <div className="sidebar-mobile-close-header">
-          <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)}>
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        {/* Org Switcher */}
-        {selectedOrg ? (
-          <div className="sidebar-org" id="sidebar-org-switcher">
-            <Avatar src={selectedOrg.avatar_url} alt={selectedOrg.name} size="sm" fallback="🏰" className="sidebar-org-avatar" />
-            <div className="sidebar-org-info">
-              <div className="sidebar-org-name">{selectedOrg.name}</div>
-              <div className="sidebar-org-role">{selectedOrg.role}</div>
-            </div>
-            <svg className="dropdown-arrow-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-        ) : (
-          <div style={{ padding: '0 var(--space-6)', marginBottom: 'var(--space-4)' }}>
-            <Link
-              href="/dashboard/org/new"
-              className="btn btn-primary btn-sm w-full"
-              style={{ justifyContent: 'center' }}
-              onClick={() => setSidebarOpen(false)}
-            >
-              + Create Organization
-            </Link>
-          </div>
+      <div className="dashboard-layout-body">
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
         )}
 
-        {/* Main Navigation */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">General</div>
-          <ul className="sidebar-nav">
-            {mainLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                    <span className="sidebar-link-icon">{link.icon}</span>
-                    {link.label}
-                  </span>
-                  {link.badge && (
-                    <span style={{
-                      display: 'inline-block',
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--color-primary)',
-                    }} />
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Sidebar */}
+        <aside className={`dashboard-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} id="dashboard-sidebar">
+          {/* Close Button for Mobile inside sidebar */}
+          <div className="sidebar-mobile-close-header">
+            <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)}>
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
 
-        {/* Organization Nav */}
-        {selectedOrg && (
-          <>
-            <div className="sidebar-divider" />
-            <div className="sidebar-section">
-              <div className="sidebar-section-label">Organization</div>
-              <ul className="sidebar-nav">
-                {orgLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <span className="sidebar-link-icon">{link.icon}</span>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+          {/* Org Switcher */}
+          {selectedOrg ? (
+            <div className="sidebar-org" id="sidebar-org-switcher">
+              <Avatar src={selectedOrg.avatar_url} alt={selectedOrg.name} size="sm" fallback="🏰" className="sidebar-org-avatar" />
+              <div className="sidebar-org-info">
+                <div className="sidebar-org-name">{selectedOrg.name}</div>
+                <div className="sidebar-org-role">{selectedOrg.role}</div>
+              </div>
+              <svg className="dropdown-arrow-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </div>
-          </>
-        )}
-
-        <div className="sidebar-divider" />
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">Manage</div>
-          {orgs.length > 0 ? (
-            <ul className="sidebar-nav sidebar-manage-orgs">
-              {orgs.map((org) => {
-                const orgPath = `/dashboard/org/${org.id}`
-                const isActive = pathname.startsWith(orgPath) && selectedOrg?.id === org.id
-                return (
-                  <li key={org.id}>
-                    <Link
-                      href={orgPath}
-                      className={`sidebar-link sidebar-manage-org-link ${isActive ? 'sidebar-link-active' : ''}`}
-                      onClick={() => {
-                        setSelectedOrg(org)
-                        setSidebarOpen(false)
-                      }}
-                    >
-                      <Avatar src={org.avatar_url} alt={org.name} size="xs" fallback="🏰" className="sidebar-manage-org-avatar" />
-                      <span className="sidebar-manage-org-info">
-                        <span className="sidebar-manage-org-name">{org.name}</span>
-                        <span className="sidebar-manage-org-role">{org.role}</span>
-                      </span>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
           ) : (
-            <div className="sidebar-manage-empty">
-              <span className="sidebar-manage-empty-text">No organizations yet</span>
+            <div style={{ padding: '0 var(--space-6)', marginBottom: 'var(--space-4)' }}>
+              <Link
+                href="/dashboard/org/new"
+                className="btn btn-primary btn-sm w-full"
+                style={{ justifyContent: 'center' }}
+                onClick={() => setSidebarOpen(false)}
+              >
+                + Create Organization
+              </Link>
             </div>
           )}
-        </div>
-      </aside>
 
-      {/* Main Content */}
-      <div className="dashboard-main">
-        {children}
+          {/* Main Navigation */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">General</div>
+            <ul className="sidebar-nav">
+              {mainLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                      <span className="sidebar-link-icon">{link.icon}</span>
+                      {link.label}
+                    </span>
+                    {link.badge && (
+                      <span style={{
+                        display: 'inline-block',
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-primary)',
+                      }} />
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Organization Nav */}
+          {selectedOrg && (
+            <>
+              <div className="sidebar-divider" />
+              <div className="sidebar-section">
+                <div className="sidebar-section-label">Organization</div>
+                <ul className="sidebar-nav">
+                  {orgLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className={`sidebar-link ${pathname === link.href ? 'sidebar-link-active' : ''}`}
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <span className="sidebar-link-icon">{link.icon}</span>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+
+          <div className="sidebar-divider" />
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">Manage</div>
+            {orgs.length > 0 ? (
+              <ul className="sidebar-nav sidebar-manage-orgs">
+                {orgs.map((org) => {
+                  const orgPath = `/dashboard/org/${org.id}`
+                  const isActive = pathname.startsWith(orgPath) && selectedOrg?.id === org.id
+                  return (
+                    <li key={org.id}>
+                      <Link
+                        href={orgPath}
+                        className={`sidebar-link sidebar-manage-org-link ${isActive ? 'sidebar-link-active' : ''}`}
+                        onClick={() => {
+                          setSelectedOrg(org)
+                          setSidebarOpen(false)
+                        }}
+                      >
+                        <Avatar src={org.avatar_url} alt={org.name} size="xs" fallback="🏰" className="sidebar-manage-org-avatar" />
+                        <span className="sidebar-manage-org-info">
+                          <span className="sidebar-manage-org-name">{org.name}</span>
+                          <span className="sidebar-manage-org-role">{org.role}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <div className="sidebar-manage-empty">
+                <span className="sidebar-manage-empty-text">No organizations yet</span>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="dashboard-main">
+          {children}
+        </div>
       </div>
     </div>
   )

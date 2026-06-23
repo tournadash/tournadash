@@ -609,6 +609,7 @@ export default function TournamentManagePage() {
 
     const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
     await runAutoFillPromotion(currentT)
+    await loadData()
   }
 
   const parseMinecraftNames = (text) => {
@@ -676,7 +677,7 @@ export default function TournamentManagePage() {
       setTimeout(() => setSuccess(''), 3000)
       setImportModalOpen(false)
       setImportText('')
-      loadData()
+      await loadData()
     } catch (err) {
       setError(`Failed to import players: ${err.message}`)
     } finally {
@@ -703,6 +704,7 @@ export default function TournamentManagePage() {
 
     const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
     await runAutoFillPromotion(currentT)
+    await loadData()
   }
 
   const handleBulkApprove = async () => {
