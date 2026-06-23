@@ -111,6 +111,14 @@ export async function POST(request) {
       return NextResponse.json({ error: regError.message }, { status: 500 })
     }
 
+    // Save minecraft_ign in users profile if not set
+    if (!user.minecraft_ign) {
+      await supabaseAdmin
+        .from('users')
+        .update({ minecraft_ign: ign.trim() })
+        .eq('id', user.id)
+    }
+
     // Auto-whitelist if needed
     if (shouldWhitelist) {
       await supabaseAdmin

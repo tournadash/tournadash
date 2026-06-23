@@ -17,11 +17,11 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Missing ign parameter.' }, { status: 400 })
   }
 
-  // Look up user by minecraft_ign
+  // Look up user by minecraft_ign or disguise_ign
   const { data: user } = await supabaseAdmin
     .from('users')
     .select('id, minecraft_ign, disguise_ign')
-    .ilike('minecraft_ign', ign)
+    .or(`minecraft_ign.ilike.${ign},disguise_ign.ilike.${ign}`)
     .maybeSingle()
 
   if (!user) {
@@ -41,7 +41,14 @@ export async function POST(request) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
-  // Accept from server token or user token
+  // Parse body once to avoid reading the stream twice
+  let requestBody = null
+  try {
+    requestBody = await request.json()
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
+  }
+
   let userId = null
   let playerIgn = null
 
@@ -50,15 +57,14 @@ export async function POST(request) {
     playerIgn = result.user.minecraft_ign
   } else {
     // Server token: require ign in body
-    const body = await request.json()
-    playerIgn = body.ign
+    playerIgn = requestBody.ign
     if (!playerIgn) {
       return NextResponse.json({ error: 'Missing ign parameter.' }, { status: 400 })
     }
     const { data: user } = await supabaseAdmin
       .from('users')
-      .select('id')
-      .ilike('minecraft_ign', playerIgn)
+      .select('id, minecraft_ign')
+      .or(`minecraft_ign.ilike.${playerIgn},disguise_ign.ilike.${playerIgn}`)
       .maybeSingle()
     if (!user) {
       return NextResponse.json({ error: 'Player not found.' }, { status: 404 })
@@ -67,8 +73,7 @@ export async function POST(request) {
   }
 
   try {
-    const body = result.tokenType === 'user' ? await request.json() : {}
-    const disguiseName = body.disguise_ign?.trim() || null
+    const disguiseName = requestBody.disguise_ign?.trim() || null
 
     if (disguiseName) {
       // Validate uniqueness: no other user should have this as real or disguise IGN

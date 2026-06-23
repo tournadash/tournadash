@@ -18,13 +18,15 @@ export async function GET(request) {
 
   // Fetch disguise_ign for the player (if any)
   let disguiseIgn = null
+  let realIgn = ign
   const { data: user } = await supabaseAdmin
     .from('users')
-    .select('disguise_ign')
-    .ilike('minecraft_ign', ign)
+    .select('minecraft_ign, disguise_ign')
+    .or(`minecraft_ign.ilike.${ign},disguise_ign.ilike.${ign}`)
     .maybeSingle()
   if (user) {
     disguiseIgn = user.disguise_ign || null
+    realIgn = user.minecraft_ign || ign
   }
 
   // Handle organization token checks
@@ -34,7 +36,7 @@ export async function GET(request) {
       .from('organization_members')
       .select('id, minecraft_ign')
       .eq('organization_id', organization.id)
-      .ilike('minecraft_ign', ign)
+      .ilike('minecraft_ign', realIgn)
       .maybeSingle()
 
     if (orgMember) {
@@ -43,6 +45,7 @@ export async function GET(request) {
         reason: 'Organization member',
         is_org_member: true,
         disguise_ign: disguiseIgn,
+        real_ign: realIgn,
       })
     }
 
@@ -60,7 +63,7 @@ export async function GET(request) {
     .from('organization_members')
     .select('id, minecraft_ign')
     .eq('organization_id', tournament.organization_id)
-    .ilike('minecraft_ign', ign)
+    .ilike('minecraft_ign', realIgn)
     .maybeSingle()
 
   if (orgMember) {
@@ -69,6 +72,7 @@ export async function GET(request) {
       reason: 'Organization member',
       is_org_member: true,
       disguise_ign: disguiseIgn,
+      real_ign: realIgn,
     })
   }
 
@@ -103,7 +107,7 @@ export async function GET(request) {
     .from('tournament_players')
     .select('id, is_banned')
     .eq('tournament_id', tournament.id)
-    .ilike('minecraft_ign', ign)
+    .ilike('minecraft_ign', realIgn)
     .maybeSingle()
 
   if (!player) {
@@ -126,5 +130,7 @@ export async function GET(request) {
     reason: 'Whitelisted player',
     is_whitelisted: true,
     disguise_ign: disguiseIgn,
+    real_ign: realIgn,
   })
+
 }

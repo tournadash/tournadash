@@ -77,18 +77,18 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Missing ign field' }, { status: 400 })
   }
 
-  // Resolve disguised IGN to real IGN
-  const { data: disguisedUser } = await supabaseAdmin
-    .from('users')
-    .select('minecraft_ign, minecraft_uuid')
-    .eq('disguise_ign', ign.trim())
-    .maybeSingle()
-
+  // Resolve disguised IGN to real IGN (case-insensitive OR lookup)
   let finalIgn = ign
   let finalUuid = uuid
-  if (disguisedUser) {
-    finalIgn = disguisedUser.minecraft_ign
-    finalUuid = disguisedUser.minecraft_uuid || uuid
+  const { data: userProfile } = await supabaseAdmin
+    .from('users')
+    .select('minecraft_ign, minecraft_uuid')
+    .or(`minecraft_ign.ilike.${ign.trim()},disguise_ign.ilike.${ign.trim()}`)
+    .maybeSingle()
+
+  if (userProfile) {
+    finalIgn = userProfile.minecraft_ign || ign
+    finalUuid = userProfile.minecraft_uuid || uuid
   }
 
   let tournamentId = null
@@ -153,16 +153,16 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Missing ign parameter' }, { status: 400 })
   }
 
-  // Resolve disguised IGN to real IGN
-  const { data: disguisedUser } = await supabaseAdmin
+  // Resolve disguised IGN to real IGN (case-insensitive OR lookup)
+  let finalIgn = ign
+  const { data: userProfile } = await supabaseAdmin
     .from('users')
     .select('minecraft_ign')
-    .eq('disguise_ign', ign.trim())
+    .or(`minecraft_ign.ilike.${ign.trim()},disguise_ign.ilike.${ign.trim()}`)
     .maybeSingle()
 
-  let finalIgn = ign
-  if (disguisedUser) {
-    finalIgn = disguisedUser.minecraft_ign
+  if (userProfile) {
+    finalIgn = userProfile.minecraft_ign || ign
   }
 
   let tournamentId = null
@@ -240,6 +240,7 @@ export async function DELETE(request) {
     if (wasSelected) {
       await triggerAutoFillPromotion(tournamentId)
     }
+
 
     return NextResponse.json({ success: true, action: 'removed', ign: finalIgn })
   }

@@ -880,7 +880,7 @@ export default function TournamentDetailPage() {
                     </div>
                   )}
 
-                  {tournament.status === 'SOON' && tournament.registration_open && (
+                  {tournament.status === 'SOON' && tournament.registration_open && registration.status !== 'SELECTED' && (
                     <button onClick={handleWithdrawRegistration} disabled={submittingReg} style={{ 
                       width: '100%', padding: '10px', backgroundColor: 'transparent', color: 'var(--color-danger)', fontWeight: '800', border: '1px solid var(--color-danger)', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s'
                     }}

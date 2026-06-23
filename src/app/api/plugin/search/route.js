@@ -97,7 +97,7 @@ export async function GET(request) {
         .ilike('minecraft_ign', user.minecraft_ign)
         .maybeSingle()
 
-      const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
+      const isSelected = registrationStatus === 'SELECTED' || !!member || (!!whitelisted && !whitelisted.is_banned)
       const joinEnabled = isSelected && (!!member || t.status === 'ONGOING')
 
       // Get registration count

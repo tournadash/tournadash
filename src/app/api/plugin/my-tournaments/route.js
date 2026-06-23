@@ -51,7 +51,7 @@ export async function GET(request) {
         whitelisted = wl
       }
 
-      const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
+      const isSelected = r.status === 'SELECTED' || !!member || (!!whitelisted && !whitelisted.is_banned)
       const joinEnabled = isSelected && (!!member || r.tournaments.status === 'ONGOING')
 
       registeredTournaments.push({

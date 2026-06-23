@@ -707,6 +707,30 @@ export default function TournamentManagePage() {
     await loadData()
   }
 
+  const handleCancelRegistration = async (reg) => {
+    if (!confirm(`Are you sure you want to cancel the registration for ${reg.minecraft_ign}? This will completely remove their registration, allowing them to register again.`)) return
+
+    const { error: deleteError } = await supabase
+      .from('tournament_registrations')
+      .delete()
+      .eq('id', reg.id)
+
+    if (deleteError) {
+      setError(deleteError.message)
+      return
+    }
+
+    await supabase
+      .from('tournament_players')
+      .delete()
+      .eq('tournament_id', tournamentId)
+      .eq('minecraft_ign', reg.minecraft_ign)
+
+    const { data: currentT } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+    await runAutoFillPromotion(currentT)
+    await loadData()
+  }
+
   const handleBulkApprove = async () => {
     const targets = filteredRegs.filter(reg => reg.status !== 'SELECTED')
     if (targets.length === 0) return
@@ -1385,14 +1409,24 @@ export default function TournamentManagePage() {
                       </Button>
                     )}
                     {(reg.status === 'SELECTED' || reg.status === 'REJECTED') && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        style={{ color: 'var(--color-text-secondary)', padding: '0 var(--space-2)', height: '28px' }}
-                        onClick={() => handleResetRegistration(reg)}
-                      >
-                        Reset
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          style={{ color: 'var(--color-text-secondary)', padding: '0 var(--space-2)', height: '28px' }}
+                          onClick={() => handleResetRegistration(reg)}
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          style={{ color: 'var(--color-danger)', padding: '0 var(--space-2)', height: '28px' }}
+                          onClick={() => handleCancelRegistration(reg)}
+                        >
+                          Cancel
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

@@ -67,8 +67,10 @@ export async function GET(request) {
       isSelected = true
       selectionReason = 'Organization member'
     } else {
-      // Check if user's IGN is whitelisted and not banned
-      if (user.minecraft_ign) {
+      if (registrationStatus === 'SELECTED') {
+        isSelected = true
+        selectionReason = 'Whitelisted player'
+      } else if (user.minecraft_ign) {
         const { data: player } = await supabaseAdmin
           .from('tournament_players')
           .select('id, is_banned')
