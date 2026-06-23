@@ -31,6 +31,29 @@ export async function GET(request) {
         .select('*', { count: 'exact', head: true })
         .eq('tournament_id', r.tournaments.id)
 
+      // Check membership
+      const { data: member } = await supabaseAdmin
+        .from('organization_members')
+        .select('id')
+        .eq('organization_id', r.tournaments.organization_id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      // Check whitelist
+      let whitelisted = null
+      if (user.minecraft_ign) {
+        const { data: wl } = await supabaseAdmin
+          .from('tournament_players')
+          .select('id, is_banned')
+          .eq('tournament_id', r.tournaments.id)
+          .ilike('minecraft_ign', user.minecraft_ign)
+          .maybeSingle()
+        whitelisted = wl
+      }
+
+      const isSelected = !!member || (!!whitelisted && !whitelisted.is_banned)
+      const joinEnabled = isSelected && r.tournaments.status === 'ONGOING'
+
       registeredTournaments.push({
         id: r.tournaments.id,
         name: r.tournaments.name,
@@ -43,6 +66,9 @@ export async function GET(request) {
         registration_open: r.tournaments.registration_open || false,
         max_registrations: r.tournaments.max_registrations || null,
         registration_count: regCount || 0,
+        is_registered: true,
+        is_selected: isSelected,
+        join_enabled: joinEnabled,
         source: 'registered'
       })
     }
@@ -68,18 +94,32 @@ export async function GET(request) {
           .select('*', { count: 'exact', head: true })
           .eq('tournament_id', t.id)
 
+        // Check if user is registered
+        const { data: reg } = await supabaseAdmin
+          .from('tournament_registrations')
+          .select('status')
+          .eq('tournament_id', t.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        const isRegistered = !!reg
+        const registrationStatus = reg?.status || 'MEMBER'
+
         memberTournaments.push({
           id: t.id,
           name: t.name,
           slug: t.slug,
           status: t.status,
-          registration_status: 'MEMBER',
+          registration_status: registrationStatus,
           minecraft_ign: user.minecraft_ign,
           org_name: t.organizations?.name || 'Unknown',
           org_slug: t.organizations?.slug || '',
           registration_open: t.registration_open || false,
           max_registrations: t.max_registrations || null,
           registration_count: regCount || 0,
+          is_registered: isRegistered,
+          is_selected: true,
+          join_enabled: t.status === 'ONGOING',
           source: 'member'
         })
       }
